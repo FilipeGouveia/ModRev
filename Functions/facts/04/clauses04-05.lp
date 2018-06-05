@@ -1,0 +1,9 @@
+clause(1,1).
+clause(1,3).
+clause(1,4).
+clause(2,1).
+clause(2,2).
+clause(2,3).
+clause(3,2).
+clause(3,3).
+clause(3,4).

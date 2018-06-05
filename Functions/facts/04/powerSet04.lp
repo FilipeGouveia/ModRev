@@ -1,0 +1,34 @@
+#const n = 4.
+#const p = 15.
+powerSet(1,1).
+powerSet(2,2).
+powerSet(3,3).
+powerSet(4,4).
+powerSet(5,1).
+powerSet(5,2).
+powerSet(6,1).
+powerSet(6,3).
+powerSet(7,1).
+powerSet(7,4).
+powerSet(8,2).
+powerSet(8,3).
+powerSet(9,2).
+powerSet(9,4).
+powerSet(10,3).
+powerSet(10,4).
+powerSet(11,1).
+powerSet(11,2).
+powerSet(11,3).
+powerSet(12,1).
+powerSet(12,2).
+powerSet(12,4).
+powerSet(13,1).
+powerSet(13,3).
+powerSet(13,4).
+powerSet(14,2).
+powerSet(14,3).
+powerSet(14,4).
+powerSet(15,1).
+powerSet(15,2).
+powerSet(15,3).
+powerSet(15,4).
