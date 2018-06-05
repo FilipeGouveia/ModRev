@@ -52,9 +52,10 @@ foreach dir ($functionDir/facts/*/)
         ./$bin/powersetGen $basedir > $functionDir/facts/powerSet$basedir.lp
     endif
 
+    printf "\tTesting with powerset size $basedir\n"
    foreach file ($dir/clauses*)
         set basefile = `basename $file .lp`
-        #(time ./$bin/clingo 0 $functionDir/HasseD2.lp $functionDir/fatherR1.lp $functionDir/fatherR2.lp $functionDir/fatherR3.lp $functionDir/facts/$basedir/powerSet$basedir.lp $file > $resdir/$basedir/$basefile-sol.txt) > $resdir/$basedir/$basefile-time.txt
+        (time ./$bin/clingo 0 $functionDir/HasseD2.lp $functionDir/fatherR1.lp $functionDir/fatherR2.lp $functionDir/fatherR3.lp $functionDir/facts/$basedir/powerSet$basedir.lp $file > $resdir/$basedir/$basefile-sol.txt) > $resdir/$basedir/$basefile-time.txt
    end
 end
 

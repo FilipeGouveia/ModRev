@@ -44,7 +44,8 @@ int main( int argc, char *argv[] )
    }
 
     int * set = (int*) malloc(size * sizeof(int));
-    for(int i = 0; i < size; i++)
+    int i;
+    for(i = 0; i < size; i++)
     {
         set[i] = i+1;
     }
