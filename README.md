@@ -43,7 +43,7 @@ The model is represented by a list of edges, each with a sign associated.
 ```
 edge(<from>,<to>,<sign>).
 ```
-Where <from> is the origin of the edge with small letters or numbers, <to> is the destination, and <sign> is '0' for a negative edge or '1' otherwise.
+Where `<from>` is the origin of the edge with small letters or numbers, `<to>` is the destination, and `<sign>` is '0' for a negative edge or '1' otherwise.
 For example, if we want to express a negative edge from *c1* to *c2*:
 ```
 edge(c1,c2,0).
@@ -54,7 +54,7 @@ The regulatory functions of each compound must be represented in DNF form.
 functionOr(<compound>,1..<end>).
 functionAnd(<compound>,<clauseID>,<regulatorCompound>).
 ```
-where <compound> represents the regulated compound, <end> represents the number of clauses in the DNF, <clauseID> identifies the each of the clauses, and <regulatorCompound> represents the regulator present in the clause.
+where `<compound>` represents the regulated compound, `<end>` represents the number of clauses in the DNF, `<clauseID>` identifies the each of the clauses, and `<regulatorCompound>` represents the regulator present in the clause.
 Each regulatory function has one **functionOr** predicate and one or more **functionAnd** predicate.
 For example, if compound *c3* has the regulatory function *((c1) or (c2 and c4))*, wich has two clauses, we define:
 ```
@@ -82,7 +82,7 @@ To use this model, run:
 ```
 ./Functions.csh <s|f> <powerSet file> <function file>
 ```
-where <s|f> represents if we want to calculate the sons (s) or the fathers (f) of the functions, <powerSet file> is the file with the power set of *n* elements, and the <function file> is the file with the function.
+where `<s|f>` represents if we want to calculate the sons (s) or the fathers (f) of the functions, `<powerSet file>` is the file with the power set of *n* elements, and the `<function file>` is the file with the function. The function is represented by a **clause** predicate indicating the number of clause and the element present (see the files in Functions/facts for examples).
 
 Example:
 ```
@@ -95,5 +95,5 @@ To generate the power set file, compile the **powersetGen** program in Functions
 ```
 ./powersetGen <n>
 ```
-where <n> is the number of elements in the powerset.
+where `<n>` is the number of elements in the powerset.
 
