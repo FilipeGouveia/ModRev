@@ -1,0 +1,15 @@
+clause(1,1).
+clause(2,2).
+clause(3,3).
+clause(4,4).
+clause(5,5).
+clause(6,6).
+clause(7,7).
+clause(8,8).
+clause(9,9).
+clause(10,10).
+clause(11,11).
+clause(12,12).
+clause(13,13).
+clause(14,14).
+clause(15,15).
