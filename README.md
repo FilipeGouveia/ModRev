@@ -82,7 +82,7 @@ To use this model, run:
 ```
 ./Functions.csh <s|f> <powerSet file> <function file>
 ```
-where `<s|f>` represents if we want to calculate the sons (s) or the fathers (f) of the functions, `<powerSet file>` is the file with the power set of *n* elements, and the `<function file>` is the file with the function. The function is represented by a **clause** predicate indicating the number of clause and the element present (see the files in Functions/facts for examples).
+where `<s|f>` represents if we want to calculate the sons (s) or the fathers (f) of the functions, `<powerSet file>` is the file with the power set of *n* elements, and the `<function file>` is the file with the function. The function is represented by a **clause** predicate indicating the number of the clause and the element present (see the files in Functions/facts for examples).
 
 Example:
 ```

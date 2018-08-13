@@ -24,6 +24,8 @@ noneNegative(V,Id) :- onePositive(V,Id), not oneNegative(V,Id).
 vlabel(V,1) :- 1{noneNegative(V,Id):functionOr(V,Id)}, vertex(V), not r_part(V).
 vlabel(V,0) :- {noneNegative(V,Id):functionOr(V,Id)}0, vertex(V), not r_gen(V).
 
+:- r_gen(V), r_part(V).
+
 repair(f,V) :- r_gen(V).
 repair(f,V) :- r_part(V).
 
@@ -35,3 +37,4 @@ repair(f,V) :- r_part(V).
 
 #show r_gen/1.
 #show r_part/1.
+#show vlabel/2.
