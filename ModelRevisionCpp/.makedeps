@@ -1,5 +1,0 @@
-ASPHelper.o: ASPHelper.cc ASPHelper.h Network.h Util.h Configuration.h
-Configuration.o: Configuration.cc Configuration.h
-Network.o: Network.cc Network.h
-Util.o: Util.cc Util.h
-main.o: main.cc main.h Configuration.h ASPHelper.h Network.h
