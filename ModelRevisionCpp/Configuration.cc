@@ -10,6 +10,7 @@ bool Configuration::function_ASP = true;
 std::string Configuration::ASP_dir = "../ASP/";
 std::string Configuration::ASP_solver = "./../ASP/bin-Darwin/clingo";
 std::string Configuration::ASP_CC_SS = "../ASP/ConsistencyCheck/core-ss.lp";
+std::string Configuration::ASP_Functions = "../ASP/Functions/";
 
 void Configuration::parseConfig() {
 

@@ -259,3 +259,75 @@ std::vector<FunctionRepairs*> ASPHelper::parseFunctionRepairResults(std::vector<
 
     return result;
 };
+
+
+
+std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers) {
+    std::vector<Function*> result;
+
+    std::string function_cmd = Configuration::ASP_solver;
+    function_cmd.append(" ");
+    function_cmd.append("0");
+    function_cmd.append(" ");
+    if(is_fathers)
+    {
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("fatherR1.lp ");
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("fatherR2.lp ");
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("fatherR3.lp ");
+    }
+    else
+    {
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("sonR1.lp ");
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("sonR2.lp ");
+        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append("sonR3.lp ");
+    }
+    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append("HasseD2.lp ");
+    //TODO pur files in conf and handle powerset
+    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append("facts/powerSet");
+    int el = function->getNumberOfRegulators();
+    if(el < 10)
+    {
+        function_cmd.append("0");
+    }
+    function_cmd.append(std::to_string(el));
+    function_cmd.append(".lp clause_aux.lp");
+    std::ofstream file("clause_aux.lp");
+    file << constructFunctionClause(function);
+    file.close();
+
+    std::string result_cmd = exec(function_cmd.c_str());
+
+    //process result to function structure
+    std::cout << result_cmd << std::endl;
+
+    return result;
+};
+
+
+std::string ASPHelper::constructFunctionClause(Function* function){
+    std::map<std::string,int> regMap = function->getRegulatorsMap();
+    std::string result = "";
+    for(int i = 1; i <= function->nClauses_; i++)
+    {
+        std::vector<std::string> clause = function->clauses_.find(i)->second;
+        for(auto it = clause.begin(), end=clause.end(); it!=end;it++)
+        {
+           result.append("clause(");
+           result.append(std::to_string(i));
+           result.append(",");
+           result.append(std::to_string(regMap.find((*it))->second));
+           result.append("). ");
+        }
+    }
+
+    return result;
+   
+};

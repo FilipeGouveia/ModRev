@@ -127,6 +127,28 @@ void Function::addElementClause(int id, std::string node) {
 };
 
 
+int Function::getNumberOfRegulators(){
+    return getRegulatorsMap().size();
+};
+
+std::map<std::string,int> Function::getRegulatorsMap(){
+    int index = 1;
+    std::map<std::string,int> elements;
+    for(int i = 1; i <= nClauses_; i++)
+    {
+        std::vector<std::string> clause = clauses_.find(i)->second;
+        for(auto it = clause.begin(), end=clause.end(); it!=end; it++)
+        {
+            auto ret = elements.insert(std::make_pair((*it),index));
+            if(ret.second != false)
+                index++;
+        }
+    }
+    return elements;
+};
+
+
+
 FunctionRepairs::FunctionRepairs()
     :generalization_(),
     particularization_(),

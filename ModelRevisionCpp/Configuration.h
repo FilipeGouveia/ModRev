@@ -11,6 +11,7 @@ class Configuration {
         static std::string ASP_dir;
         static std::string ASP_solver;
         static std::string ASP_CC_SS;
+        static std::string ASP_Functions;
 
         static void parseConfig();
 

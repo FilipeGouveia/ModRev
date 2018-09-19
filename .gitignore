@@ -6,3 +6,4 @@
 res
 results-Functions
 *.o
+*_aux.lp

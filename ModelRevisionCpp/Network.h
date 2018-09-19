@@ -17,6 +17,8 @@ class Function {
         ~Function();
 
         void addElementClause(int id, std::string node);
+        int getNumberOfRegulators();
+        std::map<std::string,int> getRegulatorsMap();
 
 
 };
