@@ -22,7 +22,7 @@ oneNegative(V,Id) :- functionAnd(V,Id, V2), edge(V2,V,S), vlabel(V2,T), compleme
 noneNegative(V,Id) :- onePositive(V,Id), not oneNegative(V,Id).
 
 vlabel(V,1) :- 1{noneNegative(V,Id):functionOr(V,Id)}, vertex(V), not r_part(V).
-vlabel(V,0) :- {noneNegative(V,Id):functionOr(V,Id)}0, vertex(V), not r_gen(V).
+vlabel(V,0) :- {noneNegative(V,Id):functionOr(V,Id)}0, vertex(V), functionOr(V,_), not r_gen(V).
 
 :- r_gen(V), r_part(V).
 
