@@ -7,6 +7,9 @@
 
 class Function {
 
+    private:
+        std::map<std::string,int> regulatorsMap_;
+
     public:
 
         std::string node_;
@@ -19,8 +22,7 @@ class Function {
         void addElementClause(int id, std::string node);
         int getNumberOfRegulators();
         std::map<std::string,int> getRegulatorsMap();
-
-
+    
 };
 
 
@@ -78,14 +80,14 @@ class Network {
 };
 
 
-class FunctionRepairs {
+class FunctionInconsistencies {
 
     public:
         std::vector<std::string> generalization_;
         std::vector<std::string> particularization_;
         std::map<std::string,int> vlabel_;
 
-        FunctionRepairs();
+        FunctionInconsistencies();
 
         void addGeneralization(std::string id);
         void addParticularization(std::string id);

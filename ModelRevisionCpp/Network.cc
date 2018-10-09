@@ -111,6 +111,8 @@ Function::Function(std::string node, int nClauses)
         std::vector<std::string> clause;
         clauses_.insert(std::make_pair(i,clause));
     }
+    regulatorsMap_ = std::map<std::string,int>();
+
 };
 
 Function::~Function() {};
@@ -130,31 +132,34 @@ void Function::addElementClause(int id, std::string node) {
 int Function::getNumberOfRegulators(){
     return getRegulatorsMap().size();
 };
-
 std::map<std::string,int> Function::getRegulatorsMap(){
-    int index = 1;
-    std::map<std::string,int> elements;
-    for(int i = 1; i <= nClauses_; i++)
+    if(regulatorsMap_.empty())
     {
-        std::vector<std::string> clause = clauses_.find(i)->second;
-        for(auto it = clause.begin(), end=clause.end(); it!=end; it++)
+        int index = 1;
+        std::map<std::string,int> elements;
+        for(int i = 1; i <= nClauses_; i++)
         {
-            auto ret = elements.insert(std::make_pair((*it),index));
-            if(ret.second != false)
-                index++;
+            std::vector<std::string> clause = clauses_.find(i)->second;
+            for(auto it = clause.begin(), end=clause.end(); it!=end; it++)
+            {
+                auto ret = elements.insert(std::make_pair((*it),index));
+                if(ret.second != false)
+                    index++;
+            }
         }
+        regulatorsMap_ = elements;
     }
-    return elements;
+    return regulatorsMap_;
 };
 
 
 
-FunctionRepairs::FunctionRepairs()
+FunctionInconsistencies::FunctionInconsistencies()
     :generalization_(),
     particularization_(),
     vlabel_() {};
 
-void FunctionRepairs::addGeneralization(std::string id) {
+void FunctionInconsistencies::addGeneralization(std::string id) {
 
     for(auto it = generalization_.begin(), end = generalization_.end(); it != end; it++)
     {
@@ -166,7 +171,7 @@ void FunctionRepairs::addGeneralization(std::string id) {
 };
 
 
-void FunctionRepairs::addParticularization(std::string id) {
+void FunctionInconsistencies::addParticularization(std::string id) {
 
     for(auto it = particularization_.begin(), end = particularization_.end(); it != end; it++)
     {
@@ -178,7 +183,7 @@ void FunctionRepairs::addParticularization(std::string id) {
 };
 
 
-void FunctionRepairs::addVLabel(std::string id, int value) {
+void FunctionInconsistencies::addVLabel(std::string id, int value) {
 
     vlabel_.insert(std::make_pair(id, value));
 
