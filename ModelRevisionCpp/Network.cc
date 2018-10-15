@@ -60,6 +60,16 @@ Edge* Network::addEdge(Node* start, Node* end, int sign) {
     return edge;
 };
 
+Edge* Network::getEdge(std::string startNode, std::string endNode)
+{
+    for(auto it = edges_.begin(), end = edges_.end(); it!=end; it++)
+    {
+        if((*it)->getStart()->id_.compare(startNode) == 0 && (*it)->getEnd()->id_.compare(endNode) == 0)
+            return (*it);
+    }
+    return nullptr;
+};
+
 Edge::Edge(Node* start, Node* end, int sign)
     :start_(start),
     end_(end),
@@ -77,6 +87,13 @@ Node* Edge::getEnd() {
 
 int Edge::getSign() {
     return sign_;
+};
+
+void Edge::flipSign(){
+    if(sign_ == 0)
+        sign_ = 1;
+    else
+        sign_ = 0;
 };
 
 
@@ -118,6 +135,15 @@ Function::Function(std::string node, int nClauses)
 Function::~Function() {};
 
 void Function::addElementClause(int id, std::string node) {
+    if(id > nClauses_)
+    {
+        for(int i = nClauses_ + 1; i <= id; i++)
+        {
+            std::vector<std::string> clause;
+            clauses_.insert(std::make_pair(i,clause));
+        }
+        nClauses_ = id;
+    }
     if(id > 0 && id <= nClauses_)
     {
         auto it = clauses_.find(id);
@@ -132,6 +158,8 @@ void Function::addElementClause(int id, std::string node) {
 int Function::getNumberOfRegulators(){
     return getRegulatorsMap().size();
 };
+
+
 std::map<std::string,int> Function::getRegulatorsMap(){
     if(regulatorsMap_.empty())
     {
@@ -152,6 +180,30 @@ std::map<std::string,int> Function::getRegulatorsMap(){
     return regulatorsMap_;
 };
 
+std::string Function::printFunction(){
+    std::string result = "";
+    for(int i = 1; i <= nClauses_; i++)
+    {
+        result += "(";
+        std::vector<std::string> clause = clauses_[i];
+        bool first = true;
+        for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
+        {
+            if(!first)
+            {
+                result += " && ";
+            }
+            first = false;
+            result += (*it);
+        }
+        result += ")";
+        if(i < nClauses_)
+        {
+            result += " || ";
+        }
+    }
+    return result;
+};
 
 
 FunctionInconsistencies::FunctionInconsistencies()

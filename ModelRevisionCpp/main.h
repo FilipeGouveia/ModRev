@@ -14,5 +14,12 @@ std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_fil
 
 std::vector<Function*> repairFuncConsistency(std::string input_file_network, FunctionInconsistencies* repairSet, int & optimization);
 
+bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f);
+
+bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool generalize);
+
+Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, Function* f, bool generalize);
+
+
 #endif
 

@@ -15,6 +15,7 @@ class ASPHelper {
         static std::vector<FunctionInconsistencies*> parseFunctionRepairResults(std::vector<std::vector<std::string>> results);
         static std::vector<Function*> getFunctionReplace(Function* function, bool is_fathers);
         static std::string constructFunctionClause(Function* function);
+        static std::vector<Function*> parseFunctionFamily(std::string input, Function* original);
 
 
 };

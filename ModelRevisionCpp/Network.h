@@ -22,6 +22,7 @@ class Function {
         void addElementClause(int id, std::string node);
         int getNumberOfRegulators();
         std::map<std::string,int> getRegulatorsMap();
+        std::string printFunction();
     
 };
 
@@ -55,6 +56,7 @@ class Edge {
         Node* getStart();
         Node* getEnd();
         int getSign();
+        void flipSign();
 
 };
 
@@ -75,6 +77,7 @@ class Network {
         Node* getNode(std::string id);
 
         std::vector< Edge* > getEdges();
+        Edge* getEdge(std::string start, std::string end);
         Edge* addEdge(Node* start, Node* end, int sign);
 
 };

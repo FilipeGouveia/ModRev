@@ -216,7 +216,7 @@ std::vector<FunctionInconsistencies*> ASPHelper::parseFunctionRepairResults(std:
     std::vector<FunctionInconsistencies*> result;   
     for(auto it = results.begin(), end= results.end(); it!=end; it++)
     {
-        FunctionInconsistencies* repair = new FunctionRepairs();
+        FunctionInconsistencies* repair = new FunctionInconsistencies();
         for(auto it2 = (*it).begin(), end2 = (*it).end(); it2 != end2; it2++)
         {
             std::vector<std::string> split = Util_h::split(*it2, '(');
@@ -308,7 +308,7 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     //process result to function structure
     std::cout << result_cmd << std::endl;
 
-    return result;
+    return parseFunctionFamily(result_cmd, function);
 };
 
 
@@ -330,4 +330,98 @@ std::string ASPHelper::constructFunctionClause(Function* function){
 
     return result;
    
+};
+
+
+std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Function* original)
+{
+    std::cout << "DEBUG original function: " << original->printFunction() << std::endl;
+    std::vector<Function*> result;
+    std::map<std::string,int> regMap = original->getRegulatorsMap();
+
+    std::cout << "DEBUG Map\n";
+    for(auto ii = regMap.begin(), ee = regMap.end(); ii != ee; ii++)
+    {
+        std::cout << "\t" << ii->first << " => " << ii->second << "\n";
+    }
+
+    bool process = false;
+    
+    std::istringstream iss(input);
+    std::string line;
+    while(std::getline(iss,line))
+    {
+        if(line.find("UNSATISFIABLE\n") != std::string::npos)
+        {
+            std::vector<Function*> result_;
+            return result_;
+        }
+        
+        if(line.find("Answer: ") != std::string::npos)
+        {
+
+            process = true;
+
+        }
+        else
+        {
+            if(process)
+            {
+                process = false;
+
+                //process new function
+                Function* newFunction = new Function(original->node_, 1);
+                //newFunction->regulatorsMap_ = regMap;
+                std::vector<std::string> splitLine = Util_h::split(line, ' ');
+                int clauseId = 1;
+                for(auto it = splitLine.begin(), end = splitLine.end(); it != end; it++)
+                {
+                    if((*it).find("selected") != std::string::npos)
+                    {
+                        std::vector<std::string> aux = Util_h::split((*it), '(');
+                        aux = Util_h::split(aux[1], ')');
+                        int value;
+                        try
+                        {
+                            value = std::stoi(aux[0]);
+                        }
+                        catch(...)
+                        {
+                            std::cout << "WARN! Invalid value: " << aux[0] << std::endl;
+                            continue;
+                        }
+
+                        //it is assumed that the power set is constructed as bit vectors of presence
+                        // set 1 only has the first element
+                        // set 2 only has the second element
+                        // set 3 has first and second element (bits on in number 3 in binary)
+                        std::bitset<16> bits (value);
+                        int regulators = original->getNumberOfRegulators();
+                        for(int i = 0; i < regulators; i++)
+                        {
+                            if(bits.test(i))
+                            {
+                                for(auto it2 = regMap.begin(), end2 = regMap.end(); it2!=end2; it2++)
+                                {
+                                    if(it2->second == i+1)
+                                    {
+                                        newFunction->addElementClause(clauseId, it2->first);
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        clauseId++;
+                    }
+                }
+
+                result.push_back(newFunction);
+                std::cout << "DEBUG read function: " << newFunction->printFunction() << std::endl;
+                
+            }
+        }
+    }
+
+    return result;
 };
