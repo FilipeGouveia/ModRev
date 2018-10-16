@@ -306,7 +306,7 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     std::string result_cmd = exec(function_cmd.c_str());
 
     //process result to function structure
-    std::cout << result_cmd << std::endl;
+    //std::cout << result_cmd << std::endl;
 
     return parseFunctionFamily(result_cmd, function);
 };
@@ -335,15 +335,15 @@ std::string ASPHelper::constructFunctionClause(Function* function){
 
 std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Function* original)
 {
-    std::cout << "DEBUG original function: " << original->printFunction() << std::endl;
+    //std::cout << "DEBUG original function: " << original->printFunction() << std::endl;
     std::vector<Function*> result;
     std::map<std::string,int> regMap = original->getRegulatorsMap();
 
-    std::cout << "DEBUG Map\n";
-    for(auto ii = regMap.begin(), ee = regMap.end(); ii != ee; ii++)
-    {
-        std::cout << "\t" << ii->first << " => " << ii->second << "\n";
-    }
+    //std::cout << "DEBUG Map\n";
+    //for(auto ii = regMap.begin(), ee = regMap.end(); ii != ee; ii++)
+    //{
+    //    std::cout << "\t" << ii->first << " => " << ii->second << "\n";
+    //}
 
     bool process = false;
     
@@ -417,7 +417,7 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
                 }
 
                 result.push_back(newFunction);
-                std::cout << "DEBUG read function: " << newFunction->printFunction() << std::endl;
+                //std::cout << "DEBUG read function: " << newFunction->printFunction() << std::endl;
                 
             }
         }

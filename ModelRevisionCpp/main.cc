@@ -136,6 +136,7 @@ std::vector<Function*> repairFuncConsistency(std::string input_file_network, Fun
         //for each function to be repaired
         for(auto it = repairSet->generalization_.begin(), end = repairSet->generalization_.end(); it != end; it++)
         {
+            //std::cout << "DEBUG: need to generalize " << (*it) << std::endl;
             //each function must have a list of replacement candidates and each msut be tested until it works
             Function* originalF = network->getNode((*it))->getFunction();
             if(originalF == nullptr)
@@ -205,6 +206,7 @@ std::vector<Function*> repairFuncConsistency(std::string input_file_network, Fun
         //TODO change object in order to avoid repeating code
         for(auto it = repairSet->particularization_.begin(), end = repairSet->particularization_.end(); it != end; it++)
         {
+            //std::cout << "DEBUG: need to specify " << (*it) << std::endl;
             //each function must have a list of replacement candidates and each msut be tested until it works
             Function* originalF = network->getNode((*it))->getFunction();
             if(originalF == nullptr)
@@ -316,10 +318,11 @@ bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f)
                 return false;
             }
         }
-        if(isClauseSatisfiable)
+        if(isClauseSatisfiable && labeling->vlabel_[f->node_] == 1)
             return true;
+
     }
-    return false;
+    return labeling->vlabel_[f->node_] == 0;
 };
 
 //checks thhe top or bottom function for consistency.
@@ -354,6 +357,7 @@ bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool gen
     }
     else{
         // conjunction of all regulators
+        // as this is a particularization, it is needed more zeros and the function evaluation should be 0
         for(auto it = map.begin(), end = map.end(); it!= end; it++)
         {
             Edge* e = network->getEdge(it->first, f->node_);
@@ -362,12 +366,12 @@ bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool gen
                 //positive interaction
                 if(e->getSign() > 0 && labeling->vlabel_[it->first] == 0)
                 {
-                    return false;
+                    return true;
                 }
                 //negative interaction
                 if(e->getSign() == 0 && labeling->vlabel_[it->first] > 0)
                 {
-                    return false;
+                    return true;
                 }
             }
             else{
@@ -375,7 +379,7 @@ bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool gen
                 return false;
             }
         }
-        return true;
+        return false;
     }
     return true;
 
