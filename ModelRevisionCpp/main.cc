@@ -50,7 +50,6 @@ void process_arguments(const int argc, char const * const * argv, std::string & 
 // 3) tries to add or remove edges
 void modelRevision(std::string input_file_network) {
 
-    bool is_consistent = false;
     int optimization = -2;
 
     std::vector<FunctionInconsistencies*> fInconsistencies = checkConsistencyFunc(input_file_network, optimization);
@@ -63,7 +62,7 @@ void modelRevision(std::string input_file_network) {
     {
         if(optimization != 0)
         {
-            newFunctions = repairFuncConsistency(input_file_network, (*it), optimization);
+            newFunctions = repairFuncConsistency((*it), optimization);
         }
         if(optimization == 0)
         {
@@ -125,7 +124,7 @@ std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_fil
 
 //This function receives an inconsistent model and a set of functions to be repaired and try to repair the target functions making the model consistent
 //returns the set of new functions to be replaced
-std::vector<Function*> repairFuncConsistency(std::string input_file_network, FunctionInconsistencies* repairSet, int & optimization){
+std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet, int & optimization){
 
     std::vector<Function*> result;
     std::vector<std::vector<Function*>> candidates;
