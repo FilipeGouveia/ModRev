@@ -83,18 +83,28 @@ class Network {
 };
 
 
-class FunctionInconsistencies {
+class Solution {
 
     public:
         std::vector<std::string> generalization_;
         std::vector<std::string> particularization_;
         std::map<std::string,int> vlabel_;
 
-        FunctionInconsistencies();
+        int nTopologyChanges_;
+        int nRepairOperations_;
+        std::vector<Function*> repairedFunctions_;
+        std::vector<Edge*> flippedEdges_;
+
+        Solution();
 
         void addGeneralization(std::string id);
         void addParticularization(std::string id);
         void addVLabel(std::string id, int value);
+
+        int getNTopologyChanges();
+        void addRepairedFunction(Function* f);
+        void addFlippedEdge(Edge* e);
+        void printSolution();
 };
 
 #endif

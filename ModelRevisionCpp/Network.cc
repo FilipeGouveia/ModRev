@@ -206,12 +206,17 @@ std::string Function::printFunction(){
 };
 
 
-FunctionInconsistencies::FunctionInconsistencies()
+Solution::Solution()
     :generalization_(),
     particularization_(),
-    vlabel_() {};
+    vlabel_(),
+    repairedFunctions_(),
+    flippedEdges_() {
+        nTopologyChanges_ = 0;
+        nRepairOperations_ = 0;
+    };
 
-void FunctionInconsistencies::addGeneralization(std::string id) {
+void Solution::addGeneralization(std::string id) {
 
     for(auto it = generalization_.begin(), end = generalization_.end(); it != end; it++)
     {
@@ -223,7 +228,7 @@ void FunctionInconsistencies::addGeneralization(std::string id) {
 };
 
 
-void FunctionInconsistencies::addParticularization(std::string id) {
+void Solution::addParticularization(std::string id) {
 
     for(auto it = particularization_.begin(), end = particularization_.end(); it != end; it++)
     {
@@ -235,8 +240,31 @@ void FunctionInconsistencies::addParticularization(std::string id) {
 };
 
 
-void FunctionInconsistencies::addVLabel(std::string id, int value) {
+void Solution::addVLabel(std::string id, int value) {
 
     vlabel_.insert(std::make_pair(id, value));
 
+};
+
+
+int Solution::getNTopologyChanges() {
+    return nTopologyChanges_;
+};
+
+
+void Solution::addRepairedFunction(Function* f) {
+    repairedFunctions_.push_back(f);
+    nRepairOperations_++;
+};
+
+
+void Solution::addFlippedEdge(Edge* e) {
+    flippedEdges_.push_back(e);
+    nRepairOperations_++;
+    nTopologyChanges_++;
+};
+
+
+void Solution::printSolution() {
+    //TODO print solution in standard way
 };

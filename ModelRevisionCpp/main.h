@@ -10,15 +10,15 @@ void process_arguments(const int argc, char const * const * argv, std::string & 
 
 void modelRevision(std::string input_file_network);
 
-std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_file_network, int & optimization);
+std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
 
-std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet, int & optimization);
+std::vector<Function*> repairFuncConsistency(Solution* repairSet, int & optimization);
 
-bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f);
+bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
 
-bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool generalize);
+bool checkPointFunction(Solution* labeling, Function* f, bool generalize);
 
-Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, Function* f, bool generalize);
+Function* repairFuncConsistencyFlippingEdge(Solution* labeling, Function* f, bool generalize);
 
 
 #endif

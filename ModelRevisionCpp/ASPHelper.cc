@@ -212,11 +212,11 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
 };
 
 
-std::vector<FunctionInconsistencies*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
-    std::vector<FunctionInconsistencies*> result;   
+std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
+    std::vector<Solution*> result;   
     for(auto it = results.begin(), end= results.end(); it!=end; it++)
     {
-        FunctionInconsistencies* repair = new FunctionInconsistencies();
+        Solution* repair = new Solution();
         for(auto it2 = (*it).begin(), end2 = (*it).end(); it2 != end2; it2++)
         {
             std::vector<std::string> split = Util_h::split(*it2, '(');

@@ -52,7 +52,7 @@ void modelRevision(std::string input_file_network) {
 
     int optimization = -2;
 
-    std::vector<FunctionInconsistencies*> fInconsistencies = checkConsistencyFunc(input_file_network, optimization);
+    std::vector<Solution*> fInconsistencies = checkConsistencyFunc(input_file_network, optimization);
 
     //At this point we have an inconsistent network with functions candidates to be repaired
 
@@ -80,10 +80,10 @@ void modelRevision(std::string input_file_network) {
 
 
 //function reponsible to check the consistency of a model and return a set of possible function inconsistencies
-std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_file_network, int & optimization) {
+std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization) {
 
     std::vector<std::vector<std::string>> result_raw;
-    std::vector<FunctionInconsistencies*> result;
+    std::vector<Solution*> result;
     
     //consistency check
     if(Configuration::check_ASP)
@@ -124,7 +124,7 @@ std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_fil
 
 //This function receives an inconsistent model and a set of functions to be repaired and try to repair the target functions making the model consistent
 //returns the set of new functions to be replaced
-std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet, int & optimization){
+std::vector<Function*> repairFuncConsistency(Solution* repairSet, int & optimization){
 
     std::vector<Function*> result;
     std::vector<std::vector<Function*>> candidates;
@@ -281,7 +281,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
 };
 
 
-bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f)
+bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
 {
     
     for(int i = 1; i <= f->nClauses_; i++)
@@ -326,7 +326,7 @@ bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f)
 
 //checks thhe top or bottom function for consistency.
 // Allows to check if it is possible to repair a function without changing the topology
-bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool generalize){
+bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
     std::map<std::string,int> map = f->getRegulatorsMap();
     if(generalize)
     {
@@ -385,7 +385,7 @@ bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool gen
 };
 
 
-Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, Function* f, bool generalize){
+Function* repairFuncConsistencyFlippingEdge(Solution* labeling, Function* f, bool generalize){
     std::map<std::string,int> map = f->getRegulatorsMap();
     std::vector<Function*> tCandidates;
     tCandidates.push_back(f);
