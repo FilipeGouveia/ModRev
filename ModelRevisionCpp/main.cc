@@ -71,6 +71,7 @@ void modelRevision(std::string input_file_network) {
             if(bestSolution == nullptr || (*it)->getNTopologyChanges() < bestSolution->getNTopologyChanges())
             {
                 bestSolution = (*it);
+                std::cout << "DEBUG: found solution with " << bestSolution->getNTopologyChanges() << " topology changes.\n";
                 if(bestSolution->getNTopologyChanges() == 0)
                     break;
             }
