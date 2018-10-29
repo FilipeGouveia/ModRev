@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <iostream>
 
 Network::Network() 
     :nodes_(),
@@ -266,5 +267,19 @@ void Solution::addFlippedEdge(Edge* e) {
 
 
 void Solution::printSolution() {
-    //TODO print solution in standard way
+    std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
+    for(auto it = flippedEdges_.begin(), end = flippedEdges_.end(); it != end; it++)
+    {
+        std::cout << "\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+    }
+    for(auto it = repairedFunctions_.begin(), end = repairedFunctions_.end(); it != end; it++)
+    {
+        std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+    }
+    std::cout << "\t### Labelling for this solution:" << std::endl;
+    for(auto it = vlabel_.begin(), end = vlabel_.end(); it != end; it++)
+    {
+        std::cout << "\t\t" << it->first << " => " << it->second << std::endl;
+    }
+
 };

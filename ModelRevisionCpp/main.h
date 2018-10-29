@@ -18,7 +18,7 @@ bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
 
 bool checkPointFunction(Solution* labeling, Function* f, bool generalize);
 
-Function* repairFuncConsistencyFlippingEdge(Solution* labeling, Function* f, bool generalize);
+Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize);
 
 
 #endif
