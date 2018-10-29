@@ -12,7 +12,7 @@ void modelRevision(std::string input_file_network);
 
 std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
 
-std::vector<Function*> repairFuncConsistency(Solution* repairSet);
+bool repairFuncConsistency(Solution* repairSet);
 
 bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
 
