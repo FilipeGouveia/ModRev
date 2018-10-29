@@ -94,6 +94,7 @@ class Solution {
         int nRepairOperations_;
         std::vector<Function*> repairedFunctions_;
         std::vector<Edge*> flippedEdges_;
+        bool hasImpossibility;
 
         Solution();
 

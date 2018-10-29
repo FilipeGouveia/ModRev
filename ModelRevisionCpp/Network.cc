@@ -215,6 +215,7 @@ Solution::Solution()
     flippedEdges_() {
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
+        hasImpossibility = false;
     };
 
 void Solution::addGeneralization(std::string id) {
