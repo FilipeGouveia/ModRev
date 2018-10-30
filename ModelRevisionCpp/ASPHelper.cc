@@ -121,7 +121,8 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
         line.erase(remove_if(line.begin(),line.end(),isspace),line.end());
         if(line.find(").") != std::string::npos)
         {
-            std::vector<std::string> split = Util_h::split(line,'(');           if(split[0].compare("edge") == 0)
+            std::vector<std::string> split = Util_h::split(line,'(');
+            if(split[0].compare("edge") == 0)
             {
                 split = Util_h::split(split[1], ')');
                 split = Util_h::split(split[0], ',');
@@ -145,6 +146,24 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
                 Node* startNode = network->addNode(startId);
                 Node* endNode = network->addNode(endId);
                 network->addEdge(startNode, endNode, sign);
+                continue;
+            }
+            if(split[0].compare("fixed") == 0)
+            {
+                split = Util_h::split(split[1], ')');
+                split = Util_h::split(split[0], ',');
+                if(split.size() != 2)
+                {
+                    continue;
+                }
+                std::string startId = split[0];
+                std::string endId = split[1];
+
+                Edge* e = network->getEdge(startId, endId);
+                if(e != nullptr)
+                {
+                    e->setFixed();
+                }
                 continue;
             }
             if(split[0].compare("functionOr") == 0)

@@ -49,6 +49,7 @@ class Edge {
         Node* start_;
         Node* end_;
         int sign_;
+        bool fixed_;
 
         Edge(Node* start, Node* end, int sign);
         ~Edge();
@@ -57,6 +58,8 @@ class Edge {
         Node* getEnd();
         int getSign();
         void flipSign();
+        bool isFixed();
+        void setFixed();
 
 };
 
