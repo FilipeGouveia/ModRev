@@ -52,38 +52,47 @@ void modelRevision(std::string input_file_network) {
 
     int optimization = -2;
 
-    std::vector<FunctionInconsistencies*> fInconsistencies = checkConsistencyFunc(input_file_network, optimization);
+    std::vector<Solution*> fInconsistencies = checkConsistencyFunc(input_file_network, optimization);
+    if(optimization == 0)
+    {
+        return;
+    }
 
     //At this point we have an inconsistent network with functions candidates to be repaired
 
     //for each possible inconsistency solution, try to make the model consistent
-    std::vector<Function*> newFunctions; 
+    Solution * bestSolution = nullptr;
     for(auto it = fInconsistencies.begin(), end = fInconsistencies.end(); it != end; it++)
     {
-        if(optimization != 0)
+        repairFuncConsistency((*it));
+        if(!(*it)->hasImpossibility)
         {
-            newFunctions = repairFuncConsistency((*it), optimization);
-        }
-        if(optimization == 0)
-        {
-            break;
-        }
+            if(bestSolution == nullptr || (*it)->getNTopologyChanges() < bestSolution->getNTopologyChanges())
+            {
+                bestSolution = (*it);
+                std::cout << "DEBUG: found solution with " << bestSolution->getNTopologyChanges() << " topology changes.\n";
+                if(bestSolution->getNTopologyChanges() == 0)
+                    break;
+            }
+        }    
     }
 
-    //TODO check quantity of the newFunction in order to see if every function was repaired
-    for(auto it = newFunctions.begin(), end = newFunctions.end(); it!=end; it++)
+    if(bestSolution == nullptr)
     {
-        std::cout << "REPAIR - Change function " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+        std::cout << "### It was not possible to repair the model." << std::endl;
+        return;
     }
+    
+    bestSolution->printSolution();
 
 };
 
 
 //function reponsible to check the consistency of a model and return a set of possible function inconsistencies
-std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_file_network, int & optimization) {
+std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization) {
 
     std::vector<std::vector<std::string>> result_raw;
-    std::vector<FunctionInconsistencies*> result;
+    std::vector<Solution*> result;
     
     //consistency check
     if(Configuration::check_ASP)
@@ -124,11 +133,10 @@ std::vector<FunctionInconsistencies*> checkConsistencyFunc(std::string input_fil
 
 //This function receives an inconsistent model and a set of functions to be repaired and try to repair the target functions making the model consistent
 //returns the set of new functions to be replaced
-std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet, int & optimization){
+//TODO change return type
+bool repairFuncConsistency(Solution* repairSet){
 
-    std::vector<Function*> result;
     std::vector<std::vector<Function*>> candidates;
-    optimization = 0;
 
     if(Configuration::function_ASP)
     {
@@ -147,26 +155,16 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
             //better try to flip the sign of the edge
             if(originalF->getNumberOfRegulators() < 2)
             {
-                //std::cout << "WARN! Not possible to repair function of " << (*it) << std::endl;
-                optimization++;
-                std::cout << "REPAIR: Try to change the sign of the edge from " << originalF->getRegulatorsMap().begin()->first << " to " << (*it) << std::endl;
+                //std::cout << "REPAIR: Try to change the sign of the edge from " << originalF->getRegulatorsMap().begin()->first << " to " << (*it) << std::endl;
+                Edge* edgeToFlip = network->getEdge(originalF->getRegulatorsMap().begin()->first, (*it));
+                repairSet->addFlippedEdge(edgeToFlip);
                 continue;
             }
 
             //check top function for the necessity of flipping an edge
             if(!checkPointFunction(repairSet, originalF, true))
             {
-                //TODO change 1 edge;
-                Function* flipEdgeFunc = repairFuncConsistencyFlippingEdge(repairSet, originalF, true);
-                if(flipEdgeFunc != nullptr)
-                {
-                    optimization++;
-                    result.push_back(flipEdgeFunc);
-                }
-                else
-                {
-                    std::cout << "WARN: Not possible to flip an edge to repair functio " << originalF->node_ << std::endl;
-                }
+                repairFuncConsistencyFlippingEdge(repairSet, originalF, true);
                 continue;
             }
 
@@ -180,8 +178,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
 
                 if(isFuncConsistentWithLabel(repairSet, candidate))
                 {
-                    result.push_back(candidate);
-                    optimization++;
+                    repairSet->addRepairedFunction(candidate);
                     functionRepaired = true;
                     break;
                 }
@@ -195,6 +192,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
             {
                 //have to flip 1 edge
                 //For 1 profile is not suposed to reach this point
+                repairSet->hasImpossibility = true;
                 std::cout << "WARN: It was not possible to repair function " << (*it) << std::endl;
             }
 
@@ -217,9 +215,9 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
             //better try to flip the sign of the edge
             if(originalF->getNumberOfRegulators() < 2)
             {
-                //std::cout << "WARN! Not possible to repair function of " << (*it) << std::endl;
-                optimization++;
-                std::cout << "REPAIR: Try to change the sign of the edge from " << originalF->getRegulatorsMap().begin()->first << " to " << (*it) << std::endl;
+                //std::cout << "REPAIR: Try to change the sign of the edge from " << originalF->getRegulatorsMap().begin()->first << " to " << (*it) << std::endl;
+                Edge* edgeToFlip =  network->getEdge(originalF->getRegulatorsMap().begin()->first, (*it));
+                repairSet->addFlippedEdge(edgeToFlip);
                 continue;
             }
 
@@ -227,16 +225,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
             if(!checkPointFunction(repairSet, originalF, false))
             {
                 //TODO change 1 edge;
-                Function* flipEdgeFunc = repairFuncConsistencyFlippingEdge(repairSet, originalF, false);
-                if(flipEdgeFunc != nullptr)
-                {
-                    optimization++;
-                    result.push_back(flipEdgeFunc);
-                }
-                else
-                {
-                    std::cout << "WARN: Not possible to flip an edge to repair functio " << originalF->node_ << std::endl;
-                }
+                repairFuncConsistencyFlippingEdge(repairSet, originalF, false);
                 continue;
             }
 
@@ -250,8 +239,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
 
                 if(isFuncConsistentWithLabel(repairSet, candidate))
                 {
-                    result.push_back(candidate);
-                    optimization++;
+                    repairSet->addRepairedFunction(candidate);
                     functionRepaired = true;
                     break;
                 }
@@ -265,6 +253,7 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
             {
                 //have to flip 1 edge
                 //For 1 profile is not suposed to reach this point
+                repairSet->hasImpossibility = true;
                 std::cout << "WARN: It was not possible to repair function " << (*it) << std::endl;
             }
 
@@ -277,11 +266,11 @@ std::vector<Function*> repairFuncConsistency(FunctionInconsistencies* repairSet,
     //TODO support other solvers
     } 
 
-    return result;
+    return !repairSet->hasImpossibility;
 };
 
 
-bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f)
+bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
 {
     
     for(int i = 1; i <= f->nClauses_; i++)
@@ -326,7 +315,7 @@ bool isFuncConsistentWithLabel(FunctionInconsistencies* labeling, Function* f)
 
 //checks thhe top or bottom function for consistency.
 // Allows to check if it is possible to repair a function without changing the topology
-bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool generalize){
+bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
     std::map<std::string,int> map = f->getRegulatorsMap();
     if(generalize)
     {
@@ -385,10 +374,13 @@ bool checkPointFunction(FunctionInconsistencies* labeling, Function* f, bool gen
 };
 
 
-Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, Function* f, bool generalize){
+Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize){
     std::map<std::string,int> map = f->getRegulatorsMap();
     std::vector<Function*> tCandidates;
     tCandidates.push_back(f);
+    bool firstFunction = true; //this is used to check if we can repair the node without changing the function.
+    //If so, do not add a new function to the solution, only include flipping the edge
+
     while(!tCandidates.empty())
     {
         Function* candidate = tCandidates.front();
@@ -401,10 +393,15 @@ Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, F
              if(e!=nullptr)
              {
                  e->flipSign();
-                 if(isFuncConsistentWithLabel(labeling, candidate))
+                 if(isFuncConsistentWithLabel(solution, candidate))
                  {
                      e->flipSign();
                      std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
+                     solution->addFlippedEdge(e);
+                     if(!firstFunction)
+                     {
+                         solution->addRepairedFunction(candidate);
+                     }
                      return candidate;
                  }
              }
@@ -418,7 +415,12 @@ Function* repairFuncConsistencyFlippingEdge(FunctionInconsistencies* labeling, F
         std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,generalize);
         if(!tauxCandidates.empty())
             tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
+
+        firstFunction = false;
     }
 
+    //If the end of this method is reached means that no solution was found
+    solution->hasImpossibility = true;
+    std::cout << "WARN: Not possible to flip an edge to repair function " << f->node_ << std::endl;
     return nullptr;
 };

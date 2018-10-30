@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <iostream>
 
 Network::Network() 
     :nodes_(),
@@ -206,12 +207,18 @@ std::string Function::printFunction(){
 };
 
 
-FunctionInconsistencies::FunctionInconsistencies()
+Solution::Solution()
     :generalization_(),
     particularization_(),
-    vlabel_() {};
+    vlabel_(),
+    repairedFunctions_(),
+    flippedEdges_() {
+        nTopologyChanges_ = 0;
+        nRepairOperations_ = 0;
+        hasImpossibility = false;
+    };
 
-void FunctionInconsistencies::addGeneralization(std::string id) {
+void Solution::addGeneralization(std::string id) {
 
     for(auto it = generalization_.begin(), end = generalization_.end(); it != end; it++)
     {
@@ -223,7 +230,7 @@ void FunctionInconsistencies::addGeneralization(std::string id) {
 };
 
 
-void FunctionInconsistencies::addParticularization(std::string id) {
+void Solution::addParticularization(std::string id) {
 
     for(auto it = particularization_.begin(), end = particularization_.end(); it != end; it++)
     {
@@ -235,8 +242,45 @@ void FunctionInconsistencies::addParticularization(std::string id) {
 };
 
 
-void FunctionInconsistencies::addVLabel(std::string id, int value) {
+void Solution::addVLabel(std::string id, int value) {
 
     vlabel_.insert(std::make_pair(id, value));
+
+};
+
+
+int Solution::getNTopologyChanges() {
+    return nTopologyChanges_;
+};
+
+
+void Solution::addRepairedFunction(Function* f) {
+    repairedFunctions_.push_back(f);
+    nRepairOperations_++;
+};
+
+
+void Solution::addFlippedEdge(Edge* e) {
+    flippedEdges_.push_back(e);
+    nRepairOperations_++;
+    nTopologyChanges_++;
+};
+
+
+void Solution::printSolution() {
+    std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
+    for(auto it = flippedEdges_.begin(), end = flippedEdges_.end(); it != end; it++)
+    {
+        std::cout << "\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+    }
+    for(auto it = repairedFunctions_.begin(), end = repairedFunctions_.end(); it != end; it++)
+    {
+        std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+    }
+    std::cout << "\t### Labelling for this solution:" << std::endl;
+    for(auto it = vlabel_.begin(), end = vlabel_.end(); it != end; it++)
+    {
+        std::cout << "\t\t" << it->first << " => " << it->second << std::endl;
+    }
 
 };
