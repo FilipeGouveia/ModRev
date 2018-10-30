@@ -392,17 +392,20 @@ Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, boo
              Edge* e = network->getEdge(it->first, f->node_);
              if(e!=nullptr)
              {
-                 e->flipSign();
-                 if(isFuncConsistentWithLabel(solution, candidate))
+                 if(!e->isFixed())
                  {
-                     e->flipSign();
-                     std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
-                     solution->addFlippedEdge(e);
-                     if(!firstFunction)
-                     {
-                         solution->addRepairedFunction(candidate);
-                     }
-                     return candidate;
+                    e->flipSign();
+                    if(isFuncConsistentWithLabel(solution, candidate))
+                    {
+                        e->flipSign();
+                        std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
+                        solution->addFlippedEdge(e);
+                        if(!firstFunction)
+                        {
+                            solution->addRepairedFunction(candidate);
+                        }
+                        return candidate;
+                    }
                  }
              }
              else{

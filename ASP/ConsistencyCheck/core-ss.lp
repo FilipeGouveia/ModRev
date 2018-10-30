@@ -6,8 +6,8 @@ vertex(V) :- edge(_,V,_).
 
 %generate
 1{vlabel(V,S):sign(S)}1:-vertex(V).
-{r_gen(V)} :- vertex(V).
-{r_part(V)} :- vertex(V).
+{r_gen(V)} :- vertex(V), not fixed(V).
+{r_part(V)} :- vertex(V), not fixed(V).
 
 
 :-vlabel(V,S), obs_vlabel(V,T),complement(S,T).

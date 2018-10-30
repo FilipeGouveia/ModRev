@@ -74,7 +74,9 @@ Edge* Network::getEdge(std::string startNode, std::string endNode)
 Edge::Edge(Node* start, Node* end, int sign)
     :start_(start),
     end_(end),
-    sign_(sign){};
+    sign_(sign){
+        fixed_ = false;
+    };
 
 Edge::~Edge() {};
 
@@ -95,6 +97,14 @@ void Edge::flipSign(){
         sign_ = 1;
     else
         sign_ = 0;
+};
+
+bool Edge::isFixed(){
+    return fixed_;
+};
+
+void Edge::setFixed(){
+    fixed_ = true;
 };
 
 
