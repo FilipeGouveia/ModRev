@@ -11,6 +11,7 @@
 #include "Network.h"
 #include <fstream>
 #include <bitset>
+#include <algorithm>
 
 int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
 
