@@ -7,7 +7,7 @@
 
 Network::Network() 
     :nodes_(),
-    edges_(){};
+    edges_(){}
 
 Network::~Network() {
 
@@ -78,7 +78,7 @@ Edge::Edge(Node* start, Node* end, int sign)
         fixed_ = false;
     }
 
-Edge::~Edge() {};
+Edge::~Edge() {}
 
 Node* Edge::getStart() {
     return start_;
@@ -143,7 +143,7 @@ Function::Function(std::string node, int nClauses)
 
 }
 
-Function::~Function() {};
+Function::~Function() {}
 
 void Function::addElementClause(int id, std::string node) {
     if(id > nClauses_)
