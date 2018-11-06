@@ -20,7 +20,7 @@ Network::~Network() {
     {
         delete (*it);
     }
-};
+}
 
 std::vector< Node* > Network::getNodes() {
 
@@ -31,7 +31,7 @@ std::vector< Node* > Network::getNodes() {
     }
     return result;
 
-};
+}
 
 Node* Network::addNode(std::string id) {
     Node* node = new Node(id);
@@ -42,24 +42,24 @@ Node* Network::addNode(std::string id) {
         return ret.first->second;
     }
     return node;
-};
+}
 
 Node* Network::getNode(std::string id) {
     auto it = nodes_.find(id);
     if(it != nodes_.end())
         return it->second;
     return nullptr;
-};
+}
 
 std::vector< Edge* > Network::getEdges() {
     return edges_;
-};
+}
 
 Edge* Network::addEdge(Node* start, Node* end, int sign) {
     Edge* edge = new Edge(start, end, sign);
     edges_.push_back(edge);
     return edge;
-};
+}
 
 Edge* Network::getEdge(std::string startNode, std::string endNode)
 {
@@ -69,50 +69,50 @@ Edge* Network::getEdge(std::string startNode, std::string endNode)
             return (*it);
     }
     return nullptr;
-};
+}
 
 Edge::Edge(Node* start, Node* end, int sign)
     :start_(start),
     end_(end),
     sign_(sign){
         fixed_ = false;
-    };
+    }
 
 Edge::~Edge() {};
 
 Node* Edge::getStart() {
     return start_;
-};
+}
 
 Node* Edge::getEnd() {
     return end_;
-};
+}
 
 int Edge::getSign() {
     return sign_;
-};
+}
 
 void Edge::flipSign(){
     if(sign_ == 0)
         sign_ = 1;
     else
         sign_ = 0;
-};
+}
 
 bool Edge::isFixed(){
     return fixed_;
-};
+}
 
 void Edge::setFixed(){
     fixed_ = true;
-};
+}
 
 
 Node::Node(std::string id)
     :id_(id)
     {
         regFunction_ = nullptr;
-    };
+    }
 
 Node::~Node()
 {
@@ -127,7 +127,7 @@ Function* Node::addFunction(Function* regulation) {
 
 Function* Node::getFunction() {
     return regFunction_;
-};
+}
 
 
 Function::Function(std::string node, int nClauses)
@@ -141,7 +141,7 @@ Function::Function(std::string node, int nClauses)
     }
     regulatorsMap_ = std::map<std::string,int>();
 
-};
+}
 
 Function::~Function() {};
 
@@ -163,12 +163,12 @@ void Function::addElementClause(int id, std::string node) {
             it->second.push_back(node);
         }
     }
-};
+}
 
 
 int Function::getNumberOfRegulators(){
     return getRegulatorsMap().size();
-};
+}
 
 
 std::map<std::string,int> Function::getRegulatorsMap(){
@@ -189,7 +189,7 @@ std::map<std::string,int> Function::getRegulatorsMap(){
         regulatorsMap_ = elements;
     }
     return regulatorsMap_;
-};
+}
 
 std::string Function::printFunction(){
     std::string result = "";
@@ -214,7 +214,7 @@ std::string Function::printFunction(){
         }
     }
     return result;
-};
+}
 
 
 Solution::Solution()
@@ -226,7 +226,7 @@ Solution::Solution()
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         hasImpossibility = false;
-    };
+    }
 
 void Solution::addGeneralization(std::string id) {
 
@@ -237,7 +237,7 @@ void Solution::addGeneralization(std::string id) {
     }
     generalization_.push_back(id);
 
-};
+}
 
 
 void Solution::addParticularization(std::string id) {
@@ -249,32 +249,32 @@ void Solution::addParticularization(std::string id) {
     }
     particularization_.push_back(id);
 
-};
+}
 
 
 void Solution::addVLabel(std::string id, int value) {
 
     vlabel_.insert(std::make_pair(id, value));
 
-};
+}
 
 
 int Solution::getNTopologyChanges() {
     return nTopologyChanges_;
-};
+}
 
 
 void Solution::addRepairedFunction(Function* f) {
     repairedFunctions_.push_back(f);
     nRepairOperations_++;
-};
+}
 
 
 void Solution::addFlippedEdge(Edge* e) {
     flippedEdges_.push_back(e);
     nRepairOperations_++;
     nTopologyChanges_++;
-};
+}
 
 
 void Solution::printSolution() {
@@ -293,4 +293,4 @@ void Solution::printSolution() {
         std::cout << "\t\t" << it->first << " => " << it->second << std::endl;
     }
 
-};
+}

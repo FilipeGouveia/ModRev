@@ -34,7 +34,7 @@ void Configuration::parseConfig() {
         f_input.close();
     }
     
-};
+}
 
 void Configuration::_store_config(std::string key, std::string value) {
 
@@ -62,5 +62,5 @@ void Configuration::_store_config(std::string key, std::string value) {
         return;
     }
     return;
-};
+}
 

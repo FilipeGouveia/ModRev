@@ -10,6 +10,7 @@
 #include "Configuration.h"
 #include "Network.h"
 #include <fstream>
+#include <bitset>
 
 int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
 
@@ -41,7 +42,7 @@ int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std:
    }
    return opt;
 
-};
+}
 
 
 std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input, int & optimization, bool optAll) {
@@ -102,7 +103,7 @@ std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input,
 
     return result;
 
-};
+}
 
 
 void ASPHelper::parseNetwork(std::string input_file_network, Network * network) {
@@ -118,7 +119,7 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
     std::string line;
     while(std::getline(file,line))
     {
-        line.erase(remove_if(line.begin(),line.end(),isspace),line.end());
+        line.erase(std::remove_if(line.begin(),line.end(),isspace),line.end());
         if(line.find(").") != std::string::npos)
         {
             std::vector<std::string> split = Util_h::split(line,'(');
@@ -228,7 +229,7 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
     }
 
 
-};
+}
 
 
 std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
@@ -277,7 +278,7 @@ std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::ve
     }
 
     return result;
-};
+}
 
 
 
@@ -328,7 +329,7 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     //std::cout << result_cmd << std::endl;
 
     return parseFunctionFamily(result_cmd, function);
-};
+}
 
 
 std::string ASPHelper::constructFunctionClause(Function* function){
@@ -349,7 +350,7 @@ std::string ASPHelper::constructFunctionClause(Function* function){
 
     return result;
    
-};
+}
 
 
 std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Function* original)
@@ -443,4 +444,4 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
     }
 
     return result;
-};
+}

@@ -27,7 +27,7 @@ int main(int argc, char ** argv) {
     //main function that revises the model
     modelRevision(input_file_network);
     
-};
+}
 
 
 // Function that initializes the program.
@@ -40,7 +40,7 @@ void process_arguments(const int argc, char const * const * argv, std::string & 
         output_file = argv[2];
 
     return;
-};
+}
 
 
 
@@ -85,7 +85,7 @@ void modelRevision(std::string input_file_network) {
     
     bestSolution->printSolution();
 
-};
+}
 
 
 //function reponsible to check the consistency of a model and return a set of possible function inconsistencies
@@ -127,7 +127,7 @@ std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int 
     }
 
     return result;
-};
+}
 
 
 
@@ -267,7 +267,7 @@ bool repairFuncConsistency(Solution* repairSet){
     } 
 
     return !repairSet->hasImpossibility;
-};
+}
 
 
 bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
@@ -311,7 +311,7 @@ bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
 
     }
     return labeling->vlabel_[f->node_] == 0;
-};
+}
 
 //checks thhe top or bottom function for consistency.
 // Allows to check if it is possible to repair a function without changing the topology
@@ -371,7 +371,7 @@ bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
     }
     return true;
 
-};
+}
 
 
 Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize){
@@ -426,4 +426,4 @@ Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, boo
     solution->hasImpossibility = true;
     std::cout << "WARN: Not possible to flip an edge to repair function " << f->node_ << std::endl;
     return nullptr;
-};
+}
