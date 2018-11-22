@@ -15,10 +15,10 @@
 
 int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
 
-    std::string solve_cmd = Configuration::ASP_solver;
+    std::string solve_cmd = Configuration::getValue("ASP_solver");
     solve_cmd.append(" ");
     if(ss)
-        solve_cmd.append(Configuration::ASP_CC_SS);
+        solve_cmd.append(Configuration::getValue("ASP_CC_SS"));
     solve_cmd.append(" ");
     solve_cmd.append("--opt-mode=optN");
     solve_cmd.append(" ");
@@ -286,32 +286,33 @@ std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::ve
 std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers) {
     std::vector<Function*> result;
 
-    std::string function_cmd = Configuration::ASP_solver;
+    std::string function_cmd = Configuration::getValue("ASP_solver");
     function_cmd.append(" ");
     function_cmd.append("0");
     function_cmd.append(" ");
+    std::string functions_folder = Configuration::getValue("ASP_Functions");
     if(is_fathers)
     {
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR1.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR2.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR3.lp ");
     }
     else
     {
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR1.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR2.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR3.lp ");
     }
-    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append(functions_folder);
     function_cmd.append("HasseD2.lp ");
     //TODO pur files in conf and handle powerset
-    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append(functions_folder);
     function_cmd.append("facts/powerSet");
     int el = function->getNumberOfRegulators();
     if(el < 10)

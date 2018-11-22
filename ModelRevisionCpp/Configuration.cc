@@ -4,15 +4,21 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 
-bool Configuration::check_ASP = true;
-bool Configuration::function_ASP = true;
-std::string Configuration::ASP_dir = "../ASP/";
-std::string Configuration::ASP_solver = "./../ASP/bin-Darwin/clingo";
-std::string Configuration::ASP_CC_SS = "../ASP/ConsistencyCheck/core-ss.lp";
-std::string Configuration::ASP_Functions = "../ASP/Functions/";
+std::map<std::string,std::string> Configuration::_configMap;
 
 void Configuration::parseConfig() {
+
+    //default known values
+    _configMap["check_ASP"] = "false";
+    _configMap["function_ASP"] = "true";
+    _configMap["ASP_dir"] = "../ASP/";
+    _configMap["ASP_solver"] = "./../ASP/bin-Darwin/clingo";
+    _configMap["ASP_CC_SS"] =  "../ASP/ConsistencyCheck/core-ss.lp";
+    _configMap["ASP_Functions"] = "../ASP/Functions/";
+
+    //read new values from config file
 
     std::ifstream f_input("config.txt");
 
@@ -27,7 +33,9 @@ void Configuration::parseConfig() {
             {
                 std::string value;
                 if(std::getline(f_line, value))
-                    _store_config(key, value);
+                {
+                    _configMap[key] = value;
+                }
 
             }
         }
@@ -36,31 +44,64 @@ void Configuration::parseConfig() {
     
 }
 
-void Configuration::_store_config(std::string key, std::string value) {
+std::string Configuration::getValue(std::string key)
+{
+    auto it = _configMap.find(key);
+    if (it != _configMap.end())
+    {
+        return it->second;
+    }
 
-    if(key == "check_ASP")
-    {
-        if(value == "true")
-            check_ASP = true;
-        else
-            if(value == "false")
-                check_ASP = false;
-        return;
-    }
-    if(key == "function_ASP")
-    {
-        if(value == "true")
-            function_ASP = true;
-        else
-            if(value == "false")
-                function_ASP = false;
-        return;
-    }
-    if(key == "ASP_dir")
-    {
-        ASP_dir = value;
-        return;
-    }
-    return;
+    return "";
 }
 
+int Configuration::getIntValue(std::string key)
+{
+    auto it = _configMap.find(key);
+    if (it != _configMap.end())
+    {
+        try{
+            int value = std::stoi(it->second);
+            return value;
+        }
+        catch(std::exception& e)
+        {
+            return -1;
+        }
+    }
+    return -1;
+}
+
+bool Configuration::isActive(std::string key)
+{
+    auto it = _configMap.find(key);
+    if (it != _configMap.end())
+    {
+        if(it->second == "true" || it->second == "True" || it->second == "T" || it->second == "1")
+        {
+            return true;
+        }
+        if(it->second == "false" || it->second == "False" || it->second == "F" || it->second == "0")
+        {
+            return false;
+        }
+        try{
+            int value = std::stoi(it->second);
+            return value > 0;
+        }
+        catch(std::exception& e)
+        {
+            return false;
+        }
+    }
+    return false;
+}
+
+void Configuration::printConfig()
+{
+    for(auto it = _configMap.begin(), end = _configMap.end(); it!=end; it++)
+    {
+        std::cout << it->first << " --> " << it->second << std::endl;
+    }
+
+}

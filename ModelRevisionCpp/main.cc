@@ -95,7 +95,7 @@ std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int 
     std::vector<Solution*> result;
     
     //consistency check
-    if(Configuration::check_ASP)
+    if(Configuration::isActive("check_ASP"))
     {
         // invoke the consistency check program in ASP
         optimization = ASPHelper::checkConsistency(input_file_network, result_raw);
@@ -118,7 +118,7 @@ std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int 
         std::cout << "This network is consistent!" << std::endl;
     }
 
-    if(optimization > 0 && Configuration::check_ASP)
+    if(optimization > 0 && Configuration::isActive("check_ASP"))
     {
         //parse the raw results to an internal representation.
         //this should be done at ASP level in the check consistency function
@@ -138,7 +138,7 @@ bool repairFuncConsistency(Solution* repairSet){
 
     std::vector<std::vector<Function*>> candidates;
 
-    if(Configuration::function_ASP)
+    if(Configuration::isActive("function_ASP"))
     {
         //for each function to be repaired
         for(auto it = repairSet->generalization_.begin(), end = repairSet->generalization_.end(); it != end; it++)
