@@ -70,8 +70,9 @@ void modelRevision(std::string input_file_network) {
             if(bestSolution == nullptr || (*it)->getNTopologyChanges() < bestSolution->getNTopologyChanges())
             {
                 bestSolution = (*it);
-                std::cout << "DEBUG: found solution with " << bestSolution->getNTopologyChanges() << " topology changes.\n";
-                if(bestSolution->getNTopologyChanges() == 0)
+                if(Configuration::isActive("debug"))
+                    std::cout << "DEBUG: found solution with " << bestSolution->getNTopologyChanges() << " topology changes.\n";
+                if(bestSolution->getNTopologyChanges() == 0 && !Configuration::isActive("allOpt"))
                     break;
             }
         }    
@@ -83,7 +84,23 @@ void modelRevision(std::string input_file_network) {
         return;
     }
     
-    bestSolution->printSolution();
+    if(Configuration::isActive("allOpt"))
+    {
+        for(auto it = fInconsistencies.begin(), end = fInconsistencies.end(); it != end; it++)
+        {
+            if(Configuration::isActive("debug"))
+                std::cout << "DEBUG: checking for printing solution with " << (*it)->getNTopologyChanges() << " topology changes\n";
+            if(!(*it)->hasImpossibility && (*it)->getNTopologyChanges() == bestSolution->getNTopologyChanges())
+            {
+                (*it)->printSolution();
+            }
+        }
+
+    }
+    else
+    {
+        bestSolution->printSolution();
+    }
 
 }
 
@@ -398,7 +415,8 @@ Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, boo
                     if(isFuncConsistentWithLabel(solution, candidate))
                     {
                         e->flipSign();
-                        std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
+                        if(Configuration::isActive("debug"))
+                            std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
                         solution->addFlippedEdge(e);
                         if(!firstFunction)
                         {
