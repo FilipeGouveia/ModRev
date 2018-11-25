@@ -11,12 +11,14 @@ std::map<std::string,std::string> Configuration::_configMap;
 void Configuration::parseConfig() {
 
     //default known values
-    _configMap["check_ASP"] = "false";
-    _configMap["function_ASP"] = "true";
-    _configMap["ASP_dir"] = "../ASP/";
-    _configMap["ASP_solver"] = "./../ASP/bin-Darwin/clingo";
-    _configMap["ASP_CC_SS"] =  "../ASP/ConsistencyCheck/core-ss.lp";
-    _configMap["ASP_Functions"] = "../ASP/Functions/";
+    _configMap["check_ASP"] = "false"; //use ASP consistency check program
+    _configMap["function_ASP"] = "true"; //use ASP function program
+    _configMap["ASP_dir"] = "../ASP/"; //ASP disrectory
+    _configMap["ASP_solver"] = "./../ASP/bin-Darwin/clingo"; // ASP solver
+    _configMap["ASP_CC_SS"] =  "../ASP/ConsistencyCheck/core-ss.lp"; //ASP consistency check steady state program file
+    _configMap["ASP_Functions"] = "../ASP/Functions/"; // ASP function files directory
+    _configMap["allOpt"] = "true"; // show one or more solutions
+    _configMap["debug"] = "false";
 
     //read new values from config file
 

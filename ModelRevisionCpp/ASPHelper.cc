@@ -29,17 +29,20 @@ int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std:
     result = ASPHelper::getOptAnswer(result_cmd, opt);
    if(opt == -1)
    {
-       std::cout << "found no solution" << std::endl;
-       return opt;
+        if(Configuration::isActive("debug"))
+            std::cout << "found no solution" << std::endl;
+        return opt;
    } 
    if(opt == 0)
    {
-        std::cout << "model consistent" << std::endl;
+        if(Configuration::isActive("debug"))
+            std::cout << "model consistent" << std::endl;
         return opt;
    }
    if(opt > 0)
    {
-       std::cout << "found " << result.size() << " solutions with " << opt << " repairs" << std::endl;
+        if(Configuration::isActive("debug"))
+            std::cout << "found " << result.size() << " solutions with " << opt << " inconsistent nodes" << std::endl;
    }
    return opt;
 
