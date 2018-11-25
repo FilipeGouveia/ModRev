@@ -10,13 +10,15 @@
 #include "Configuration.h"
 #include "Network.h"
 #include <fstream>
+#include <bitset>
+#include <algorithm>
 
 int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
 
-    std::string solve_cmd = Configuration::ASP_solver;
+    std::string solve_cmd = Configuration::getValue("ASP_solver");
     solve_cmd.append(" ");
     if(ss)
-        solve_cmd.append(Configuration::ASP_CC_SS);
+        solve_cmd.append(Configuration::getValue("ASP_CC_SS"));
     solve_cmd.append(" ");
     solve_cmd.append("--opt-mode=optN");
     solve_cmd.append(" ");
@@ -27,21 +29,24 @@ int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std:
     result = ASPHelper::getOptAnswer(result_cmd, opt);
    if(opt == -1)
    {
-       std::cout << "found no solution" << std::endl;
-       return opt;
+        if(Configuration::isActive("debug"))
+            std::cout << "found no solution" << std::endl;
+        return opt;
    } 
    if(opt == 0)
    {
-        std::cout << "model consistent" << std::endl;
+        if(Configuration::isActive("debug"))
+            std::cout << "model consistent" << std::endl;
         return opt;
    }
    if(opt > 0)
    {
-       std::cout << "found " << result.size() << " solutions with " << opt << " repairs" << std::endl;
+        if(Configuration::isActive("debug"))
+            std::cout << "found " << result.size() << " solutions with " << opt << " inconsistent nodes" << std::endl;
    }
    return opt;
 
-};
+}
 
 
 std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input, int & optimization, bool optAll) {
@@ -102,7 +107,7 @@ std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input,
 
     return result;
 
-};
+}
 
 
 void ASPHelper::parseNetwork(std::string input_file_network, Network * network) {
@@ -118,10 +123,11 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
     std::string line;
     while(std::getline(file,line))
     {
-        line.erase(remove_if(line.begin(),line.end(),isspace),line.end());
+        line.erase(std::remove_if(line.begin(),line.end(),isspace),line.end());
         if(line.find(").") != std::string::npos)
         {
-            std::vector<std::string> split = Util_h::split(line,'(');           if(split[0].compare("edge") == 0)
+            std::vector<std::string> split = Util_h::split(line,'(');
+            if(split[0].compare("edge") == 0)
             {
                 split = Util_h::split(split[1], ')');
                 split = Util_h::split(split[0], ',');
@@ -145,6 +151,24 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
                 Node* startNode = network->addNode(startId);
                 Node* endNode = network->addNode(endId);
                 network->addEdge(startNode, endNode, sign);
+                continue;
+            }
+            if(split[0].compare("fixed") == 0)
+            {
+                split = Util_h::split(split[1], ')');
+                split = Util_h::split(split[0], ',');
+                if(split.size() != 2)
+                {
+                    continue;
+                }
+                std::string startId = split[0];
+                std::string endId = split[1];
+
+                Edge* e = network->getEdge(startId, endId);
+                if(e != nullptr)
+                {
+                    e->setFixed();
+                }
                 continue;
             }
             if(split[0].compare("functionOr") == 0)
@@ -209,14 +233,14 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
     }
 
 
-};
+}
 
 
-std::vector<FunctionInconsistencies*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
-    std::vector<FunctionInconsistencies*> result;   
+std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
+    std::vector<Solution*> result;   
     for(auto it = results.begin(), end= results.end(); it!=end; it++)
     {
-        FunctionInconsistencies* repair = new FunctionInconsistencies();
+        Solution* repair = new Solution();
         for(auto it2 = (*it).begin(), end2 = (*it).end(); it2 != end2; it2++)
         {
             std::vector<std::string> split = Util_h::split(*it2, '(');
@@ -258,39 +282,40 @@ std::vector<FunctionInconsistencies*> ASPHelper::parseFunctionRepairResults(std:
     }
 
     return result;
-};
+}
 
 
 
 std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers) {
     std::vector<Function*> result;
 
-    std::string function_cmd = Configuration::ASP_solver;
+    std::string function_cmd = Configuration::getValue("ASP_solver");
     function_cmd.append(" ");
     function_cmd.append("0");
     function_cmd.append(" ");
+    std::string functions_folder = Configuration::getValue("ASP_Functions");
     if(is_fathers)
     {
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR1.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR2.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("fatherR3.lp ");
     }
     else
     {
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR1.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR2.lp ");
-        function_cmd.append(Configuration::ASP_Functions);
+        function_cmd.append(functions_folder);
         function_cmd.append("sonR3.lp ");
     }
-    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append(functions_folder);
     function_cmd.append("HasseD2.lp ");
     //TODO pur files in conf and handle powerset
-    function_cmd.append(Configuration::ASP_Functions);
+    function_cmd.append(functions_folder);
     function_cmd.append("facts/powerSet");
     int el = function->getNumberOfRegulators();
     if(el < 10)
@@ -309,7 +334,7 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     //std::cout << result_cmd << std::endl;
 
     return parseFunctionFamily(result_cmd, function);
-};
+}
 
 
 std::string ASPHelper::constructFunctionClause(Function* function){
@@ -330,7 +355,7 @@ std::string ASPHelper::constructFunctionClause(Function* function){
 
     return result;
    
-};
+}
 
 
 std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Function* original)
@@ -424,4 +449,4 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
     }
 
     return result;
-};
+}
