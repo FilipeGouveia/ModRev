@@ -91,7 +91,7 @@ class Solution {
     public:
         std::vector<std::string> generalization_;
         std::vector<std::string> particularization_;
-        std::map<std::string,int> vlabel_;
+        std::map<std::string, std::map<std::string,int>> vlabel_;
 
         int nTopologyChanges_;
         int nRepairOperations_;
@@ -103,7 +103,7 @@ class Solution {
 
         void addGeneralization(std::string id);
         void addParticularization(std::string id);
-        void addVLabel(std::string id, int value);
+        void addVLabel(std::string profile, std::string id, int value);
 
         int getNTopologyChanges();
         void addRepairedFunction(Function* f);

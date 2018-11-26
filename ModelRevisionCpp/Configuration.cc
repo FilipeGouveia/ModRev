@@ -19,6 +19,7 @@ void Configuration::parseConfig() {
     _configMap["ASP_Functions"] = "../ASP/Functions/"; // ASP function files directory
     _configMap["allOpt"] = "true"; // show one or more solutions
     _configMap["debug"] = "false";
+    _configMap["multipleProfiles"] = "true";
 
     //read new values from config file
 

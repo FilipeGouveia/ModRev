@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include "Configuration.h"
 
 Network::Network() 
     :nodes_(),
@@ -252,9 +253,14 @@ void Solution::addParticularization(std::string id) {
 }
 
 
-void Solution::addVLabel(std::string id, int value) {
-
-    vlabel_.insert(std::make_pair(id, value));
+void Solution::addVLabel(std::string profile, std::string id, int value) {
+    
+    if(vlabel_.find(profile) == vlabel_.end())
+    {
+        std::map<std::string, int> newMap;
+        vlabel_.insert(std::make_pair(profile, newMap));
+    }
+    vlabel_.find(profile)->second.insert(std::make_pair(id, value));
 
 }
 
@@ -288,9 +294,15 @@ void Solution::printSolution() {
         std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
     }
     std::cout << "\t### Labelling for this solution:" << std::endl;
+    bool multipleProfiles = Configuration::isActive("multipleProfiles");
     for(auto it = vlabel_.begin(), end = vlabel_.end(); it != end; it++)
     {
-        std::cout << "\t\t" << it->first << " => " << it->second << std::endl;
+        if(multipleProfiles)
+            std::cout << "\t\tProfile: " << it->first << std::endl;
+        for(auto it2 = it->second.begin(), end2 = it->second.end(); it2 != end2; it2++)
+        {
+            std::cout << "\t\t" << it2->first << " => " << it2->second << std::endl;
+        }
     }
 
 }
