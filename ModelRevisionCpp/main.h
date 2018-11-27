@@ -16,7 +16,11 @@ bool repairFuncConsistency(Solution* repairSet);
 
 bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
 
+bool isFuncConsistentWithLabel(Solution* labeling, Function* f, std::string profile);
+
 bool checkPointFunction(Solution* labeling, Function* f, bool generalize);
+
+bool checkPointFunction(Solution* labeling, Function* f, std::string profile, bool generalize);
 
 Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize);
 

@@ -251,14 +251,14 @@ std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::ve
                 int value;
                 try
                 {
-                    value = std::stoi(split[1]);
+                    value = std::stoi(split[2]);
                 }
                 catch(...)
                 {
-                    std::cout << "WARN! Invalid value in label: " << split[1] << std::endl;
+                    std::cout << "WARN! Invalid value in label: " << split[2] << std::endl;
                     continue;
                 }
-                repair->addVLabel(split[0], value);
+                repair->addVLabel(split[0], split[1], value);
                 continue;
             }
             

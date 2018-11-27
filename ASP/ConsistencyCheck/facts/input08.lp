@@ -20,8 +20,9 @@ functionAnd(c3,2,c4).
 exp(p1).
 obs_vlabel(p1,c1,1).
 %obs_vlabel(p1,c2,0).
-obs_vlabel(p1,c3,0).
-obs_vlabel(p1,c4,0).
+%obs_vlabel(p1,c3,0).
+%obs_vlabel(p1,c4,0).
 
-%fixed nodes and edges must be at the end of description
-fixed(c1).
+exp(p2).
+obs_vlabel(p2,c1,0).
+fixed(c2).

@@ -17,7 +17,8 @@ functionAnd(c3,1,c1).
 functionAnd(c3,2,c2).
 functionAnd(c3,2,c4).
 
-obs_vlabel(c1,1).
-obs_vlabel(c2,0).
-obs_vlabel(c3,0).
-obs_vlabel(c4,0).
+exp(p1).
+obs_vlabel(p1,c1,1).
+obs_vlabel(p1,c2,0).
+obs_vlabel(p1,c3,0).
+obs_vlabel(p1,c4,0).

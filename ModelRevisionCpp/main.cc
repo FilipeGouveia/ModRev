@@ -286,10 +286,18 @@ bool repairFuncConsistency(Solution* repairSet){
     return !repairSet->hasImpossibility;
 }
 
-
 bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
 {
-    
+    for(auto it = labeling->vlabel_.begin(), end = labeling->vlabel_.end(); it != end; it++)
+    {
+        if(!isFuncConsistentWithLabel(labeling, f, it->first))
+            return false;
+    }
+    return true;
+}
+
+bool isFuncConsistentWithLabel(Solution* labeling, Function* f, std::string profile)
+{
     for(int i = 1; i <= f->nClauses_; i++)
     {
         bool isClauseSatisfiable = true;
@@ -302,7 +310,7 @@ bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
                 //positive interaction
                 if(e->getSign() > 0)
                 {
-                    if(labeling->vlabel_[(*it)] == 0)
+                    if(labeling->vlabel_[profile][(*it)] == 0)
                     {
                         isClauseSatisfiable = false;
                         break;
@@ -311,7 +319,7 @@ bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
                 //negative interaction
                 else
                 {
-                    if(labeling->vlabel_[(*it)] > 0)
+                    if(labeling->vlabel_[profile][(*it)] > 0)
                     {
                         isClauseSatisfiable = false;
                         break;
@@ -323,16 +331,25 @@ bool isFuncConsistentWithLabel(Solution* labeling, Function* f)
                 return false;
             }
         }
-        if(isClauseSatisfiable && labeling->vlabel_[f->node_] == 1)
+        if(isClauseSatisfiable && labeling->vlabel_[profile][f->node_] == 1)
             return true;
 
     }
-    return labeling->vlabel_[f->node_] == 0;
+    return labeling->vlabel_[profile][f->node_] == 0;
 }
 
+bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
+    
+    for(auto it = labeling->vlabel_.begin(), end = labeling->vlabel_.end(); it != end; it++)
+    {
+        if(!checkPointFunction(labeling, f, it->first, generalize))
+            return false;
+    }
+    return true;
+}
 //checks thhe top or bottom function for consistency.
 // Allows to check if it is possible to repair a function without changing the topology
-bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
+bool checkPointFunction(Solution* labeling, Function* f, std::string profile, bool generalize){
     std::map<std::string,int> map = f->getRegulatorsMap();
     if(generalize)
     {
@@ -343,12 +360,12 @@ bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
             if(e != nullptr)
             {
                 //positive interaction
-                if(e->getSign() > 0 && labeling->vlabel_[it->first] > 0)
+                if(e->getSign() > 0 && labeling->vlabel_[profile][it->first] > 0)
                 {
                     return true;
                 }
                 //negative interaction
-                if(e->getSign() == 0 && labeling->vlabel_[it->first] == 0)
+                if(e->getSign() == 0 && labeling->vlabel_[profile][it->first] == 0)
                 {
                     return true;
                 }
@@ -369,12 +386,12 @@ bool checkPointFunction(Solution* labeling, Function* f, bool generalize){
             if(e != nullptr)
             {
                 //positive interaction
-                if(e->getSign() > 0 && labeling->vlabel_[it->first] == 0)
+                if(e->getSign() > 0 && labeling->vlabel_[profile][it->first] == 0)
                 {
                     return true;
                 }
                 //negative interaction
-                if(e->getSign() == 0 && labeling->vlabel_[it->first] > 0)
+                if(e->getSign() == 0 && labeling->vlabel_[profile][it->first] > 0)
                 {
                     return true;
                 }
