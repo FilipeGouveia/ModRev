@@ -236,11 +236,11 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
 }
 
 
-std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
-    std::vector<Solution*> result;   
+std::vector<InconsistencySolution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
+    std::vector<InconsistencySolution*> result;   
     for(auto it = results.begin(), end= results.end(); it!=end; it++)
     {
-        Solution* repair = new Solution();
+        InconsistencySolution* inconsistency = new InconsistencySolution();
         for(auto it2 = (*it).begin(), end2 = (*it).end(); it2 != end2; it2++)
         {
             std::vector<std::string> split = Util_h::split(*it2, '(');
@@ -258,27 +258,27 @@ std::vector<Solution*> ASPHelper::parseFunctionRepairResults(std::vector<std::ve
                     std::cout << "WARN! Invalid value in label: " << split[2] << std::endl;
                     continue;
                 }
-                repair->addVLabel(split[0], split[1], value);
+                inconsistency->addVLabel(split[0], split[1], value);
                 continue;
             }
             
             if(split[0].compare("r_gen") == 0)
             {
                 split = Util_h::split(split[1], ')');
-                repair->addGeneralization(split[0]);
+                inconsistency->addGeneralization(split[0]);
                 continue;
             }
 
             if(split[0].compare("r_part") == 0)
             {
                 split = Util_h::split(split[1], ')');
-                repair->addParticularization(split[0]);
+                inconsistency->addParticularization(split[0]);
                 continue;
             }
 
         }
 
-        result.push_back(repair);
+        result.push_back(inconsistency);
     }
 
     return result;
@@ -441,6 +441,7 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
                     }
                 }
 
+                newFunction->level_ = original->level_ + 1;
                 result.push_back(newFunction);
                 //std::cout << "DEBUG read function: " << newFunction->printFunction() << std::endl;
                 

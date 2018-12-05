@@ -10,20 +10,20 @@ void process_arguments(const int argc, char const * const * argv, std::string & 
 
 void modelRevision(std::string input_file_network);
 
-std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
+std::vector<InconsistencySolution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
 
-bool repairFuncConsistency(Solution* repairSet);
+void repairInconsistencies(InconsistencySolution* inconsistency);
 
-bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
+void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNode* iNode);
 
-bool isFuncConsistentWithLabel(Solution* labeling, Function* f, std::string profile);
+bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f);
 
-bool checkPointFunction(Solution* labeling, Function* f, bool generalize);
+bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
 
-bool checkPointFunction(Solution* labeling, Function* f, std::string profile, bool generalize);
+bool checkPointFunction(InconsistencySolution* labeling, Function* f, bool generalize);
 
-Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize);
+bool checkPointFunction(InconsistencySolution* labeling, Function* f, std::string profile, bool generalize);
 
+void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* inconsistency, InconsistentNode* iNode);
 
 #endif
-

@@ -108,6 +108,19 @@ void Edge::setFixed(){
     fixed_ = true;
 }
 
+bool Edge::isEqual(Edge* e, bool checkSign)
+{
+    if(start_->id_.compare(e->getStart()->id_) != 0 || end_->id_.compare(e->getEnd()->id_) != 0)
+    {
+        return false;
+    }
+    if(checkSign)
+    {
+        return sign_ == e->getSign();
+    }
+    return true;
+}
+
 
 Node::Node(std::string id)
     :id_(id)
@@ -141,6 +154,7 @@ Function::Function(std::string node, int nClauses)
         clauses_.insert(std::make_pair(i,clause));
     }
     regulatorsMap_ = std::map<std::string,int>();
+    level_ = 0;
 
 }
 
@@ -217,43 +231,112 @@ std::string Function::printFunction(){
     return result;
 }
 
+bool Function::isEqual(Function* f)
+{
+    if(nClauses_ != f->nClauses_ || node_.compare(f->node_) != 0)
+        return false;
 
-Solution::Solution()
-    :generalization_(),
-    particularization_(),
-    vlabel_(),
-    repairedFunctions_(),
-    flippedEdges_() {
+    for(int i = 1; i <= nClauses_; i++)
+    {
+        //to prevent some function having duplicated clauses, we double check inclusiveness
+        if(!Function::isClausePresent(clauses_[i], f->clauses_))
+            return false;
+        if(!Function::isClausePresent(f->clauses_[i], clauses_))
+            return false;
+    }
+    
+    return true;
+}
+
+bool Function::isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses)
+{
+
+    for(auto it = clauses.begin(), end = clauses.end(); it!=end; it++)
+    {
+        std::vector<std::string> possMatch = it->second;
+        bool isPossibleMatch = true;
+
+        for(auto itElem = clause.begin(), endElem = clause.end(); itElem != endElem; itElem++)
+        {
+            bool elemFound = false;
+
+            for(auto itPossElem = possMatch.begin(), endPossElem = possMatch.end(); itPossElem != endPossElem; itPossElem++)
+            {
+                if((*itElem).compare((*itPossElem)) == 0)
+                {
+                    elemFound = true;
+                    break;
+                }
+            }
+
+            if(!elemFound)
+            {
+                isPossibleMatch = false;
+                break;
+            }
+
+        }
+        
+        if(isPossibleMatch)
+        {
+            bool isTrueMatch = true;
+            //double check to prevent duplicated values originating false positives
+            for(auto itElem = possMatch.begin(), endElem = possMatch.end(); itElem != endElem; itElem++)
+            {
+                bool elemFound = false;
+
+                for(auto itPossElem = clause.begin(), endPossElem = clause.end(); itPossElem != endPossElem; itPossElem++)
+                {
+                    if((*itElem).compare((*itPossElem)) == 0)
+                    {
+                        elemFound = true;
+                        break;
+                    }
+                }
+
+                if(!elemFound)
+                {
+                    isTrueMatch = false;
+                    break;
+                }
+
+            }
+            if(isTrueMatch)
+                return true;
+        }
+
+    }
+    return false;
+}
+
+
+InconsistencySolution::InconsistencySolution()
+    :iNodes_(),
+    vlabel_(){
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         hasImpossibility = false;
     }
 
-void Solution::addGeneralization(std::string id) {
+InconsistencySolution::~InconsistencySolution(){}
 
-    for(auto it = generalization_.begin(), end = generalization_.end(); it != end; it++)
-    {
-        if((*it) == id)
-            return;
-    }
-    generalization_.push_back(id);
+void InconsistencySolution::addGeneralization(std::string id) {
+
+    InconsistentNode* newINode = new InconsistentNode(id, true);
+    iNodes_.insert(std::make_pair(id, newINode));
 
 }
 
 
-void Solution::addParticularization(std::string id) {
+void InconsistencySolution::addParticularization(std::string id) {
 
-    for(auto it = particularization_.begin(), end = particularization_.end(); it != end; it++)
-    {
-        if((*it) == id)
-            return;
-    }
-    particularization_.push_back(id);
+    InconsistentNode* newINode = new InconsistentNode(id, false);
+    iNodes_.insert(std::make_pair(id, newINode));
 
 }
 
 
-void Solution::addVLabel(std::string profile, std::string id, int value) {
+void InconsistencySolution::addVLabel(std::string profile, std::string id, int value) {
     
     if(vlabel_.find(profile) == vlabel_.end())
     {
@@ -264,45 +347,234 @@ void Solution::addVLabel(std::string profile, std::string id, int value) {
 
 }
 
-
-int Solution::getNTopologyChanges() {
-    return nTopologyChanges_;
+void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
+{
+    auto target = iNodes_.find(id);
+    if(target != iNodes_.end())
+    {
+        if(!target->second->repaired_)
+        {
+            nTopologyChanges_ += repairSet->getNTopologyChanges();
+            nRepairOperations_ += repairSet->getNRepairOperations();
+        }
+        target->second->addRepairSet(repairSet);
+    }
 }
 
 
-void Solution::addRepairedFunction(Function* f) {
+int InconsistencySolution::getNTopologyChanges() {
+    return nTopologyChanges_;
+}
+
+int InconsistencySolution::getNRepairOperations() {
+    return nRepairOperations_;
+}
+
+void InconsistencySolution::printSolution(bool printAll) {
+    std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
+    for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
+    {
+        for(auto repair = iNode->second->repairSet_.begin(), repairEnd = iNode->second->repairSet_.end(); repair!=repairEnd;repair++)
+        {
+            for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
+            {
+                std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+            }
+            for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
+            {
+                std::cout << "\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+            }
+            for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
+            {
+                std::cout << "\tRemove edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+            }
+            for(auto it = (*repair)->addedEdges_.begin(), end = (*repair)->addedEdges_.end(); it != end; it++)
+            {
+                std::cout << "\tAdd edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ") with sign " << (*it)->getSign() << "." << std::endl;
+            }
+        }
+    }
+    if(Configuration::isActive("labelling"))
+    {
+        std::cout << "\t### Labelling for this solution:" << std::endl;
+        bool multipleProfiles = Configuration::isActive("multipleProfiles");
+        for(auto it = vlabel_.begin(), end = vlabel_.end(); it != end; it++)
+        {
+            if(multipleProfiles)
+                std::cout << "\t\tProfile: " << it->first << std::endl;
+            for(auto it2 = it->second.begin(), end2 = it->second.end(); it2 != end2; it2++)
+            {
+                std::cout << "\t\t" << it2->first << " => " << it2->second << std::endl;
+            }
+        }
+    }
+}
+
+
+
+InconsistentNode::InconsistentNode(std::string id, bool generalization)
+    :id_(id),
+    generalization_(generalization),
+    repairSet_(){
+        nTopologyChanges_ = 0;
+        nRepairOperations_ = 0;
+        repaired_ = false;
+    }
+
+InconsistentNode::~InconsistentNode(){}
+
+
+void InconsistentNode::addRepairSet(RepairSet* repairSet)
+{
+    repairSet_.push_back(repairSet);
+    if(!repaired_)
+    {
+        repaired_ = true;
+        nTopologyChanges_ = repairSet->getNTopologyChanges();
+        nRepairOperations_= repairSet->getNRepairOperations();
+
+    }
+
+}
+
+void InconsistentNode::printSolution(bool printAll)
+{
+    //TODO
+    return;
+}
+
+int InconsistentNode::getNTopologyChanges() {
+    return nTopologyChanges_;
+}
+
+int InconsistentNode::getNRepairOperations() {
+    return nRepairOperations_;
+}
+
+
+RepairSet::RepairSet()
+    :repairedFunctions_(),
+    flippedEdges_(),
+    removedEdges_(),
+    addedEdges_() {
+        nTopologyChanges_ = 0;
+        nRepairOperations_ = 0;
+    }
+
+RepairSet::~RepairSet(){}
+
+
+int RepairSet::getNTopologyChanges() {
+    return nTopologyChanges_;
+}
+
+int RepairSet::getNRepairOperations() {
+    return nRepairOperations_;
+}
+
+
+void RepairSet::addRepairedFunction(Function* f) {
     repairedFunctions_.push_back(f);
     nRepairOperations_++;
 }
 
 
-void Solution::addFlippedEdge(Edge* e) {
+void RepairSet::addFlippedEdge(Edge* e) {
     flippedEdges_.push_back(e);
     nRepairOperations_++;
     nTopologyChanges_++;
 }
 
+void RepairSet::removeEdge(Edge* e) {
+    removedEdges_.push_back(e);
+    nRepairOperations_++;
+    nTopologyChanges_++;
+}
 
-void Solution::printSolution() {
-    std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
-    for(auto it = flippedEdges_.begin(), end = flippedEdges_.end(); it != end; it++)
+void RepairSet::addEdge(Edge* e) {
+    addedEdges_.push_back(e);
+    nRepairOperations_++;
+    nTopologyChanges_++;
+}
+
+bool RepairSet::isEqual(RepairSet* repairSet)
+{
+
+    if(nTopologyChanges_ != repairSet->nTopologyChanges_ ||
+        nRepairOperations_ != repairSet->nRepairOperations_ ||
+        repairedFunctions_.size() != repairSet->repairedFunctions_.size() ||
+        flippedEdges_.size() != repairSet->flippedEdges_.size() ||
+        removedEdges_.size() != repairSet->removedEdges_.size() ||
+        addedEdges_.size() != repairSet->addedEdges_.size())
     {
-        std::cout << "\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+        return false;
     }
+
+    //check if functions are the same
     for(auto it = repairedFunctions_.begin(), end = repairedFunctions_.end(); it != end; it++)
     {
-        std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
-    }
-    std::cout << "\t### Labelling for this solution:" << std::endl;
-    bool multipleProfiles = Configuration::isActive("multipleProfiles");
-    for(auto it = vlabel_.begin(), end = vlabel_.end(); it != end; it++)
-    {
-        if(multipleProfiles)
-            std::cout << "\t\tProfile: " << it->first << std::endl;
-        for(auto it2 = it->second.begin(), end2 = it->second.end(); it2 != end2; it2++)
+        bool found = false;
+        for(auto it2 = repairSet->repairedFunctions_.begin(), end2 = repairSet->repairedFunctions_.end(); it2 != end2; it2++)
         {
-            std::cout << "\t\t" << it2->first << " => " << it2->second << std::endl;
+            if((*it)->isEqual((*it2)))
+            {
+                found = true;
+                break;
+            }
         }
+        if(!found)
+            return false;
     }
 
+    //check if flip edge sign operations are the same
+    for(auto it = flippedEdges_.begin(), end = flippedEdges_.end(); it != end; it++)
+    {
+        bool found = false;
+        for(auto it2 = repairSet->flippedEdges_.begin(), end2 = repairSet->flippedEdges_.end(); it2 != end2; it2++)
+        {
+            if((*it)->isEqual((*it2)))
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+            return false;
+    }
+
+    //check if removed edges are the same
+    for(auto it = removedEdges_.begin(), end = removedEdges_.end(); it != end; it++)
+    {
+        bool found = false;
+        for(auto it2 = repairSet->removedEdges_.begin(), end2 = repairSet->removedEdges_.end(); it2 != end2; it2++)
+        {
+            if((*it)->isEqual((*it2)))
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+            return false;
+    }
+
+    //check if added edges are the same
+    for(auto it = addedEdges_.begin(), end = addedEdges_.end(); it != end; it++)
+    {
+        bool found = false;
+        for(auto it2 = repairSet->addedEdges_.begin(), end2 = repairSet->addedEdges_.end(); it2 != end2; it2++)
+        {
+            if((*it)->isEqual((*it2)))
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+            return false;
+    }
+
+
+
+    return true;
 }

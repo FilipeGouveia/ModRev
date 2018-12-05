@@ -15,6 +15,7 @@ class Function {
         std::string node_;
         int nClauses_;
         std::map<int, std::vector< std::string >> clauses_;
+        int level_;
 
         Function(std::string node, int nClauses);
         ~Function();
@@ -23,6 +24,9 @@ class Function {
         int getNumberOfRegulators();
         std::map<std::string,int> getRegulatorsMap();
         std::string printFunction();
+        bool isEqual(Function* f);
+
+        static bool isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses);
     
 };
 
@@ -60,6 +64,7 @@ class Edge {
         void flipSign();
         bool isFixed();
         void setFixed();
+        bool isEqual(Edge* e, bool checkSign = false);
 
 };
 
@@ -86,29 +91,71 @@ class Network {
 };
 
 
-class Solution {
+class RepairSet {
 
     public:
-        std::vector<std::string> generalization_;
-        std::vector<std::string> particularization_;
-        std::map<std::string, std::map<std::string,int>> vlabel_;
-
         int nTopologyChanges_;
         int nRepairOperations_;
-        std::vector<Function*> repairedFunctions_;
+        std::vector<Function*> repairedFunctions_; //should only be one per repairSet per inconsistent node
         std::vector<Edge*> flippedEdges_;
+        std::vector<Edge*> removedEdges_;
+        std::vector<Edge*> addedEdges_;
+
+        RepairSet();
+        ~RepairSet();
+
+        int getNTopologyChanges();
+        int getNRepairOperations();
+        void addRepairedFunction(Function* f);
+        void addFlippedEdge(Edge* e);
+        void removeEdge(Edge* e);
+        void addEdge(Edge* e);
+        bool isEqual(RepairSet* repairSet);
+};
+
+
+class InconsistentNode {
+
+    public:
+        std::string id_;
+        bool generalization_;
+        int nTopologyChanges_;
+        int nRepairOperations_;
+        bool repaired_;
+        //possible ways to repair the node;
+        std::vector<RepairSet*> repairSet_;
+
+        InconsistentNode(std::string id, bool generalization);
+        ~InconsistentNode();
+
+        int getNTopologyChanges();
+        int getNRepairOperations();
+        void addRepairSet(RepairSet* repairSet);
+        void printSolution(bool printAll = true);
+};
+
+
+class InconsistencySolution {
+
+    public:
+        //map node id as key
+        std::map<std::string, InconsistentNode*> iNodes_;
+        //map profile as key; second map node as key;
+        std::map<std::string, std::map<std::string,int>> vlabel_;
+        int nTopologyChanges_;
+        int nRepairOperations_;
         bool hasImpossibility;
 
-        Solution();
+        InconsistencySolution();
+        ~InconsistencySolution();
 
         void addGeneralization(std::string id);
         void addParticularization(std::string id);
         void addVLabel(std::string profile, std::string id, int value);
-
+        void addRepairSet(std::string id, RepairSet* repairSet);
         int getNTopologyChanges();
-        void addRepairedFunction(Function* f);
-        void addFlippedEdge(Edge* e);
-        void printSolution();
-};
+        int getNRepairOperations();
+        void printSolution(bool printAll = true);
 
+};
 #endif
