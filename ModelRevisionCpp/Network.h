@@ -131,7 +131,6 @@ class InconsistentNode {
         int getNTopologyChanges();
         int getNRepairOperations();
         void addRepairSet(RepairSet* repairSet);
-        void printSolution(bool printAll = true);
 };
 
 

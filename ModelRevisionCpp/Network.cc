@@ -357,6 +357,24 @@ void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
             nTopologyChanges_ += repairSet->getNTopologyChanges();
             nRepairOperations_ += repairSet->getNRepairOperations();
         }
+        else
+        {
+            //filter solutions not optimal
+            if(target->second->getNTopologyChanges() < repairSet->getNTopologyChanges()
+            || target->second->getNRepairOperations() < repairSet->getNRepairOperations())
+            {
+                return;
+            }
+            //update values for better solutions
+            if(repairSet->getNTopologyChanges() < target->second->getNTopologyChanges()
+            || repairSet->getNRepairOperations() < target->second->getNRepairOperations())
+            {
+                nTopologyChanges_ -= target->second->getNTopologyChanges();
+                nTopologyChanges_ += repairSet->getNTopologyChanges();
+                nRepairOperations_ -= target->second->getNRepairOperations();
+                nRepairOperations_ += repairSet->getNRepairOperations();
+            }
+        }
         target->second->addRepairSet(repairSet);
     }
 }
@@ -374,23 +392,34 @@ void InconsistencySolution::printSolution(bool printAll) {
     std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
     for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
     {
+        std::cout << "\tInconsistent node " << iNode->second->id_ << "." << std::endl;
+        int i = 1;
         for(auto repair = iNode->second->repairSet_.begin(), repairEnd = iNode->second->repairSet_.end(); repair!=repairEnd;repair++)
         {
+            if(printAll)
+            {
+                std::cout << "\t\tRepair #" << i << ":" << std::endl;
+                i++;
+            }
             for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
             {
-                std::cout << "\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+                std::cout << "\t\t\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
             }
             for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
             {
-                std::cout << "\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+                std::cout << "\t\t\tFlip sign of edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
             }
             for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
             {
-                std::cout << "\tRemove edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
+                std::cout << "\t\t\tRemove edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")." << std::endl;
             }
             for(auto it = (*repair)->addedEdges_.begin(), end = (*repair)->addedEdges_.end(); it != end; it++)
             {
-                std::cout << "\tAdd edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ") with sign " << (*it)->getSign() << "." << std::endl;
+                std::cout << "\t\t\tAdd edge (" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ") with sign " << (*it)->getSign() << "." << std::endl;
+            }
+            if(!printAll)
+            {
+                break;
             }
         }
     }
@@ -426,21 +455,24 @@ InconsistentNode::~InconsistentNode(){}
 
 void InconsistentNode::addRepairSet(RepairSet* repairSet)
 {
-    repairSet_.push_back(repairSet);
     if(!repaired_)
     {
         repaired_ = true;
         nTopologyChanges_ = repairSet->getNTopologyChanges();
         nRepairOperations_= repairSet->getNRepairOperations();
-
     }
-
-}
-
-void InconsistentNode::printSolution(bool printAll)
-{
-    //TODO
-    return;
+    else
+    {
+        //if new solution is better, remove all others before
+        if(repairSet->getNTopologyChanges() < nTopologyChanges_ ||
+            repairSet->getNRepairOperations() < nRepairOperations_)
+        {
+            repairSet_.clear();
+            nTopologyChanges_ = repairSet->getNTopologyChanges();
+            nRepairOperations_= repairSet->getNRepairOperations();
+        }
+    }
+    repairSet_.push_back(repairSet);
 }
 
 int InconsistentNode::getNTopologyChanges() {

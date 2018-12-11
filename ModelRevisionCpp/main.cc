@@ -415,6 +415,7 @@ void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* solution, I
                             repairSet->addRepairedFunction(candidate);
                         }
                         solution->addRepairSet(iNode->id_, repairSet);
+                        bestFunctionLevel = candidate->level_;
                         if(!Configuration::isActive("showAllFunctions"))
                         {
                             return;
@@ -428,15 +429,27 @@ void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* solution, I
             }
         }
 
-        //renew candidates
-        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-        if(!tauxCandidates.empty())
-            tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
+        
+        if(candidate->getNumberOfRegulators() < 2)
+        {
+            //there is no possible condidates for 1 regulator function
+            break;
+        }
+        //renew candidates if solution level not found yet
+        if(bestFunctionLevel >= 0 && candidate->level_ < bestFunctionLevel)
+        {
+            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+            if(!tauxCandidates.empty())
+                tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
+        }
 
     }
 
     //If the end of this method is reached means that no solution was found
-    solution->hasImpossibility = true;
-    std::cout << "WARN: Not possible to flip an edge to repair function " << f->node_ << std::endl;
+    if(bestFunctionLevel < 0)
+    {
+        solution->hasImpossibility = true;
+        std::cout << "WARN: Not possible to flip an edge to repair function " << f->node_ << std::endl;
+    }
     return;
 }
