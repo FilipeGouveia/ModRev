@@ -26,4 +26,10 @@ bool checkPointFunction(InconsistencySolution* labeling, Function* f, std::strin
 
 void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* inconsistency, InconsistentNode* iNode);
 
+void repairNodeConsistencyFlippingEdge(InconsistencySolution* solution, InconsistentNode* iNode, std::vector<std::vector<Edge *>> edges);
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n);
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n, int indexStart);
+
 #endif

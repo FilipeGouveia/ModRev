@@ -26,6 +26,28 @@ int main(int argc, char ** argv) {
 
     //main function that revises the model
     modelRevision(input_file_network);
+
+/*     std::vector<Edge*> vt;
+    Node* n = network->getNode("c3");
+    std::map<std::string,int> map = n->getFunction()->getRegulatorsMap();
+    for(auto it = map.begin(), end = map.end(); it!= end; it++)
+    {
+            Edge* e = network->getEdge(it->first, "c3");
+            vt.push_back(e);
+    }
+    for(int i = 1; i < 4; i++)
+    {
+        auto aux = getEdgesCombinations(vt,i);
+        std::cout << "#### edges with " << i << " combinations\n";
+        for(auto it1 = aux.begin(), end1 = aux.end(); it1!=end1; it1++)
+        {
+            std::cout << "\t---\n";
+            for(auto it2 = (*it1).begin(), end2 = (*it1).end(); it2!=end2; it2++)
+            {
+                std::cout << "\t from " << (*it2)->start_->id_ << "\n";
+            }
+        }
+    } */
     
 }
 
@@ -292,8 +314,8 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
                 return false;
             }
         }
-        if(isClauseSatisfiable && labeling->vlabel_[profile][f->node_] == 1)
-            return true;
+        if(isClauseSatisfiable)
+            return labeling->vlabel_[profile][f->node_] == 1;
 
     }
     return labeling->vlabel_[profile][f->node_] == 0;
@@ -370,86 +392,173 @@ bool checkPointFunction(InconsistencySolution* labeling, Function* f, std::strin
 }
 
 //this only works for flipping edges
+//TODO consider this function for no flipping edges
 void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* solution, InconsistentNode* iNode)
 {
+    if(Configuration::isActive("debug"))
+        std::cout << "DEBUG: searching solution flipping edges for " << iNode->id_ << "\n";
     Function * f = network->getNode(iNode->id_)->regFunction_;
     std::map<std::string,int> map = f->getRegulatorsMap();
-    std::vector<Function*> tCandidates;
-    tCandidates.push_back(f);
-    int bestFunctionLevel = -1;
-    //this is used to check if we can repair the node without changing the function.
-    //If so, do not add a new function to the solution, only include flipping the edge
-
-    while(!tCandidates.empty())
+    std::vector<Edge*> listEdges;
+    for(auto it = map.begin(), end = map.end(); it!= end; it++)
     {
-        Function* candidate = tCandidates.front();
-        tCandidates.erase (tCandidates.begin());
-
-        if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+        Edge* e = network->getEdge(it->first, f->node_);
+        if(e!=nullptr && !e->isFixed())
         {
-            //function is from a higher level than expected
-            continue;
+            listEdges.push_back(e);
         }
+    }
+    bool solFound = false;
+    for(int nEdges = 1; nEdges <= listEdges.size(); nEdges++)
+    {
+        if(Configuration::isActive("debug"))
+            std::cout << "DEBUG: testing with " << nEdges << " edge flips\n";
+        std::vector<std::vector<Edge*>> eCandidates = getEdgesCombinations(listEdges, nEdges);
+        std::vector<Function*> fCandidates;
+        fCandidates.push_back(f);
+        int bestFunctionLevel = -1;
+        //This is used to check if we can repair the node without changing the function.
+        //If so, do not add a new function to the solution, only include flipping the edge.
 
-        //try to flip each edge
-        //TODO change this to contemplate all solutions with all the possible edges flip from 1 to n regulators
-        for(auto it = map.begin(), end = map.end(); it!= end; it++)
+        while(!fCandidates.empty())
         {
-             Edge* e = network->getEdge(it->first, f->node_);
-             if(e!=nullptr)
-             {
-                 if(!e->isFixed())
-                 {
-                    e->flipSign();
-                    if(isFuncConsistentWithLabel(solution, candidate))
-                    {
-                        e->flipSign();
-                        if(Configuration::isActive("debug"))
-                            std::cout << "REPAIR: Try to change the sign of the edge from " << it->first << " to " << f->node_ << std::endl;
-                        
-                        RepairSet * repairSet = new RepairSet();
-                        repairSet->addFlippedEdge(e);
-                        if(candidate->level_ > 0)
-                        {
-                            //Only add a function repair operations if the candidate is not the original
-                            repairSet->addRepairedFunction(candidate);
-                        }
-                        solution->addRepairSet(iNode->id_, repairSet);
-                        bestFunctionLevel = candidate->level_;
-                        if(!Configuration::isActive("showAllFunctions"))
-                        {
-                            return;
-                        }
-                    }
-                 }
-             }
-             else{
-                std::cout << "WARN: Missing edge from " << it->first << " to " << f->node_ << std::endl;
+            Function* candidate = fCandidates.front();
+            fCandidates.erase (fCandidates.begin());
+
+            if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+            {
+                //function is from a higher level than expected
                 continue;
             }
-        }
+
+            //for each set of flipping edges
+            for(auto it = eCandidates.begin(), end = eCandidates.end(); it!= end; it++)
+            {
+                //flip all edges
+                for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                {
+                    Edge* e = (*itEdge);
+                    e->flipSign();
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: flip edge from " << e->start_->id_ << "\n";
+                }
+                bool isSol = false;
+                if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: testing function " << candidate->printFunction() << "\n";
+                if(isFuncConsistentWithLabel(solution, candidate))
+                {
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: found solution with " << nEdges << " edges flipped\n";
+                    isSol = true;
+                    solFound = true;
+                }
+                //put network back to normal
+                RepairSet * repairSet = new RepairSet();
+                for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                {
+                    Edge* e = (*itEdge);
+                    e->flipSign();
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: return flip edge from " << e->start_->id_ << "\n";
+                    if(isSol)
+                    {
+                        repairSet->addFlippedEdge(e);
+                    }
+                }
+                if(isSol)
+                {
+                    //Only add a function repair operations if the candidate is not the original
+                    if(candidate->level_ > 0)
+                    {
+                        if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: solution without original function\n";
+                        repairSet->addRepairedFunction(candidate);
+                    }
+                    solution->addRepairSet(iNode->id_, repairSet);
+                    bestFunctionLevel = candidate->level_;
+                    if(!Configuration::isActive("allOpt"))
+                    {
+                        if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: no more solutions - allOpt\n";
+                        return;
+                    }
+                }
+            }
+            if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
+            {
+                if(Configuration::isActive("debug"))
+                    std::cout << "DEBUG: no more function solutions\n";
+                return;           
+            }
 
         
-        if(candidate->getNumberOfRegulators() < 2)
+            if(candidate->getNumberOfRegulators() < 2)
+            {
+                if(Configuration::isActive("debug"))
+                    std::cout << "DEBUG: function with 1 regulator\n";
+                //there is no possible condidates for 1 regulator function
+                break;
+            }
+            //renew candidates if solution level not found yet
+            if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
+            {
+                if(Configuration::isActive("debug"))
+                    std::cout << "DEBUG: updating solutions\n";
+                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                if(!fauxCandidates.empty())
+                    fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
+            }
+
+        }
+
+        //If the end of this method is reached means that no solution was found with nEdges
+        if(solFound)
         {
-            //there is no possible condidates for 1 regulator function
+            if(Configuration::isActive("debug"))
+                std::cout << "DEBUG: ready to end with " << nEdges << " edges flipped\n";
             break;
         }
-        //renew candidates if solution level not found yet
-        if(bestFunctionLevel >= 0 && candidate->level_ < bestFunctionLevel)
-        {
-            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-            if(!tauxCandidates.empty())
-                tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
-        }
-
+        if(Configuration::isActive("debug"))
+            std::cout << "DEBUG: reached the end of " << nEdges << " without solution\n";
     }
-
-    //If the end of this method is reached means that no solution was found
-    if(bestFunctionLevel < 0)
+    if(!solFound)
     {
+        //TODO add or remove edges
         solution->hasImpossibility = true;
         std::cout << "WARN: Not possible to flip an edge to repair function " << f->node_ << std::endl;
     }
     return;
+}
+
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n)
+{
+    return getEdgesCombinations(edges, n, 0);
+}
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n, int indexStart)
+{
+    std::vector<std::vector<Edge *>> result;
+
+    for(int i = indexStart; i <= edges.size() - n; i++)
+    {
+        if(n > 1)
+        {
+            std::vector<std::vector<Edge *>> aux = getEdgesCombinations(edges, n-1, i+1);
+            for(auto it = aux.begin(), end=aux.end(); it!=end; it++)
+            {
+                (*it).push_back(edges[i]);
+                result.push_back((*it));
+            }
+
+        }
+        else
+        {
+            std::vector<Edge*> finalAux;
+            finalAux.push_back(edges[i]);
+            result.push_back(finalAux);
+        }
+    }
+
+    return result;
 }
