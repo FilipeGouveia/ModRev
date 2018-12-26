@@ -240,6 +240,10 @@ std::map<std::string,int> Function::getRegulatorsMap(){
 
 std::string Function::printFunction(){
     std::string result = "";
+    if(nClauses_ < 1)
+    {
+        result += "Empty Function (turn node input)";
+    }
     for(int i = 1; i <= nClauses_; i++)
     {
         result += "(";
