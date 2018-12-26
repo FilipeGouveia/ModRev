@@ -87,6 +87,9 @@ class Network {
         std::vector< Edge* > getEdges();
         Edge* getEdge(std::string start, std::string end);
         Edge* addEdge(Node* start, Node* end, int sign);
+        void removeEdge(std::string start, std::string end);
+        void removeEdge(Edge * e);
+        void addEdge(Edge * e);
 
 };
 

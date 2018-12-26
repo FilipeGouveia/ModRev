@@ -72,6 +72,38 @@ Edge* Network::getEdge(std::string startNode, std::string endNode)
     return nullptr;
 }
 
+void Network::removeEdge(std::string startNode, std::string endNode)
+{
+    for(auto it = edges_.begin(), end = edges_.end(); it!=end; it++)
+    {
+        if((*it)->getStart()->id_.compare(startNode) == 0 && (*it)->getEnd()->id_.compare(endNode) == 0)
+        {
+            edges_.erase(it);
+            return;
+        }
+    }
+    return;
+}
+
+void Network::removeEdge(Edge* e)
+{
+    for(auto it = edges_.begin(), end = edges_.end(); it!=end; it++)
+    {
+        if((*it)->getStart()->id_.compare(e->start_->id_) == 0 && (*it)->getEnd()->id_.compare(e->end_->id_) == 0)
+        {
+            edges_.erase(it);
+            return;
+        }
+    }
+}
+
+void Network::addEdge(Edge * e) {
+    edges_.push_back(e);
+    return;
+}
+
+
+
 Edge::Edge(Node* start, Node* end, int sign)
     :start_(start),
     end_(end),
