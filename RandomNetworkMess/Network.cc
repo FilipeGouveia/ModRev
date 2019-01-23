@@ -168,6 +168,7 @@ Node::Node(std::string id)
     :id_(id)
     {
         regFunction_ = nullptr;
+        fixed_ = false;
     }
 
 Node::~Node()

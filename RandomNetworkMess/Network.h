@@ -38,6 +38,7 @@ class Node {
 
         std::string id_;
         Function* regFunction_;
+        bool fixed_;
 
         Node(std::string id);
         ~Node();

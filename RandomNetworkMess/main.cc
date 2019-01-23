@@ -38,6 +38,7 @@ int main(int argc, char ** argv) {
     //output_s.open(output_file);
     log_s.open(log_file);
 
+    log_s << "Seed: " << seed << std::endl;
 
     ASPHelper::parseNetwork(input_file_network, network);
 
@@ -133,8 +134,11 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
     std::vector<Node *> nodes = network->getNodes();
     for(auto node = nodes.begin(), endNode = nodes.end(); node != endNode; node++ )
     {
-        
         Node * originalN = (*node);
+        if(originalN->fixed_)
+        {
+            continue;
+        }
         Function * originalF = originalN->regFunction_;
         std::map<std::string,int> originalMap = originalF->getRegulatorsMap();
         int numberRegulators = (int)originalMap.size();
@@ -174,6 +178,12 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
         
         for(auto it = nodes.begin(), end = nodes.end(); it!= end; it++)
         {
+            //no more than 12 regulators are allowed
+            if(numberRegulators >= 12)
+            {
+                break;
+            }
+
             bool isOriginalRegulator = false;
             for(auto it2 = originalMap.begin(), end2 = originalMap.end(); it2!=end2; it2++)
             {
@@ -198,6 +208,7 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
                     listEdgesFinal.push_back(newEdge);
                 }
             }
+
         }
 
         
@@ -229,7 +240,7 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
             }
             else
             {
-                if(numberRegulators == 1)
+                if(numberRegulators == 1 || numberRegulators > 12)
                 {
                     continue;
                 }
@@ -251,7 +262,7 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
                 candidate = tCandidates.front();
                 tCandidates.erase(tCandidates.begin());
                 
-                if(getProbability(50) || numberRegulators == 1)
+                if(getProbability(50) || numberRegulators == 1 || numberRegulators > 12)
                 {
                     break;
                 }

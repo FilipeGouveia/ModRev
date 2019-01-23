@@ -12,6 +12,7 @@
 #include <fstream>
 #include <bitset>
 #include <algorithm>
+#include <time.h>
 
 int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
 
@@ -323,8 +324,15 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
         function_cmd.append("0");
     }
     function_cmd.append(std::to_string(el));
-    function_cmd.append(".lp clause_aux.lp");
-    std::ofstream file("clause_aux.lp");
+    function_cmd.append(".lp ");
+    
+    std::string clauses_file = "clause_aux";
+    clauses_file.append(std::to_string((int)time(NULL)));
+    clauses_file.append(".lp");
+
+    function_cmd.append(clauses_file);
+
+    std::ofstream file(clauses_file);
     file << constructFunctionClause(function);
     file.close();
 
@@ -332,6 +340,9 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
 
     //process result to function structure
     //std::cout << result_cmd << std::endl;
+    std::string rm_cmd = "rm ";
+    rm_cmd.append(clauses_file);
+    exec(rm_cmd.c_str());
 
     return parseFunctionFamily(result_cmd, function);
 }

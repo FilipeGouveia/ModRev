@@ -12,6 +12,7 @@
 #include <fstream>
 #include <bitset>
 #include <algorithm>
+#include <time.h>
 
 void ASPHelper::parseNetwork(std::string input_file_network, Network * network) {
 
@@ -59,6 +60,16 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
             {
                 split = Util_h::split(split[1], ')');
                 split = Util_h::split(split[0], ',');
+                if(split.size() == 1)
+                {
+                    std::string node = split[0];
+                    Node * n = network->getNode(node);
+                    if(n != nullptr)
+                    {
+                        n->fixed_ = true;
+                    }
+                    continue;
+                }
                 if(split.size() != 2)
                 {
                     continue;
@@ -173,8 +184,15 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
         function_cmd.append("0");
     }
     function_cmd.append(std::to_string(el));
-    function_cmd.append(".lp clause_aux.lp");
-    std::ofstream file("clause_aux.lp");
+    function_cmd.append(".lp ");
+    
+    std::string clauses_file = "clause_aux";
+    clauses_file.append(std::to_string((int)time(NULL)));
+    clauses_file.append(".lp");
+
+    function_cmd.append(clauses_file);
+    
+    std::ofstream file(clauses_file);
     file << constructFunctionClause(function);
     file.close();
 
@@ -182,6 +200,9 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
 
     //process result to function structure
     //std::cout << result_cmd << std::endl;
+    std::string rm_cmd = "rm ";
+    rm_cmd.append(clauses_file);
+    exec(rm_cmd.c_str());
 
     return parseFunctionFamily(result_cmd, function);
 }
