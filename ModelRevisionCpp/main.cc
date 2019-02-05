@@ -946,7 +946,7 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                 {
                     for(auto itAdd = listAddCombination.begin(), endAdd = listAddCombination.end(); itAdd != endAdd; itAdd++)
                     {
-                        for(auto itRemove = listAddCombination.begin(), endAdd = listAddCombination.end(); itAdd != endAdd; itAdd++)
+                        for(auto itRemove = listRemoveCombination.begin(), endRemove = listRemoveCombination.end(); itRemove != endRemove; itRemove++)
                         {
 
                             bool isSol = false;
