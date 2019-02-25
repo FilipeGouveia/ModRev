@@ -211,8 +211,10 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
 
         //if the function only has 1 regulator then it is not possible to change the function
         //better try to flip the sign of the edge
-        //check top function for the necessity of flipping an edge
-        if(originalF->getNumberOfRegulators() < 2 || !checkPointFunction(inconsistency, originalF, iNode->generalization_))
+        //check top function for the necessity of flipping an edge <- yhis only works for single profile
+        
+        //if(originalF->getNumberOfRegulators() < 2 || !checkPointFunction(inconsistency, originalF, iNode->generalization_))
+        if(originalF->getNumberOfRegulators() < 2)
         {
             repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
             return;
