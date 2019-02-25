@@ -1,0 +1,6 @@
+**/*net.lp
+**/*net-att.lp
+**/*.log
+results/
+!**/original/*
+

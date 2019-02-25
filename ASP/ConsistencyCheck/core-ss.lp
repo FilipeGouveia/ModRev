@@ -5,36 +5,36 @@ vertex(V) :- edge(V,_,_).
 vertex(V) :- edge(_,V,_).
 
 %generate
-1{vlabel(V,S):sign(S)}1:-vertex(V).
+1{vlabel(P,V,S):sign(S)}1:-vertex(V), exp(P).
 {r_gen(V)} :- vertex(V), not fixed(V).
 {r_part(V)} :- vertex(V), not fixed(V).
 
 
-:-vlabel(V,S), obs_vlabel(V,T),complement(S,T).
+:-vlabel(P,V,S), obs_vlabel(P,V,T),complement(S,T).
 
 % functions
 %one positive or negative contribution in a clause
-onePositive(V,Id) :- functionAnd(V,Id, V2), edge(V2,V,S), vlabel(V2,S).
-oneNegative(V,Id) :- functionAnd(V,Id, V2), edge(V2,V,S), vlabel(V2,T), complement(S,T).
+onePositive(P,V,Id) :- functionAnd(V,Id, V2), edge(V2,V,S), vlabel(P,V2,S), exp(P).
+oneNegative(P,V,Id) :- functionAnd(V,Id, V2), edge(V2,V,S), vlabel(P,V2,T), complement(S,T), exp(P).
 
 % none positive or none negative on a clause
 % nonePositive(V,Id) :- not onePositive(V,Id), oneNegative(V,Id).
-noneNegative(V,Id) :- onePositive(V,Id), not oneNegative(V,Id).
+noneNegative(P,V,Id) :- onePositive(P,V,Id), not oneNegative(P,V,Id).
 
-vlabel(V,1) :- 1{noneNegative(V,Id):functionOr(V,Id)}, vertex(V), not r_part(V).
-vlabel(V,0) :- {noneNegative(V,Id):functionOr(V,Id)}0, vertex(V), functionOr(V,_), not r_gen(V).
+vlabel(P,V,1) :- 1{noneNegative(P,V,Id):functionOr(V,Id)}, vertex(V), exp(P), not r_part(V).
+vlabel(P,V,0) :- {noneNegative(P,V,Id):functionOr(V,Id)}0, vertex(V), exp(P), functionOr(V,_), not r_gen(V).
 
 :- r_gen(V), r_part(V).
 
-repair(f,V) :- r_gen(V).
-repair(f,V) :- r_part(V).
+repair(V) :- r_gen(V).
+repair(V) :- r_part(V).
 
 %not sure if this makes sense
 %either prevent the repair on non observed nodes
 %or minimize the repairs needed
-%:- repair(_,V), vertex(V), not obs_vlabel(V,_).
-#minimize {1,V : repair(_,V)}.
+%:- repair(V), vertex(V), not obs_vlabel(V,_).
+#minimize {1,V : repair(V)}.
 
 #show r_gen/1.
 #show r_part/1.
-#show vlabel/2.
+#show vlabel/3.

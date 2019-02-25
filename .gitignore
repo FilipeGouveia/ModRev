@@ -7,3 +7,13 @@ res
 results-Functions
 *.o
 *_aux.lp
+results-table
+results-tableV2
+results-tableV3
+resultsV3
+Extract*.pl
+extract*.csh
+generate*.csh
+inputTestsV2
+runTests.csh
+resultsv3latex.txt

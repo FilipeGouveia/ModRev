@@ -14,103 +14,6 @@
 #include <algorithm>
 #include <time.h>
 
-int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
-
-    std::string solve_cmd = Configuration::getValue("ASP_solver");
-    solve_cmd.append(" ");
-    if(ss)
-        solve_cmd.append(Configuration::getValue("ASP_CC_SS"));
-    solve_cmd.append(" ");
-    solve_cmd.append("--opt-mode=optN");
-    solve_cmd.append(" ");
-    solve_cmd.append(input_file_network);
-
-    std::string result_cmd = exec(solve_cmd.c_str());
-    int opt = -2;
-    result = ASPHelper::getOptAnswer(result_cmd, opt);
-   if(opt == -1)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "found no solution" << std::endl;
-        return opt;
-   } 
-   if(opt == 0)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "model consistent" << std::endl;
-        return opt;
-   }
-   if(opt > 0)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "found " << result.size() << " solutions with " << opt << " inconsistent nodes" << std::endl;
-   }
-   return opt;
-
-}
-
-
-std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input, int & optimization, bool optAll) {
-    
-    std::vector<std::vector<std::string>> result;
-
-    int found = 0;
-    bool process = false;
-    bool to_ignore = false;
-    
-    std::istringstream iss(input);
-    std::string line;
-    while(std::getline(iss,line))
-    {
-        if(line.find("UNSATISFIABLE\n") != std::string::npos)
-        {
-            optimization = -1;
-            break;
-        }
-        if(line.find("Answer: ") != std::string::npos)
-        {
-            if(found > 1)
-            {
-                process = true;
-            }
-            else 
-            {
-                if(0 == line.compare(line.length()-2,2," 1"))
-                {
-                    found++;
-                    if(found > 1)
-                        process = true;
-                }
-            }
-        }
-        else
-        {
-            if(process && !to_ignore)
-            {
-                process = false;
-                if(!optAll)
-                    to_ignore = true;
-                result.push_back(Util_h::split(line, ' '));
-            }
-            else
-            {
-                if(line.find("Optimization : ") != std::string::npos)
-                {
-                    try{
-                        optimization = std::stoi(Util_h::split(line, ' ').back());
-                    }
-                    catch(std::exception& e)
-                    { }
-                }
-            }
-        }
-    }
-
-    return result;
-
-}
-
-
 void ASPHelper::parseNetwork(std::string input_file_network, Network * network) {
 
     std::ifstream file;
@@ -148,7 +51,6 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
                     std::cout << "WARN! Invalid edge sign: " << split[2] << " on line " << line << std::endl;
                     continue;
                 }
-                
                 Node* startNode = network->addNode(startId);
                 Node* endNode = network->addNode(endId);
                 network->addEdge(startNode, endNode, sign);
@@ -158,6 +60,16 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
             {
                 split = Util_h::split(split[1], ')');
                 split = Util_h::split(split[0], ',');
+                if(split.size() == 1)
+                {
+                    std::string node = split[0];
+                    Node * n = network->getNode(node);
+                    if(n != nullptr)
+                    {
+                        n->fixed_ = true;
+                    }
+                    continue;
+                }
                 if(split.size() != 2)
                 {
                     continue;
@@ -233,59 +145,7 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
         }
     }
 
-
 }
-
-
-std::vector<InconsistencySolution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
-    std::vector<InconsistencySolution*> result;   
-    for(auto it = results.begin(), end= results.end(); it!=end; it++)
-    {
-        InconsistencySolution* inconsistency = new InconsistencySolution();
-        for(auto it2 = (*it).begin(), end2 = (*it).end(); it2 != end2; it2++)
-        {
-            std::vector<std::string> split = Util_h::split(*it2, '(');
-            if(split[0].compare("vlabel") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                split = Util_h::split(split[0], ',');
-                int value;
-                try
-                {
-                    value = std::stoi(split[2]);
-                }
-                catch(...)
-                {
-                    std::cout << "WARN! Invalid value in label: " << split[2] << std::endl;
-                    continue;
-                }
-                inconsistency->addVLabel(split[0], split[1], value);
-                continue;
-            }
-            
-            if(split[0].compare("r_gen") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                inconsistency->addGeneralization(split[0]);
-                continue;
-            }
-
-            if(split[0].compare("r_part") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                inconsistency->addParticularization(split[0]);
-                continue;
-            }
-
-        }
-
-        result.push_back(inconsistency);
-    }
-
-    return result;
-}
-
-
 
 std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers) {
     std::vector<Function*> result;
@@ -331,7 +191,7 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     clauses_file.append(".lp");
 
     function_cmd.append(clauses_file);
-
+    
     std::ofstream file(clauses_file);
     file << constructFunctionClause(function);
     file.close();

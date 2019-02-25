@@ -10,16 +10,28 @@ void process_arguments(const int argc, char const * const * argv, std::string & 
 
 void modelRevision(std::string input_file_network);
 
-std::vector<Solution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
+std::vector<InconsistencySolution*> checkConsistencyFunc(std::string input_file_network, int & optimization);
 
-bool repairFuncConsistency(Solution* repairSet);
+void repairInconsistencies(InconsistencySolution* inconsistency);
 
-bool isFuncConsistentWithLabel(Solution* labeling, Function* f);
+void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNode* iNode);
 
-bool checkPointFunction(Solution* labeling, Function* f, bool generalize);
+bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f);
 
-Function* repairFuncConsistencyFlippingEdge(Solution* solution, Function* f, bool generalize);
+bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
 
+bool checkPointFunction(InconsistencySolution* labeling, Function* f, bool generalize);
+
+bool checkPointFunction(InconsistencySolution* labeling, Function* f, std::string profile, bool generalize);
+
+void repairNodeConsistencyWithTopologyChanges(InconsistencySolution* inconsistency, InconsistentNode* iNode);
+
+bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, InconsistentNode* iNode, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges);
+
+void repairNodeConsistencyByRegulators(InconsistencySolution* solution, InconsistentNode* iNode);
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n);
+
+std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n, int indexStart);
 
 #endif
-

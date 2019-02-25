@@ -12,6 +12,7 @@ class Function {
 
     public:
 
+        bool domainChanged;
         std::string node_;
         int nClauses_;
         std::map<int, std::vector< std::string >> clauses_;
@@ -37,6 +38,7 @@ class Node {
 
         std::string id_;
         Function* regFunction_;
+        bool fixed_;
 
         Node(std::string id);
         ~Node();
@@ -54,6 +56,7 @@ class Edge {
         Node* end_;
         int sign_;
         bool fixed_;
+        bool deleted_;
 
         Edge(Node* start, Node* end, int sign);
         ~Edge();

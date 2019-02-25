@@ -35,6 +35,7 @@ std::vector< Node* > Network::getNodes() {
 }
 
 Node* Network::addNode(std::string id) {
+    /*
     Node* node = new Node(id);
     auto ret = nodes_.insert(std::make_pair(id, node));
     if(ret.second == false)
@@ -43,6 +44,14 @@ Node* Network::addNode(std::string id) {
         return ret.first->second;
     }
     return node;
+    */
+   Node* node = getNode(id);
+   if(node == nullptr)
+   {
+       node = new Node(id);
+       nodes_.insert(std::make_pair(id, node));
+   }
+   return node;
 }
 
 Node* Network::getNode(std::string id) {
@@ -109,6 +118,7 @@ Edge::Edge(Node* start, Node* end, int sign)
     end_(end),
     sign_(sign){
         fixed_ = false;
+        deleted_ = false;
     }
 
 Edge::~Edge() {}
@@ -158,6 +168,7 @@ Node::Node(std::string id)
     :id_(id)
     {
         regFunction_ = nullptr;
+        fixed_ = false;
     }
 
 Node::~Node()
@@ -187,6 +198,7 @@ Function::Function(std::string node, int nClauses)
     }
     regulatorsMap_ = std::map<std::string,int>();
     level_ = 0;
+    domainChanged = false;
 
 }
 
