@@ -182,11 +182,23 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
     //repair each inconsistent node
     for(auto it = inconsistency->iNodes_.begin(), end = inconsistency->iNodes_.end(); it != end; it++)
     {
+        //FG
+        if(it->second->repairType > 2)
+        {
+            std::cout << "#FOUND a node with double inconsistency\n";
+            //inconsistency->hasImpossibility = true;
+            testDouble(inconsistency, it->second);
+            //throw std::invalid_argument( "end of double inconsistency" );
+            //return;
+        }
+        else
+        {
         repairNodeConsistency(inconsistency, it->second);
         if(inconsistency->hasImpossibility)
         {
             //one of the nodes was not possible to repair
             return;
+        }
         }
     }
 
@@ -1114,4 +1126,98 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
         std::cout << "WARN: Not possible to repair node " << iNode->id_ << std::endl;
     }
     return;
+}
+
+
+void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
+{
+
+    std::vector<Function*> candidates;
+    std::vector<Function*> consistentFunctions;
+
+
+    //each function must have a list of replacement candidates and each must be tested until it works
+    Function* originalF = network->getNode(iNode->id_)->getFunction();
+    std::map<std::string,int> originalMap = originalF->getRegulatorsMap();
+    if(originalF->getNumberOfRegulators() < 2)
+    {
+        repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
+        return;
+    }
+    Function* newF = new Function(originalF->node_, 1);
+    for(auto it = originalMap.begin(), end = originalMap.end(); it!= end; it++)
+    {
+        newF->addElementClause(1, it->first);
+    }
+    candidates.push_back(newF);
+
+    std::cout << "Finding functions for double inconsistency in " << originalF->printFunction() << " (" << originalF->getNumberOfRegulators() << " regulators)\n\n";
+
+    // get the possible candidates to replace the inconsistent function
+    bool functionRepaired = false;
+    int repairedFunctionLevel = -1;
+    int counter=0;
+    while(!candidates.empty())
+    {
+        counter++;
+        Function* candidate = candidates.front();
+        candidates.erase (candidates.begin());
+        bool isConsistent = false;
+        
+        if(isIn(consistentFunctions, candidate))
+        {
+            continue;
+        }
+
+        if(isFuncConsistentWithLabel(inconsistency, candidate))
+        {
+            isConsistent = true;
+            consistentFunctions.push_back(candidate);
+            if(!functionRepaired)
+                std::cout << "\tfound first function at level " << candidate->level_ << "  " << candidate->printFunction() << "\n";
+            functionRepaired = true;
+            if(repairedFunctionLevel == -1)
+                repairedFunctionLevel = candidate->level_;
+        }
+        else
+        {
+            if(candidate->son_consistent)
+                continue;
+        }
+        
+        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true);
+        for(auto it = tauxCandidates.begin(), end = tauxCandidates.end(); it!=end; it++)
+        {
+            (*it)->son_consistent = isConsistent;
+            if(!isIn(candidates, (*it)))
+                candidates.push_back((*it));
+        }
+        
+    }
+    if(functionRepaired)
+    {
+        std::cout << "\nPrinting consistent functions found\n\n";
+        for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
+        {
+            std::cout << "\t" << (*it)->printFunction() << "(distance from bottom: " << (*it)->level_ << ")\n";
+        }
+    }
+    else
+    {
+        std::cout << "no consistent functions found - " << counter << "\n";
+    }
+
+    return;
+
+}
+
+bool isIn(std::vector<Function*> list, Function* item)
+{
+    for(auto it = list.begin(), end = list.end(); it!= end; it++)
+    {
+        Function* aux = (*it);
+        if(item->isEqual(aux))
+            return true;
+    }
+    return false;
 }

@@ -187,7 +187,7 @@ Function::Function(std::string node, int nClauses)
     }
     regulatorsMap_ = std::map<std::string,int>();
     level_ = 0;
-
+    son_consistent = false;
 }
 
 Function::~Function() {}
@@ -358,16 +358,29 @@ InconsistencySolution::~InconsistencySolution(){}
 
 void InconsistencySolution::addGeneralization(std::string id) {
 
-    InconsistentNode* newINode = new InconsistentNode(id, true);
-    iNodes_.insert(std::make_pair(id, newINode));
+    auto it = iNodes_.find(id);
+    if ( it == iNodes_.end() ) {
+        InconsistentNode* newINode = new InconsistentNode(id, true);
+        iNodes_.insert(std::make_pair(id, newINode));
+    } else {
+        if(it->second->repairType != 1)
+            it->second->repairType = 3;
+    }
+    
 
 }
 
 
 void InconsistencySolution::addParticularization(std::string id) {
 
-    InconsistentNode* newINode = new InconsistentNode(id, false);
-    iNodes_.insert(std::make_pair(id, newINode));
+    auto it = iNodes_.find(id);
+    if ( it == iNodes_.end() ) {
+        InconsistentNode* newINode = new InconsistentNode(id, false);
+        iNodes_.insert(std::make_pair(id, newINode));
+    } else {
+        if(it->second->repairType != 2)
+            it->second->repairType = 3;
+    }
 
 }
 
@@ -484,6 +497,15 @@ InconsistentNode::InconsistentNode(std::string id, bool generalization)
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         repaired_ = false;
+        if(generalization)
+        {
+            repairType = 1;
+        }
+        else
+        {
+            repairType = 2;
+        }
+        
     }
 
 InconsistentNode::~InconsistentNode(){}

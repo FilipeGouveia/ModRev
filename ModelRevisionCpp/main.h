@@ -34,4 +34,8 @@ std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges,
 
 std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n, int indexStart);
 
+//fg
+void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode);
+bool isIn(std::vector<Function*> list, Function* item);
+
 #endif

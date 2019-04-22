@@ -16,6 +16,7 @@ class Function {
         int nClauses_;
         std::map<int, std::vector< std::string >> clauses_;
         int level_;
+        bool son_consistent;
 
         Function(std::string node, int nClauses);
         ~Function();
@@ -127,6 +128,9 @@ class InconsistentNode {
         bool repaired_;
         //possible ways to repair the node;
         std::vector<RepairSet*> repairSet_;
+
+        //debug repair type: 0 - no info; 1 - gen; 2 - part; 3 - both
+        int repairType;
 
         InconsistentNode(std::string id, bool generalization);
         ~InconsistentNode();
