@@ -1132,8 +1132,15 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
 void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
 {
 
+    
     std::vector<Function*> candidates;
     std::vector<Function*> consistentFunctions;
+
+    //to find the best possible functions comparing the levels
+    bool levelCompare = Configuration::isActive("compareLevelFunction");
+    std::vector<Function*> bestBelow;
+    std::vector<Function*> bestAbove;
+    std::vector<Function*> equalLevel;
 
 
     //each function must have a list of replacement candidates and each must be tested until it works
@@ -1144,6 +1151,9 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
         repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
         return;
     }
+
+    //construction of new function to start search
+    // TODO consider the nearest extreme
     Function* newF = new Function(originalF->node_, 1);
     for(auto it = originalMap.begin(), end = originalMap.end(); it!= end; it++)
     {
@@ -1151,7 +1161,7 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
     }
     candidates.push_back(newF);
 
-    std::cout << "Finding functions for double inconsistency in " << originalF->printFunction() << " (" << originalF->getNumberOfRegulators() << " regulators)\n\n";
+    printf("Finding functions for double inconsistency in %s %s (%d regulators)\n\n",originalF->printFunction().c_str(), originalF->printFunctionFullLevel().c_str(), originalF->getNumberOfRegulators());
 
     // get the possible candidates to replace the inconsistent function
     bool functionRepaired = false;
@@ -1174,15 +1184,95 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
             isConsistent = true;
             consistentFunctions.push_back(candidate);
             if(!functionRepaired)
-                std::cout << "\tfound first function at level " << candidate->level_ << "  " << candidate->printFunction() << "\n";
+                printf("\tfound first function at level %d %s\n",candidate->level_, candidate->printFunction().c_str());
             functionRepaired = true;
             if(repairedFunctionLevel == -1)
                 repairedFunctionLevel = candidate->level_;
+            
+            if(levelCompare)
+            {
+                int cmp = originalF->compareLevel(candidate);
+                if(cmp == 0)
+                {
+                    //same level function
+                    equalLevel.push_back(candidate);
+                    continue;
+                }
+                if(cmp < 0 && !equalLevel.empty())
+                {
+                    continue;
+                }
+                if(cmp > 0 && equalLevel.empty())
+                {
+                    //candidate below original function
+                    if(bestBelow.empty())
+                    {
+                        bestBelow.push_back(candidate);
+                    }
+                    else
+                    {
+                        Function * representant = bestBelow.front();
+                        int repCmp = representant->compareLevel(candidate);
+                        if(repCmp == 0)
+                        {
+                            bestBelow.push_back(candidate);
+                        }
+                        if(repCmp < 0)
+                        {
+                            bestBelow.clear();
+                            bestBelow.push_back(candidate);
+                        }
+                    }
+                    
+                }
+                if(cmp < 0 && equalLevel.empty())
+                {
+                    //candidate above the original function
+                    if(bestAbove.empty())
+                    {
+                        bestAbove.push_back(candidate);
+                    }
+                    else
+                    {
+                        Function * representant = bestBelow.front();
+                        int repCmp = representant->compareLevel(candidate);
+                        if(repCmp == 0)
+                        {
+                            bestAbove.push_back(candidate);
+                        }
+                        if(repCmp > 0)
+                        {
+                            bestAbove.clear();
+                            bestAbove.push_back(candidate);
+                        }
+                        
+                    }
+                    continue;
+                    
+                }
+            }
+
         }
         else
         {
             if(candidate->son_consistent)
                 continue;
+            if(levelCompare)
+            {
+                if(!equalLevel.empty() && candidate->compareLevel(originalF) > 0)
+                {
+                    continue;
+                }
+                if(!bestAbove.empty())
+                {
+                    Function* representant = bestAbove.front();
+                    int repCmp = representant->compareLevel(candidate);
+                    if(repCmp < 0)
+                    {
+                        continue;
+                    }
+                }
+            }
         }
         
         std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true);
@@ -1196,15 +1286,45 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
     }
     if(functionRepaired)
     {
-        std::cout << "\nPrinting consistent functions found\n\n";
-        for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
+        if(levelCompare)
         {
-            std::cout << "\t" << (*it)->printFunction() << "(distance from bottom: " << (*it)->level_ << ")\n";
+            printf("\nPrinting consistent functions found using level comparison\n");
+            if(!equalLevel.empty())
+            {
+                printf("Looked at %d functions. Found %d consistent. To return %d functions of same level\n\n", counter, (int)consistentFunctions.size(), (int)equalLevel.size());
+                for(auto it = equalLevel.begin(), end = equalLevel.end(); it != end; it++)
+                {
+                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                }
+            }
+            else
+            {
+                printf("Looked at %d functions. Found %d consistent. To return %d functions\n\n", counter, (int)consistentFunctions.size(), (int)bestBelow.size()+(int)bestAbove.size());
+                for(auto it = bestBelow.begin(), end = bestBelow.end(); it != end; it++)
+                {
+                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                }
+                for(auto it = bestAbove.begin(), end = bestAbove.end(); it != end; it++)
+                {
+                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                }
+            }
+            
         }
+        else
+        {
+            printf("\nPrinting consistent functions found\n");
+            printf("Looked at %d functions. Found %d functions\n\n", counter, (int)consistentFunctions.size());
+            //for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
+            //{
+            //    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+            //}
+        }
+        
     }
     else
     {
-        std::cout << "no consistent functions found - " << counter << "\n";
+        printf("no consistent functions found - %d\n", counter);
     }
 
     return;

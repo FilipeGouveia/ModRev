@@ -9,6 +9,7 @@ class Function {
 
     private:
         std::map<std::string,int> regulatorsMap_;
+        std::vector<int> fullLevel_;
 
     public:
 
@@ -26,6 +27,10 @@ class Function {
         std::map<std::string,int> getRegulatorsMap();
         std::string printFunction();
         bool isEqual(Function* f);
+
+        std::vector<int> getFullLevel();
+        int compareLevel(Function * f);
+        std::string printFunctionFullLevel();
 
         static bool isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses);
     

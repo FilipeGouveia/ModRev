@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "Configuration.h"
 
 Network::Network() 
@@ -186,6 +187,7 @@ Function::Function(std::string node, int nClauses)
         clauses_.insert(std::make_pair(i,clause));
     }
     regulatorsMap_ = std::map<std::string,int>();
+    fullLevel_ = std::vector<int>();
     level_ = 0;
     son_consistent = false;
 }
@@ -343,6 +345,80 @@ bool Function::isClausePresent(std::vector<std::string> clause, std::map<int, st
 
     }
     return false;
+}
+
+std::vector<int> Function::getFullLevel()
+{
+    if(fullLevel_.empty())
+    {
+        int nRegulators = getNumberOfRegulators();
+        for(int i = 1; i <= nClauses_; i++)
+        {
+            std::vector<std::string> clause = clauses_.find(i)->second;
+            int count = (int)clause.size();
+            fullLevel_.push_back(nRegulators - count);
+        }
+        std::sort(fullLevel_.begin(), fullLevel_.end(), std::greater<int>());
+
+    }
+    return fullLevel_;
+}
+
+//returns -1 if the original function is lower
+//return 0 if the functions are the same level
+//return 1 if the other function is lower
+int Function::compareLevel(Function * f)
+{
+    std::vector<int> ownLevel = getFullLevel();
+    std::vector<int> otherLevel = f->getFullLevel();
+
+    int ownLevelSize = (int)ownLevel.size();
+    int otherLevelSize = (int)otherLevel.size();
+
+    int min = ownLevelSize;
+    if(otherLevelSize < min)
+    {
+        min = otherLevelSize;
+    }
+
+    for(int i = 0; i < min; i++)
+    {
+        if(ownLevel[i] < otherLevel[i])
+            return -1;
+        if(ownLevel[i] > otherLevel[i])
+            return 1;
+    }
+
+    if(ownLevelSize < otherLevelSize)
+        return -1;
+    if(ownLevelSize > otherLevelSize)
+        return 1;
+    return 0;
+
+}
+
+std::string Function::printFunctionFullLevel()
+{
+    std::string result = "";
+    std::vector<int> level = getFullLevel();
+
+    result += "(";
+    for(int i = 0; i < nClauses_; i++)
+    {
+        if(i > 0)
+        {
+            result += ",";
+        }
+        result += std::to_string(level[i]);
+    }
+    result += ")";
+
+    if(Configuration::isActive("debug"))
+    {
+        std::cout << "DEBUG: print full level order " << result << "\n";
+    }
+
+    return result;
 }
 
 
