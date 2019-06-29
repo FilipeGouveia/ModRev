@@ -257,6 +257,7 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
                 }
             }
 
+            bool isNonComparable = Configuration::isActive("nonComparableFunctions");
             while(!tCandidates.empty())
             {
                 candidate = tCandidates.front();
@@ -266,7 +267,10 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
                 {
                     break;
                 }
-
+                if(isNonComparable && getProbability(50))
+                {
+                    isGeneralize = !isGeneralize;
+                }
                 std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate, isGeneralize);
                 if(!tauxCandidates.empty())
                     tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
