@@ -35,7 +35,13 @@ std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges,
 std::vector<std::vector<Edge *>> getEdgesCombinations(std::vector<Edge *> edges, int n, int indexStart);
 
 //fg
-void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode);
+bool searchComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges);
+bool searchNonComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges);
 bool isIn(std::vector<Function*> list, Function* item);
+void printAllFunctions(int dimension);
+bool myFunctionCompare(Function * f1, Function * f2);
+bool isFunctionInBottomHalf(Function *f);
 
+int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f);
+int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
 #endif

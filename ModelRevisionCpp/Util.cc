@@ -37,3 +37,18 @@ std::string exec(const char* cmd) {
     }
     return result;
 }
+
+std::string getFilename(const std::string &s) 
+{
+    std::string filename = s;
+    std::vector<std::string> elems;
+    split(s, '/', elems);
+    filename = elems.back();
+    split(filename, '.', elems);
+    filename = "";
+    for(int i = 0; i < (int) elems.size(); i++)
+    {
+        filename.append(elems[i]);
+    }
+    return filename;
+}

@@ -30,6 +30,7 @@ class Function {
 
         std::vector<int> getFullLevel();
         int compareLevel(Function * f);
+        int compareLevel(std::vector<int> fullLevel);
         std::string printFunctionFullLevel();
 
         static bool isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses);

@@ -5,6 +5,10 @@
 #include <string>
 #include "ASPHelper.h"
 #include "Network.h"
+#include "Util.h"
+
+//same as used in InconsistencySolution and InconsistentNode
+enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 
 Network * network = new Network();
 
@@ -14,6 +18,8 @@ int main(int argc, char ** argv) {
 
     std::string input_file_network, output_file;
 
+    //printAllFunctions(6);
+
     if(argc < 2)
     {
         std::cout << "Invalid number of arguments: " << argc << std::endl;
@@ -21,6 +27,10 @@ int main(int argc, char ** argv) {
     }
 
     process_arguments(argc, argv, input_file_network, output_file);
+
+    std::string filen = Util_h::getFilename(input_file_network);
+    printf(" file path: %s\nfile name %s\n", input_file_network.c_str(), filen.c_str());
+    throw std::invalid_argument( "end of double inconsistency" );
 
     ASPHelper::parseNetwork(input_file_network, network);
 
@@ -182,12 +192,15 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
     //repair each inconsistent node
     for(auto it = inconsistency->iNodes_.begin(), end = inconsistency->iNodes_.end(); it != end; it++)
     {
-        //FG
+        //double inconsistent case
         if(it->second->repairType > 2)
         {
+            
+
             std::cout << "#FOUND a node with double inconsistency\n";
             //inconsistency->hasImpossibility = true;
-            testDouble(inconsistency, it->second);
+            std::vector<Edge *> emptyList;
+            searchNonComparableFunctions(inconsistency, it->second, emptyList, emptyList, emptyList);
             //throw std::invalid_argument( "end of double inconsistency" );
             //return;
         }
@@ -207,78 +220,96 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
 //This function repair a given node and determines all possible solutions
 void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNode* iNode)
 {
-    std::vector<std::vector<Function*>> candidates;
-
-    if(Configuration::isActive("function_ASP"))
+    //double inconsistent case
+    if(iNode->repairType > 2)
     {
-
-        //each function must have a list of replacement candidates and each must be tested until it works
-        Function* originalF = network->getNode(iNode->id_)->getFunction();
-        if(originalF == nullptr)
-        {
-            std::cout << "WARN: Inconsistent node " << iNode->id_ << " without regulatory function." << std::endl;
-            inconsistency->hasImpossibility = true;
-            return;
-        }
-
-        //if the function only has 1 regulator then it is not possible to change the function
-        //better try to flip the sign of the edge
-        //check top function for the necessity of flipping an edge <- yhis only works for single profile
-        
-        //if(originalF->getNumberOfRegulators() < 2 || !checkPointFunction(inconsistency, originalF, iNode->generalization_))
-        if(originalF->getNumberOfRegulators() < 2)
+        if(Configuration::isActive("debug"))
+            std::cout << "#FOUND a node with double inconsistency\n";
+        //inconsistency->hasImpossibility = true;
+        std::vector<Edge *> emptyList;
+        bool res = searchNonComparableFunctions(inconsistency, iNode, emptyList, emptyList, emptyList);
+        if(!res)
         {
             repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
-            return;
         }
-
-        // get the possible candidates to replace the inconsistent function
-        bool functionRepaired = false;
-        int repairedFunctionLevel = -1;
-        std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_);
-        while(!tCandidates.empty())
-        {
-            Function* candidate = tCandidates.front();
-            tCandidates.erase (tCandidates.begin());
-            
-            if(functionRepaired && candidate->level_ > repairedFunctionLevel)
-            {
-                //function is from a higher level than expected
-                continue;
-            }
-
-            if(isFuncConsistentWithLabel(inconsistency, candidate))
-            {
-
-                RepairSet * repairSet = new RepairSet();
-                repairSet->addRepairedFunction(candidate);
-                inconsistency->addRepairSet(iNode->id_, repairSet);
-                functionRepaired = true;
-                repairedFunctionLevel = candidate->level_;
-                if(!Configuration::isActive("showAllFunctions"))
-                {
-                    break;
-                }
-            }
-
-            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_);
-            if(!tauxCandidates.empty())
-                tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
-            
-        }
-        if(!functionRepaired)
-        {
-            //not possible to repair without topology changes
-            //For 1 profile is not suposed to reach this point
-            repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
-        }
-        
+        //throw std::invalid_argument( "end of double inconsistency" );
+        //return;
     }
     else
     {
-    //TODO support other solvers
-    } 
 
+        std::vector<std::vector<Function*>> candidates;
+
+        if(Configuration::isActive("function_ASP"))
+        {
+
+            //each function must have a list of replacement candidates and each must be tested until it works
+            Function* originalF = network->getNode(iNode->id_)->getFunction();
+            if(originalF == nullptr)
+            {
+                std::cout << "WARN: Inconsistent node " << iNode->id_ << " without regulatory function." << std::endl;
+                inconsistency->hasImpossibility = true;
+                return;
+            }
+
+            //if the function only has 1 regulator then it is not possible to change the function
+            //better try to flip the sign of the edge
+            //check top function for the necessity of flipping an edge <- yhis only works for single profile
+            
+            //if(originalF->getNumberOfRegulators() < 2 || !checkPointFunction(inconsistency, originalF, iNode->generalization_))
+            if(originalF->getNumberOfRegulators() < 2)
+            {
+                repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
+                return;
+            }
+
+            // get the possible candidates to replace the inconsistent function
+            bool functionRepaired = false;
+            int repairedFunctionLevel = -1;
+            std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_);
+            while(!tCandidates.empty())
+            {
+                Function* candidate = tCandidates.front();
+                tCandidates.erase (tCandidates.begin());
+                
+                if(functionRepaired && candidate->level_ > repairedFunctionLevel)
+                {
+                    //function is from a higher level than expected
+                    continue;
+                }
+
+                if(isFuncConsistentWithLabel(inconsistency, candidate))
+                {
+
+                    RepairSet * repairSet = new RepairSet();
+                    repairSet->addRepairedFunction(candidate);
+                    inconsistency->addRepairSet(iNode->id_, repairSet);
+                    functionRepaired = true;
+                    repairedFunctionLevel = candidate->level_;
+                    if(!Configuration::isActive("showAllFunctions"))
+                    {
+                        break;
+                    }
+                }
+
+                std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_);
+                if(!tauxCandidates.empty())
+                    tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
+                
+            }
+            if(!functionRepaired)
+            {
+                //not possible to repair without topology changes
+                //For 1 profile is not suposed to reach this point
+                repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
+            }
+            
+        }
+        else
+        {
+        //TODO support other solvers
+        } 
+    }
     return;
 }
 
@@ -448,23 +479,9 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
         if(Configuration::isActive("debug"))
             std::cout << "DEBUG: testing with " << nEdges << " edge flips\n";
         std::vector<std::vector<Edge*>> eCandidates = getEdgesCombinations(listEdges, nEdges);
-        std::vector<Function*> fCandidates;
-        fCandidates.push_back(f);
-        int bestFunctionLevel = -1;
-        //This is used to check if we can repair the node without changing the function.
-        //If so, do not add a new function to the solution, only include flipping the edge.
 
-        while(!fCandidates.empty())
+        if(iNode->repairType > 2)
         {
-            Function* candidate = fCandidates.front();
-            fCandidates.erase (fCandidates.begin());
-
-            if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
-            {
-                //function is from a higher level than expected
-                continue;
-            }
-
             //for each set of flipping edges
             for(auto it = eCandidates.begin(), end = eCandidates.end(); it!= end; it++)
             {
@@ -477,38 +494,28 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
                         std::cout << "DEBUG: flip edge from " << e->start_->id_ << "\n";
                 }
                 bool isSol = false;
-                if(Configuration::isActive("debug"))
-                        std::cout << "DEBUG: testing function " << candidate->printFunction() << "\n";
-                if(isFuncConsistentWithLabel(solution, candidate))
+                int nInc = nFuncInconsistWithLabel(solution, f);
+                if(nInc > CONSISTENT)
                 {
-                    if(Configuration::isActive("debug"))
-                        std::cout << "DEBUG: found solution with " << nEdges << " edges flipped\n";
-                    isSol = true;
-                    solFound = true;
-                }
-                //put network back to normal
-                RepairSet * repairSet = new RepairSet();
-                for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
-                {
-                    Edge* e = (*itEdge);
-                    e->flipSign();
-                    if(Configuration::isActive("debug"))
-                        std::cout << "DEBUG: return flip edge from " << e->start_->id_ << "\n";
-                    if(isSol)
+                    if(nInc == DOUBLE_INC)
                     {
+                        isSol = searchNonComparableFunctions(solution, iNode, (*it), addedEdges, removedEdges);
+                    }
+                    else
+                    {
+                        iNode->generalization_ = nInc == SINGLE_INC_GEN;
+                        isSol = searchComparableFunctions(solution, iNode, (*it), addedEdges, removedEdges);
+                    }
+                }
+                else
+                {
+                    isSol = true;
+                    RepairSet * repairSet = new RepairSet();
+                    for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                    {
+                        Edge* e = (*itEdge);
                         repairSet->addFlippedEdge(e);
                     }
-                }
-                if(isSol)
-                {
-                    //Only add a function repair operations if the candidate is not the original
-                    if(candidate->level_ > 0)
-                    {
-                        if(Configuration::isActive("debug"))
-                            std::cout << "DEBUG: solution without original function\n";
-                        repairSet->addRepairedFunction(candidate);
-                    }
-
                     //add and remove edges in solution repair set
                     for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
                     {
@@ -520,7 +527,19 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
                     }
 
                     solution->addRepairSet(iNode->id_, repairSet);
-                    bestFunctionLevel = candidate->level_;
+
+                }
+                //put network back to normal
+                for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                {
+                    Edge* e = (*itEdge);
+                    e->flipSign();
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: return flip edge from " << e->start_->id_ << "\n";
+                }
+                if(isSol)
+                {
+                    solFound = true;
                     if(!Configuration::isActive("allOpt"))
                     {
                         if(Configuration::isActive("debug"))
@@ -529,42 +548,129 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
                     }
                 }
             }
-            if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
+        }
+        else
+        {
+            //TODO REFACT THE CODE
+            std::vector<Function*> fCandidates;
+            fCandidates.push_back(f);
+            int bestFunctionLevel = -1;
+            //This is used to check if we can repair the node without changing the function.
+            //If so, do not add a new function to the solution, only include flipping the edge.
+
+            while(!fCandidates.empty())
             {
-                if(Configuration::isActive("debug"))
-                    std::cout << "DEBUG: no more function solutions\n";
-                return true;           
+                Function* candidate = fCandidates.front();
+                fCandidates.erase (fCandidates.begin());
+
+                if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                {
+                    //function is from a higher level than expected
+                    continue;
+                }
+
+                //for each set of flipping edges
+                for(auto it = eCandidates.begin(), end = eCandidates.end(); it!= end; it++)
+                {
+                    //flip all edges
+                    for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                    {
+                        Edge* e = (*itEdge);
+                        e->flipSign();
+                        if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: flip edge from " << e->start_->id_ << "\n";
+                    }
+                    bool isSol = false;
+                    if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: testing function " << candidate->printFunction() << "\n";
+                    if(isFuncConsistentWithLabel(solution, candidate))
+                    {
+                        if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: found solution with " << nEdges << " edges flipped\n";
+                        isSol = true;
+                        solFound = true;
+                    }
+                    //put network back to normal
+                    RepairSet * repairSet = new RepairSet();
+                    for(auto itEdge = (*it).begin(), endEdge = (*it).end(); itEdge != endEdge; itEdge++)
+                    {
+                        Edge* e = (*itEdge);
+                        e->flipSign();
+                        if(Configuration::isActive("debug"))
+                            std::cout << "DEBUG: return flip edge from " << e->start_->id_ << "\n";
+                        if(isSol)
+                        {
+                            repairSet->addFlippedEdge(e);
+                        }
+                    }
+                    if(isSol)
+                    {
+                        //Only add a function repair operations if the candidate is not the original
+                        if(candidate->level_ > 0)
+                        {
+                            if(Configuration::isActive("debug"))
+                                std::cout << "DEBUG: solution without original function\n";
+                            repairSet->addRepairedFunction(candidate);
+                        }
+
+                        //add and remove edges in solution repair set
+                        for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                        {
+                            repairSet->removeEdge((*itRem));
+                        }
+                        for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                        {
+                            repairSet->removeEdge((*itAdd));
+                        }
+
+                        solution->addRepairSet(iNode->id_, repairSet);
+                        bestFunctionLevel = candidate->level_;
+                        if(!Configuration::isActive("allOpt"))
+                        {
+                            if(Configuration::isActive("debug"))
+                                std::cout << "DEBUG: no more solutions - allOpt\n";
+                            return true;
+                        }
+                    }
+                }
+                if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
+                {
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: no more function solutions\n";
+                    return true;           
+                }
+
+            
+                if(candidate->getNumberOfRegulators() < 2)
+                {
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: function with 1 regulator\n";
+                    //there is no possible condidates for 1 regulator function
+                    break;
+                }
+                //renew candidates if solution level not found yet
+                if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
+                {
+                    if(Configuration::isActive("debug"))
+                        std::cout << "DEBUG: updating solutions\n";
+                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                    if(!fauxCandidates.empty())
+                        fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
+                }
+
             }
 
-        
-            if(candidate->getNumberOfRegulators() < 2)
+            //If the end of this method is reached means that no solution was found with nEdges
+            if(solFound)
             {
                 if(Configuration::isActive("debug"))
-                    std::cout << "DEBUG: function with 1 regulator\n";
-                //there is no possible condidates for 1 regulator function
+                    std::cout << "DEBUG: ready to end with " << nEdges << " edges flipped\n";
                 break;
             }
-            //renew candidates if solution level not found yet
-            if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
-            {
-                if(Configuration::isActive("debug"))
-                    std::cout << "DEBUG: updating solutions\n";
-                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-                if(!fauxCandidates.empty())
-                    fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
-            }
-
-        }
-
-        //If the end of this method is reached means that no solution was found with nEdges
-        if(solFound)
-        {
             if(Configuration::isActive("debug"))
-                std::cout << "DEBUG: ready to end with " << nEdges << " edges flipped\n";
-            break;
+                std::cout << "DEBUG: reached the end of " << nEdges << " without solution\n";
+
         }
-        if(Configuration::isActive("debug"))
-            std::cout << "DEBUG: reached the end of " << nEdges << " without solution\n";
     }
     
     return solFound;
@@ -735,69 +841,101 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                     {
                         fCandidates.push_back(newF);
                     }
-                    int bestFunctionLevel = -1;
-                    while(!fCandidates.empty())
+
+                    if(iNode->repairType > 2)
                     {
-                        Function* candidate = fCandidates.front();
-                        fCandidates.erase (fCandidates.begin());
-
-                        if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                        int nInc = nFuncInconsistWithLabel(solution, newF);
+                        if(nInc > CONSISTENT)
                         {
-                            //function is from a higher level than expected
-                            continue;
+                            if(nInc == DOUBLE_INC)
+                            {
+                                isSol = searchNonComparableFunctions(solution, iNode, emptyList, emptyList, (*itRemove));
+                            }
+                            else
+                            {
+                                iNode->generalization_ = nInc == SINGLE_INC_GEN;
+                                isSol = searchComparableFunctions(solution, iNode, emptyList, emptyList, (*itRemove));
+                            }
                         }
-
-                        if(isFuncConsistentWithLabel(solution, candidate))
+                        else
                         {
                             isSol = true;
-                        }
-
-                        if(isSol)
-                        {
                             RepairSet * repairSet = new RepairSet();
-
-                            repairSet->addRepairedFunction(candidate);
-
                             //remove edges in solution repair set
                             for(auto itRem = (*itRemove).begin(), endRem = (*itRemove).end(); itRem != endRem; itRem++)
                             {
                                 repairSet->removeEdge((*itRem));
                             }
-
+                            repairSet->addRepairedFunction(newF);
                             solution->addRepairSet(iNode->id_, repairSet);
-                            bestFunctionLevel = candidate->level_;
-                            if(!Configuration::isActive("allOpt"))
+                        }
+                    }
+                    else
+                    {
+                        int bestFunctionLevel = -1;
+                        while(!fCandidates.empty())
+                        {
+                            Function* candidate = fCandidates.front();
+                            fCandidates.erase (fCandidates.begin());
+
+                            if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                            {
+                                //function is from a higher level than expected
+                                continue;
+                            }
+
+                            if(isFuncConsistentWithLabel(solution, candidate))
+                            {
+                                isSol = true;
+                            }
+
+                            if(isSol)
+                            {
+                                RepairSet * repairSet = new RepairSet();
+
+                                repairSet->addRepairedFunction(candidate);
+
+                                //remove edges in solution repair set
+                                for(auto itRem = (*itRemove).begin(), endRem = (*itRemove).end(); itRem != endRem; itRem++)
+                                {
+                                    repairSet->removeEdge((*itRem));
+                                }
+
+                                solution->addRepairSet(iNode->id_, repairSet);
+                                bestFunctionLevel = candidate->level_;
+                                if(!Configuration::isActive("allOpt"))
+                                {
+                                    if(Configuration::isActive("debug"))
+                                        std::cout << "DEBUG: no more solutions - allOpt\n";
+                                    break;;
+                                }
+                                
+                            }
+                            if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
                             {
                                 if(Configuration::isActive("debug"))
-                                    std::cout << "DEBUG: no more solutions - allOpt\n";
-                                break;;
+                                    std::cout << "DEBUG: no more function solutions\n";
+                                break;           
                             }
-                            
-                        }
-                        if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
-                        {
-                            if(Configuration::isActive("debug"))
-                                std::cout << "DEBUG: no more function solutions\n";
-                            break;           
-                        }
 
-                        if(candidate->getNumberOfRegulators() < 2)
-                        {
-                            if(Configuration::isActive("debug"))
-                                std::cout << "DEBUG: function with 1 regulator\n";
-                            //there is no possible condidates for 1 regulator function
-                            break;
-                        }
-                        //renew candidates if solution level not found yet
-                        if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
-                        {
-                            if(Configuration::isActive("debug"))
-                                std::cout << "DEBUG: updating solutions\n";
-                            std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-                            if(!fauxCandidates.empty())
-                                fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
-                        }
+                            if(candidate->getNumberOfRegulators() < 2)
+                            {
+                                if(Configuration::isActive("debug"))
+                                    std::cout << "DEBUG: function with 1 regulator\n";
+                                //there is no possible condidates for 1 regulator function
+                                break;
+                            }
+                            //renew candidates if solution level not found yet
+                            if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
+                            {
+                                if(Configuration::isActive("debug"))
+                                    std::cout << "DEBUG: updating solutions\n";
+                                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                if(!fauxCandidates.empty())
+                                    fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
+                            }
 
+                        }
                     }
 
                     //test with edge flips
@@ -859,73 +997,104 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
 
                         originalN->addFunction(newF);
 
-                        //test only functions
-                        std::vector<Function*> fCandidates;
-                        fCandidates.push_back(newF);
-                        int bestFunctionLevel = -1;
-                        while(!fCandidates.empty())
+                        if(iNode->repairType > 2)
                         {
-                            Function* candidate = fCandidates.front();
-                            fCandidates.erase (fCandidates.begin());
-
-                            if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                            int nInc = nFuncInconsistWithLabel(solution, newF);
+                            if(nInc > CONSISTENT)
                             {
-                                //function is from a higher level than expected
-                                continue;
+                                if(nInc == DOUBLE_INC)
+                                {
+                                    isSol = searchNonComparableFunctions(solution, iNode, emptyList, (*itAdd), emptyList);
+                                }
+                                else
+                                {
+                                    iNode->generalization_ = nInc == SINGLE_INC_GEN;
+                                    isSol = searchComparableFunctions(solution, iNode, emptyList, (*itAdd), emptyList);
+                                }
                             }
-
-                            if(isFuncConsistentWithLabel(solution, candidate))
+                            else
                             {
                                 isSol = true;
-                            }
-
-
-                            if(isSol)
-                            {
                                 RepairSet * repairSet = new RepairSet();
-
-                                repairSet->addRepairedFunction(candidate);
-
                                 //add edges in solution repair set
                                 for(auto itA = (*itAdd).begin(), endA = (*itAdd).end(); itA != endA; itA++)
                                 {
                                     repairSet->addEdge((*itA));
                                 }
-
+                                repairSet->addRepairedFunction(newF);
                                 solution->addRepairSet(iNode->id_, repairSet);
-                                bestFunctionLevel = candidate->level_;
-                                if(!Configuration::isActive("allOpt"))
+                            }
+                        }
+                        else
+                        {
+                            //test only functions
+                            std::vector<Function*> fCandidates;
+                            fCandidates.push_back(newF);
+                            int bestFunctionLevel = -1;
+                            while(!fCandidates.empty())
+                            {
+                                Function* candidate = fCandidates.front();
+                                fCandidates.erase (fCandidates.begin());
+
+                                if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                                {
+                                    //function is from a higher level than expected
+                                    continue;
+                                }
+
+                                if(isFuncConsistentWithLabel(solution, candidate))
+                                {
+                                    isSol = true;
+                                }
+
+
+                                if(isSol)
+                                {
+                                    RepairSet * repairSet = new RepairSet();
+
+                                    repairSet->addRepairedFunction(candidate);
+
+                                    //add edges in solution repair set
+                                    for(auto itA = (*itAdd).begin(), endA = (*itAdd).end(); itA != endA; itA++)
+                                    {
+                                        repairSet->addEdge((*itA));
+                                    }
+
+                                    solution->addRepairSet(iNode->id_, repairSet);
+                                    bestFunctionLevel = candidate->level_;
+                                    if(!Configuration::isActive("allOpt"))
+                                    {
+                                        if(Configuration::isActive("debug"))
+                                            std::cout << "DEBUG: no more solutions - allOpt\n";
+                                        break;;
+                                    }
+                                    
+                                }
+                                if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
                                 {
                                     if(Configuration::isActive("debug"))
-                                        std::cout << "DEBUG: no more solutions - allOpt\n";
-                                    break;;
+                                        std::cout << "DEBUG: no more function solutions\n";
+                                    break;           
                                 }
-                                
-                            }
-                            if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
-                            {
-                                if(Configuration::isActive("debug"))
-                                    std::cout << "DEBUG: no more function solutions\n";
-                                break;           
-                            }
 
-                            if(candidate->getNumberOfRegulators() < 2)
-                            {
-                                if(Configuration::isActive("debug"))
-                                    std::cout << "DEBUG: function with 1 regulator\n";
-                                //there is no possible condidates for 1 regulator function
-                                break;
-                            }
-                            //renew candidates if solution level not found yet
-                            if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
-                            {
-                                if(Configuration::isActive("debug"))
-                                    std::cout << "DEBUG: updating solutions\n";
-                                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-                                if(!fauxCandidates.empty())
-                                    fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
-                            }
+                                if(candidate->getNumberOfRegulators() < 2)
+                                {
+                                    if(Configuration::isActive("debug"))
+                                        std::cout << "DEBUG: function with 1 regulator\n";
+                                    //there is no possible condidates for 1 regulator function
+                                    break;
+                                }
+                                //renew candidates if solution level not found yet
+                                if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
+                                {
+                                    if(Configuration::isActive("debug"))
+                                        std::cout << "DEBUG: updating solutions\n";
+                                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                    if(!fauxCandidates.empty())
+                                        fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
+                                }
 
+                            }
                         }
 
                         //test with edge flips
@@ -1002,33 +1171,26 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                             }
                             originalN->addFunction(newF);
 
-                            //test only functions
-                            std::vector<Function*> fCandidates;
-                            fCandidates.push_back(newF);
-                            int bestFunctionLevel = -1;
-                            while(!fCandidates.empty())
+
+                            if(iNode->repairType > 2)
                             {
-                                Function* candidate = fCandidates.front();
-                                fCandidates.erase (fCandidates.begin());
-
-                                if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                                int nInc = nFuncInconsistWithLabel(solution, newF);
+                                if(nInc > CONSISTENT)
                                 {
-                                    //function is from a higher level than expected
-                                    continue;
+                                    if(nInc == DOUBLE_INC)
+                                    {
+                                        isSol = searchNonComparableFunctions(solution, iNode, emptyList, (*itAdd), (*itRemove));
+                                    }
+                                    else
+                                    {
+                                        iNode->generalization_ = nInc == SINGLE_INC_GEN;
+                                        isSol = searchComparableFunctions(solution, iNode, emptyList, (*itAdd), (*itRemove));
+                                    }
                                 }
-
-                                if(isFuncConsistentWithLabel(solution, candidate))
+                                else
                                 {
                                     isSol = true;
-                                }
-
-
-                                if(isSol)
-                                {
                                     RepairSet * repairSet = new RepairSet();
-
-                                    repairSet->addRepairedFunction(candidate);
-
                                     //remove and add edges in solution repair set
                                     for(auto itRem = (*itRemove).begin(), endRem = (*itRemove).end(); itRem != endRem; itRem++)
                                     {
@@ -1038,41 +1200,84 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                                     {
                                         repairSet->addEdge((*itA));
                                     }
-
+                                    repairSet->addRepairedFunction(newF);
                                     solution->addRepairSet(iNode->id_, repairSet);
-                                    bestFunctionLevel = candidate->level_;
-                                    if(!Configuration::isActive("allOpt"))
+                                }
+                            }
+                            else
+                            {
+                                //test only functions
+                                std::vector<Function*> fCandidates;
+                                fCandidates.push_back(newF);
+                                int bestFunctionLevel = -1;
+                                while(!fCandidates.empty())
+                                {
+                                    Function* candidate = fCandidates.front();
+                                    fCandidates.erase (fCandidates.begin());
+
+                                    if(bestFunctionLevel >= 0 && candidate->level_ > bestFunctionLevel)
+                                    {
+                                        //function is from a higher level than expected
+                                        continue;
+                                    }
+
+                                    if(isFuncConsistentWithLabel(solution, candidate))
+                                    {
+                                        isSol = true;
+                                    }
+
+
+                                    if(isSol)
+                                    {
+                                        RepairSet * repairSet = new RepairSet();
+
+                                        repairSet->addRepairedFunction(candidate);
+
+                                        //remove and add edges in solution repair set
+                                        for(auto itRem = (*itRemove).begin(), endRem = (*itRemove).end(); itRem != endRem; itRem++)
+                                        {
+                                            repairSet->removeEdge((*itRem));
+                                        }
+                                        for(auto itA = (*itAdd).begin(), endA = (*itAdd).end(); itA != endA; itA++)
+                                        {
+                                            repairSet->addEdge((*itA));
+                                        }
+
+                                        solution->addRepairSet(iNode->id_, repairSet);
+                                        bestFunctionLevel = candidate->level_;
+                                        if(!Configuration::isActive("allOpt"))
+                                        {
+                                            if(Configuration::isActive("debug"))
+                                                std::cout << "DEBUG: no more solutions - allOpt\n";
+                                            break;;
+                                        }
+                                        
+                                    }
+                                    if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
                                     {
                                         if(Configuration::isActive("debug"))
-                                            std::cout << "DEBUG: no more solutions - allOpt\n";
-                                        break;;
+                                            std::cout << "DEBUG: no more function solutions\n";
+                                        break;           
                                     }
-                                    
-                                }
-                                if(bestFunctionLevel >= 0 && !Configuration::isActive("showAllFunctions"))
-                                {
-                                    if(Configuration::isActive("debug"))
-                                        std::cout << "DEBUG: no more function solutions\n";
-                                    break;           
-                                }
 
-                                if(candidate->getNumberOfRegulators() < 2)
-                                {
-                                    if(Configuration::isActive("debug"))
-                                        std::cout << "DEBUG: function with 1 regulator\n";
-                                    //there is no possible condidates for 1 regulator function
-                                    break;
-                                }
-                                //renew candidates if solution level not found yet
-                                if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
-                                {
-                                    if(Configuration::isActive("debug"))
-                                        std::cout << "DEBUG: updating solutions\n";
-                                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
-                                    if(!fauxCandidates.empty())
-                                        fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
-                                }
+                                    if(candidate->getNumberOfRegulators() < 2)
+                                    {
+                                        if(Configuration::isActive("debug"))
+                                            std::cout << "DEBUG: function with 1 regulator\n";
+                                        //there is no possible condidates for 1 regulator function
+                                        break;
+                                    }
+                                    //renew candidates if solution level not found yet
+                                    if(bestFunctionLevel < 0 || candidate->level_ < bestFunctionLevel)
+                                    {
+                                        if(Configuration::isActive("debug"))
+                                            std::cout << "DEBUG: updating solutions\n";
+                                        std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                        if(!fauxCandidates.empty())
+                                            fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
+                                    }
 
+                                }
                             }
 
                             //test with edge flips
@@ -1128,11 +1333,97 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
     return;
 }
 
-
-void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
+bool searchComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges)
 {
+    bool solFound = false;
 
-    
+    if(Configuration::isActive("function_ASP"))
+    {
+
+        //each function must have a list of replacement candidates and each must be tested until it works
+        Function* originalF = network->getNode(iNode->id_)->getFunction();
+        if(originalF == nullptr)
+        {
+            std::cout << "WARN: Inconsistent node " << iNode->id_ << " without regulatory function." << std::endl;
+            inconsistency->hasImpossibility = true;
+            return false;
+        }
+
+        //if the function only has 1 regulator then it is not possible to change the function
+        //better try to flip the sign of the edge
+        //check top function for the necessity of flipping an edge <- yhis only works for single profile
+        
+        //if(originalF->getNumberOfRegulators() < 2 || !checkPointFunction(inconsistency, originalF, iNode->generalization_))
+        if(originalF->getNumberOfRegulators() < 2)
+        {
+            return false;
+        }
+
+        // get the possible candidates to replace the inconsistent function
+        bool functionRepaired = false;
+        int repairedFunctionLevel = -1;
+        std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_);
+        while(!tCandidates.empty())
+        {
+            Function* candidate = tCandidates.front();
+            tCandidates.erase (tCandidates.begin());
+            
+            if(functionRepaired && candidate->level_ > repairedFunctionLevel)
+            {
+                //function is from a higher level than expected
+                continue;
+            }
+
+            if(isFuncConsistentWithLabel(inconsistency, candidate))
+            {
+
+                RepairSet * repairSet = new RepairSet();
+                repairSet->addRepairedFunction(candidate);
+                //add flipped edges in solution repair set
+                for(auto itEdge = flippedEdges.begin(), endEdge = flippedEdges.end(); itEdge != endEdge; itEdge++)
+                {
+                    repairSet->addFlippedEdge((*itEdge));
+                }
+                //add and remove edges in solution repair set
+                for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                {
+                    repairSet->removeEdge((*itRem));
+                }
+                for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                {
+                    repairSet->removeEdge((*itAdd));
+                }
+                inconsistency->addRepairSet(iNode->id_, repairSet);
+                functionRepaired = true;
+                solFound = true;
+                repairedFunctionLevel = candidate->level_;
+                if(!Configuration::isActive("showAllFunctions"))
+                {
+                    break;
+                }
+            }
+
+            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_);
+            if(!tauxCandidates.empty())
+                tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
+            
+        }
+        
+    }
+    else
+    {
+    //TODO support other solvers
+    }
+
+    return solFound;
+
+}
+
+
+
+bool searchNonComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges)
+{
+    bool solFound = false;
     std::vector<Function*> candidates;
     std::vector<Function*> consistentFunctions;
 
@@ -1148,20 +1439,37 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
     std::map<std::string,int> originalMap = originalF->getRegulatorsMap();
     if(originalF->getNumberOfRegulators() < 2)
     {
-        repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
-        return;
+        //repairNodeConsistencyWithTopologyChanges(inconsistency, iNode);
+        return false;
     }
 
     //construction of new function to start search
     // TODO consider the nearest extreme
     Function* newF = new Function(originalF->node_, 1);
+
+    //if the function is in the lower half of the Hasse diagram,
+    //start search at the most specific function and generalize
+    //else start at the most generic function and specify
+    bool isGeneralize = true;
+    if(levelCompare)
+    {
+        isGeneralize = isFunctionInBottomHalf(originalF);
+        if(Configuration::isActive("debug"))
+            printf("Performing a search going %s\n", isGeneralize ? "up" : "down");
+    }
+    int cindex = 1;
     for(auto it = originalMap.begin(), end = originalMap.end(); it!= end; it++)
     {
-        newF->addElementClause(1, it->first);
+        newF->addElementClause(cindex, it->first);
+        if(!isGeneralize)
+        {
+            cindex++;
+        }
+
     }
     candidates.push_back(newF);
-
-    printf("Finding functions for double inconsistency in %s %s (%d regulators)\n\n",originalF->printFunction().c_str(), originalF->printFunctionFullLevel().c_str(), originalF->getNumberOfRegulators());
+    if(Configuration::isActive("debug"))
+        printf("Finding functions for double inconsistency in %s %s (%d regulators)\n\n",originalF->printFunction().c_str(), originalF->printFunctionFullLevel().c_str(), originalF->getNumberOfRegulators());
 
     // get the possible candidates to replace the inconsistent function
     bool functionRepaired = false;
@@ -1183,9 +1491,10 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
         {
             isConsistent = true;
             consistentFunctions.push_back(candidate);
-            if(!functionRepaired)
+            if(!functionRepaired && Configuration::isActive("debug"))
                 printf("\tfound first function at level %d %s\n",candidate->level_, candidate->printFunction().c_str());
             functionRepaired = true;
+            solFound = true;
             if(repairedFunctionLevel == -1)
                 repairedFunctionLevel = candidate->level_;
             
@@ -1198,8 +1507,16 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
                     equalLevel.push_back(candidate);
                     continue;
                 }
-                if(cmp < 0 && !equalLevel.empty())
+                if(isGeneralize && cmp < 0 && !equalLevel.empty())
                 {
+                    //if the candidate is above the original and we are going up and we found an equal level function
+                    //then do nothing - do not continue explore this branch
+                    continue;
+                }
+                if(!isGeneralize && cmp > 0 && !equalLevel.empty())
+                {
+                    //if the candidate is below the original and we are going down and we found an equal level function
+                    //then do nothing - do not continue explore this branch
                     continue;
                 }
                 if(cmp > 0 && equalLevel.empty())
@@ -1223,7 +1540,11 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
                             bestBelow.push_back(candidate);
                         }
                     }
-                    
+                    if(!isGeneralize)
+                    {
+                        //if we are going down and found a below function, do not continue explore this branch
+                        continue;
+                    }
                 }
                 if(cmp < 0 && equalLevel.empty())
                 {
@@ -1234,7 +1555,7 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
                     }
                     else
                     {
-                        Function * representant = bestBelow.front();
+                        Function * representant = bestAbove.front();
                         int repCmp = representant->compareLevel(candidate);
                         if(repCmp == 0)
                         {
@@ -1247,23 +1568,31 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
                         }
                         
                     }
-                    continue;
-                    
+                    if(isGeneralize)
+                    {
+                         //if we are going up and found an above function, do not continue explore this branch
+                        continue;
+                    }
                 }
             }
 
         }
+        //not consistent candidate
         else
         {
             if(candidate->son_consistent)
                 continue;
             if(levelCompare)
             {
-                if(!equalLevel.empty() && candidate->compareLevel(originalF) > 0)
+                if(isGeneralize && !equalLevel.empty() && candidate->compareLevel(originalF) > 0)
                 {
                     continue;
                 }
-                if(!bestAbove.empty())
+                if(!isGeneralize && !equalLevel.empty() && candidate->compareLevel(originalF) < 0)
+                {
+                    continue;
+                }
+                if(isGeneralize && !bestAbove.empty())
                 {
                     Function* representant = bestAbove.front();
                     int repCmp = representant->compareLevel(candidate);
@@ -1272,10 +1601,19 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
                         continue;
                     }
                 }
+                if(!isGeneralize && !bestBelow.empty())
+                {
+                    Function* representant = bestBelow.front();
+                    int repCmp = representant->compareLevel(candidate);
+                    if(repCmp > 0)
+                    {
+                        continue;
+                    }
+                }
             }
         }
         
-        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true);
+        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,isGeneralize);
         for(auto it = tauxCandidates.begin(), end = tauxCandidates.end(); it!=end; it++)
         {
             (*it)->son_consistent = isConsistent;
@@ -1284,50 +1622,154 @@ void testDouble(InconsistencySolution* inconsistency, InconsistentNode* iNode)
         }
         
     }
-    if(functionRepaired)
+    if(Configuration::isActive("debug"))
     {
-        if(levelCompare)
+        if(functionRepaired)
         {
-            printf("\nPrinting consistent functions found using level comparison\n");
-            if(!equalLevel.empty())
+            if(levelCompare)
             {
-                printf("Looked at %d functions. Found %d consistent. To return %d functions of same level\n\n", counter, (int)consistentFunctions.size(), (int)equalLevel.size());
-                for(auto it = equalLevel.begin(), end = equalLevel.end(); it != end; it++)
+                printf("\nPrinting consistent functions found using level comparison\n");
+                if(!equalLevel.empty())
                 {
-                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                    printf("Looked at %d functions. Found %d consistent. To return %d functions of same level\n\n", counter, (int)consistentFunctions.size(), (int)equalLevel.size());
+                    for(auto it = equalLevel.begin(), end = equalLevel.end(); it != end; it++)
+                    {
+                        printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                    }
                 }
+                else
+                {
+                    printf("Looked at %d functions. Found %d consistent. To return %d functions\n\n", counter, (int)consistentFunctions.size(), (int)bestBelow.size()+(int)bestAbove.size());
+                    for(auto it = bestBelow.begin(), end = bestBelow.end(); it != end; it++)
+                    {
+                        printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                    }
+                    for(auto it = bestAbove.begin(), end = bestAbove.end(); it != end; it++)
+                    {
+                        printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                    }
+                }
+                
             }
             else
             {
-                printf("Looked at %d functions. Found %d consistent. To return %d functions\n\n", counter, (int)consistentFunctions.size(), (int)bestBelow.size()+(int)bestAbove.size());
-                for(auto it = bestBelow.begin(), end = bestBelow.end(); it != end; it++)
-                {
-                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
-                }
-                for(auto it = bestAbove.begin(), end = bestAbove.end(); it != end; it++)
-                {
-                    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
-                }
+                printf("\nPrinting consistent functions found\n");
+                printf("Looked at %d functions. Found %d functions\n\n", counter, (int)consistentFunctions.size());
+                //for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
+                //{
+                //    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
+                //}
             }
             
         }
         else
         {
-            printf("\nPrinting consistent functions found\n");
-            printf("Looked at %d functions. Found %d functions\n\n", counter, (int)consistentFunctions.size());
-            //for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
-            //{
-            //    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
-            //}
+            printf("no consistent functions found - %d\n", counter);
         }
-        
-    }
-    else
-    {
-        printf("no consistent functions found - %d\n", counter);
     }
 
-    return;
+    //add repair sets to the solution
+    if(solFound)
+    {
+        if(levelCompare)
+        {
+            if(!equalLevel.empty())
+            {
+                for(auto it = equalLevel.begin(), end = equalLevel.end(); it != end; it++)
+                {
+                    RepairSet * repairSet = new RepairSet();
+                    repairSet->addRepairedFunction((*it));
+
+                    //add flipped edges in solution repair set
+                    for(auto itEdge = flippedEdges.begin(), endEdge = flippedEdges.end(); itEdge != endEdge; itEdge++)
+                    {
+                        repairSet->addFlippedEdge((*itEdge));
+                    }
+                    //add and remove edges in solution repair set
+                    for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                    {
+                        repairSet->removeEdge((*itRem));
+                    }
+                    for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                    {
+                        repairSet->removeEdge((*itAdd));
+                    }
+                    inconsistency->addRepairSet(iNode->id_, repairSet);
+                }
+            }
+            else
+            {
+                for(auto it = bestBelow.begin(), end = bestBelow.end(); it != end; it++)
+                {
+                    RepairSet * repairSet = new RepairSet();
+                    repairSet->addRepairedFunction((*it));
+
+                    //add flipped edges in solution repair set
+                    for(auto itEdge = flippedEdges.begin(), endEdge = flippedEdges.end(); itEdge != endEdge; itEdge++)
+                    {
+                        repairSet->addFlippedEdge((*itEdge));
+                    }
+                    //add and remove edges in solution repair set
+                    for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                    {
+                        repairSet->removeEdge((*itRem));
+                    }
+                    for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                    {
+                        repairSet->removeEdge((*itAdd));
+                    }
+                    inconsistency->addRepairSet(iNode->id_, repairSet);
+                }
+                for(auto it = bestAbove.begin(), end = bestAbove.end(); it != end; it++)
+                {
+                    RepairSet * repairSet = new RepairSet();
+                    repairSet->addRepairedFunction((*it));
+
+                    //add flipped edges in solution repair set
+                    for(auto itEdge = flippedEdges.begin(), endEdge = flippedEdges.end(); itEdge != endEdge; itEdge++)
+                    {
+                        repairSet->addFlippedEdge((*itEdge));
+                    }
+                    //add and remove edges in solution repair set
+                    for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                    {
+                        repairSet->removeEdge((*itRem));
+                    }
+                    for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                    {
+                        repairSet->removeEdge((*itAdd));
+                    }
+                    inconsistency->addRepairSet(iNode->id_, repairSet);
+                }
+            }
+        }
+        else
+        {
+            for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
+            {
+                RepairSet * repairSet = new RepairSet();
+                repairSet->addRepairedFunction((*it));
+
+                //add flipped edges in solution repair set
+                for(auto itEdge = flippedEdges.begin(), endEdge = flippedEdges.end(); itEdge != endEdge; itEdge++)
+                {
+                    repairSet->addFlippedEdge((*itEdge));
+                }
+                //add and remove edges in solution repair set
+                for(auto itRem = removedEdges.begin(), endRem = removedEdges.end(); itRem != endRem; itRem++)
+                {
+                    repairSet->removeEdge((*itRem));
+                }
+                for(auto itAdd = addedEdges.begin(), endAdd = addedEdges.end(); itAdd != endAdd; itAdd++)
+                {
+                    repairSet->removeEdge((*itAdd));
+                }
+                inconsistency->addRepairSet(iNode->id_, repairSet);
+            }
+        }
+
+    }
+    return solFound;
 
 }
 
@@ -1340,4 +1782,156 @@ bool isIn(std::vector<Function*> list, Function* item)
             return true;
     }
     return false;
+}
+
+
+void printAllFunctions(int dimension)
+{
+ 
+    std::vector<Function*> candidates;
+    std::vector<Function*> computedFunctions;
+
+    //construction of new function to start search
+    Function* newF = new Function("t", 1);
+    for(int i = 1; i<= dimension; i++)
+    {
+        newF->addElementClause(1, std::to_string(i));
+    }
+    candidates.push_back(newF);
+
+    // get the possible candidates to replace the inconsistent function
+
+    int counter=0;
+    while(!candidates.empty())
+    {
+        counter++;
+        Function* candidate = candidates.front();
+        candidates.erase (candidates.begin());
+
+        if(isIn(computedFunctions, candidate))
+        {
+            continue;
+        }
+        computedFunctions.push_back(candidate);
+  
+        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true);
+        for(auto it = tauxCandidates.begin(), end = tauxCandidates.end(); it!=end; it++)
+        {
+            if(!isIn(candidates, (*it)))
+                candidates.push_back((*it));
+        }
+        
+    }
+
+    std::sort(computedFunctions.begin(), computedFunctions.end(), myFunctionCompare);
+
+    printf("\nPrinting functions with %d arguments\n", dimension);
+    for(auto it = computedFunctions.begin(), end = computedFunctions.end(); it != end; it++)
+    {
+        printf("\t %s %s\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str());
+    }
+
+    printf("\nLooked at %d functions and computed %d functions\n", counter, (int)computedFunctions.size());
+    
+
+    return;
+
+}
+
+bool myFunctionCompare(Function * f1, Function * f2)
+{
+    if(f1->compareLevel(f2) < 0)
+        return true;
+    return false;
+}
+
+bool isFunctionInBottomHalf(Function *f)
+{
+    int n = f->getNumberOfRegulators();
+    int n2 = n/2;
+    std::vector<int> midLevel;
+    for(int i = 0; i < n; i++)
+    {
+        midLevel.push_back(n2);
+    }
+    return f->compareLevel(midLevel) < 0;
+
+}
+
+int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f)
+{
+    int result = CONSISTENT;
+    //verify for each profile
+    for(auto it = labeling->vlabel_.begin(), end = labeling->vlabel_.end(); it != end; it++)
+    {
+        int ret = nFuncInconsistWithLabel(labeling, f, it->first);
+        if(result == CONSISTENT)
+        {
+            result = ret;
+        }
+        else
+        {
+            if(ret != result)
+            {
+                result = DOUBLE_INC;
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
+{
+    for(int i = 1; i <= f->nClauses_; i++)
+    {
+        bool isClauseSatisfiable = true;
+        std::vector<std::string> clause = f->clauses_[i];
+        for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
+        {
+            Edge* e = network->getEdge((*it), f->node_);
+            if(e != nullptr)
+            {
+                //positive interaction
+                if(e->getSign() > 0)
+                {
+                    if(labeling->vlabel_[profile][(*it)] == 0)
+                    {
+                        isClauseSatisfiable = false;
+                        break;
+                    }
+                }
+                //negative interaction
+                else
+                {
+                    if(labeling->vlabel_[profile][(*it)] > 0)
+                    {
+                        isClauseSatisfiable = false;
+                        break;
+                    }
+                }
+            }
+            else{
+                std::cout << "WARN: Missing edge from " << (*it) << " to " << f->node_ << std::endl;
+                return false;
+            }
+        }
+        if(isClauseSatisfiable)
+        {
+            if(labeling->vlabel_[profile][f->node_] == 1)
+            {
+                return CONSISTENT;
+            }
+            else
+            {
+                return SINGLE_INC_PART;
+            }
+        }
+
+    }
+    if(labeling->vlabel_[profile][f->node_] == 0)
+    {
+        return CONSISTENT;
+    }
+    return SINGLE_INC_GEN;
 }

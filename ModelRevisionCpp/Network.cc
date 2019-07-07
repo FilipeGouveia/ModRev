@@ -397,6 +397,37 @@ int Function::compareLevel(Function * f)
 
 }
 
+int Function::compareLevel(std::vector<int> otherLevel)
+{
+    std::vector<int> ownLevel = getFullLevel();
+
+    int ownLevelSize = (int)ownLevel.size();
+    int otherLevelSize = (int)otherLevel.size();
+
+    int min = ownLevelSize;
+    if(otherLevelSize < min)
+    {
+        min = otherLevelSize;
+    }
+
+    for(int i = 0; i < min; i++)
+    {
+        if(ownLevel[i] < otherLevel[i])
+            return -1;
+        if(ownLevel[i] > otherLevel[i])
+            return 1;
+    }
+
+    if(ownLevelSize < otherLevelSize)
+        return -1;
+    if(ownLevelSize > otherLevelSize)
+        return 1;
+    return 0;
+
+}
+
+
+
 std::string Function::printFunctionFullLevel()
 {
     std::string result = "";
