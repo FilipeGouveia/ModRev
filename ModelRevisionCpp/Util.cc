@@ -40,15 +40,24 @@ std::string exec(const char* cmd) {
 
 std::string getFilename(const std::string &s) 
 {
+    if(s.empty())
+        return "";
     std::string filename = s;
     std::vector<std::string> elems;
-    split(s, '/', elems);
+    elems = split(filename, '/');
     filename = elems.back();
-    split(filename, '.', elems);
+    elems = split(filename, '.');
     filename = "";
-    for(int i = 0; i < (int) elems.size(); i++)
+    if(elems.size() > 1)
     {
-        filename.append(elems[i]);
+        for(int i = 0; i < (int) elems.size() - 1; i++)
+        {
+            filename.append(elems[i]);
+        }
+    }
+    else
+    {
+        filename.append(elems[0]);
     }
     return filename;
 }

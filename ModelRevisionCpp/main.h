@@ -41,7 +41,11 @@ bool isIn(std::vector<Function*> list, Function* item);
 void printAllFunctions(int dimension);
 bool myFunctionCompare(Function * f1, Function * f2);
 bool isFunctionInBottomHalf(Function *f);
+bool isFunctionInBottomHalfByState(Function *f);
 
 int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f);
 int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
+
+bool getFunctionValue(Function * f, std::map<std::string,int> input);
+
 #endif

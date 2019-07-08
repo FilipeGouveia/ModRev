@@ -83,6 +83,7 @@ class Network {
         
         std::map< std::string, Node* > nodes_;
         std::vector< Edge* > edges_;
+        std::string input_file_network_;
 
         Network();
         ~Network();

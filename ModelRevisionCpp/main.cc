@@ -6,6 +6,9 @@
 #include "ASPHelper.h"
 #include "Network.h"
 #include "Util.h"
+#include <bitset>
+#include <algorithm>
+#include <math.h>
 
 //same as used in InconsistencySolution and InconsistentNode
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
@@ -28,12 +31,9 @@ int main(int argc, char ** argv) {
 
     process_arguments(argc, argv, input_file_network, output_file);
 
-    std::string filen = Util_h::getFilename(input_file_network);
-    printf(" file path: %s\nfile name %s\n", input_file_network.c_str(), filen.c_str());
-    throw std::invalid_argument( "end of double inconsistency" );
-
     ASPHelper::parseNetwork(input_file_network, network);
 
+    network->input_file_network_ = input_file_network;
     //main function that revises the model
     modelRevision(input_file_network);
 
@@ -89,6 +89,8 @@ void modelRevision(std::string input_file_network) {
     {
         return;
     }
+    if(Configuration::isActive("debug"))
+        std::cout << "found " << fInconsistencies.size() << " solutions with " << fInconsistencies.front()->iNodes_.size() << " inconsistent nodes" << std::endl;
 
     //At this point we have an inconsistent network with node candidates to be repaired
 
@@ -109,7 +111,12 @@ void modelRevision(std::string input_file_network) {
                 if(bestSolution->getNTopologyChanges() == 0 && !Configuration::isActive("allOpt"))
                     break;
             }
-        }  
+        }
+        else
+        {
+            if(Configuration::isActive("debug"))
+                std::cout << "Reached an impossibility\n";
+        }
     }
 
     if(bestSolution == nullptr)
@@ -192,27 +199,16 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
     //repair each inconsistent node
     for(auto it = inconsistency->iNodes_.begin(), end = inconsistency->iNodes_.end(); it != end; it++)
     {
-        //double inconsistent case
-        if(it->second->repairType > 2)
-        {
-            
 
-            std::cout << "#FOUND a node with double inconsistency\n";
-            //inconsistency->hasImpossibility = true;
-            std::vector<Edge *> emptyList;
-            searchNonComparableFunctions(inconsistency, it->second, emptyList, emptyList, emptyList);
-            //throw std::invalid_argument( "end of double inconsistency" );
-            //return;
-        }
-        else
-        {
         repairNodeConsistency(inconsistency, it->second);
         if(inconsistency->hasImpossibility)
         {
             //one of the nodes was not possible to repair
+            if(Configuration::isActive("debug"))
+                printf("#FOUND a node with impossibility - %s\n", it->second->id_.c_str());
             return;
         }
-        }
+        
     }
 
 }
@@ -224,7 +220,7 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
     if(iNode->repairType > 2)
     {
         if(Configuration::isActive("debug"))
-            std::cout << "#FOUND a node with double inconsistency\n";
+            printf("#FOUND a node with double inconsistency - %s\n", iNode->id_.c_str());
         //inconsistency->hasImpossibility = true;
         std::vector<Edge *> emptyList;
         bool res = searchNonComparableFunctions(inconsistency, iNode, emptyList, emptyList, emptyList);
@@ -237,7 +233,8 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
     }
     else
     {
-
+        if(Configuration::isActive("debug"))
+            printf("#FOUND a node with single inconsistency - %s\n", iNode->id_.c_str());
         std::vector<std::vector<Function*>> candidates;
 
         if(Configuration::isActive("function_ASP"))
@@ -266,7 +263,7 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
             // get the possible candidates to replace the inconsistent function
             bool functionRepaired = false;
             int repairedFunctionLevel = -1;
-            std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_);
+            std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_, network->input_file_network_);
             while(!tCandidates.empty())
             {
                 Function* candidate = tCandidates.front();
@@ -292,7 +289,7 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
                     }
                 }
 
-                std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_);
+                std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_, network->input_file_network_);
                 if(!tauxCandidates.empty())
                     tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
                 
@@ -653,7 +650,7 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
                 {
                     if(Configuration::isActive("debug"))
                         std::cout << "DEBUG: updating solutions\n";
-                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_, network->input_file_network_);
                     if(!fauxCandidates.empty())
                         fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
                 }
@@ -930,7 +927,7 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                             {
                                 if(Configuration::isActive("debug"))
                                     std::cout << "DEBUG: updating solutions\n";
-                                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_, network->input_file_network_);
                                 if(!fauxCandidates.empty())
                                     fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
                             }
@@ -1089,7 +1086,7 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                                 {
                                     if(Configuration::isActive("debug"))
                                         std::cout << "DEBUG: updating solutions\n";
-                                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                    std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_, network->input_file_network_);
                                     if(!fauxCandidates.empty())
                                         fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
                                 }
@@ -1272,7 +1269,7 @@ void repairNodeConsistencyByRegulators(InconsistencySolution* solution, Inconsis
                                     {
                                         if(Configuration::isActive("debug"))
                                             std::cout << "DEBUG: updating solutions\n";
-                                        std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_);
+                                        std::vector<Function*> fauxCandidates = ASPHelper::getFunctionReplace(candidate, iNode->generalization_, network->input_file_network_);
                                         if(!fauxCandidates.empty())
                                             fCandidates.insert(fCandidates.end(),fauxCandidates.begin(),fauxCandidates.end());
                                     }
@@ -1362,7 +1359,7 @@ bool searchComparableFunctions(InconsistencySolution* inconsistency, Inconsisten
         // get the possible candidates to replace the inconsistent function
         bool functionRepaired = false;
         int repairedFunctionLevel = -1;
-        std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_);
+        std::vector<Function*> tCandidates = ASPHelper::getFunctionReplace(originalF,iNode->generalization_, network->input_file_network_);
         while(!tCandidates.empty())
         {
             Function* candidate = tCandidates.front();
@@ -1403,7 +1400,7 @@ bool searchComparableFunctions(InconsistencySolution* inconsistency, Inconsisten
                 }
             }
 
-            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_);
+            std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,iNode->generalization_, network->input_file_network_);
             if(!tauxCandidates.empty())
                 tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
             
@@ -1453,7 +1450,11 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
     bool isGeneralize = true;
     if(levelCompare)
     {
+        if(Configuration::isActive("debug"))
+            printf("DEBUG: Starting half determination\n");
         isGeneralize = isFunctionInBottomHalf(originalF);
+        if(Configuration::isActive("debug"))
+            printf("DEBUG: End half determination\n");
         if(Configuration::isActive("debug"))
             printf("Performing a search going %s\n", isGeneralize ? "up" : "down");
     }
@@ -1613,7 +1614,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
             }
         }
         
-        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,isGeneralize);
+        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,isGeneralize, network->input_file_network_);
         for(auto it = tauxCandidates.begin(), end = tauxCandidates.end(); it!=end; it++)
         {
             (*it)->son_consistent = isConsistent;
@@ -1814,7 +1815,7 @@ void printAllFunctions(int dimension)
         }
         computedFunctions.push_back(candidate);
   
-        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true);
+        std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate,true, network->input_file_network_);
         for(auto it = tauxCandidates.begin(), end = tauxCandidates.end(); it!=end; it++)
         {
             if(!isIn(candidates, (*it)))
@@ -1847,6 +1848,12 @@ bool myFunctionCompare(Function * f1, Function * f2)
 
 bool isFunctionInBottomHalf(Function *f)
 {
+    if(Configuration::isActive("exactMiddleFunctionDetermination"))
+    {
+        if(Configuration::isActive("debug"))
+            printf("DEBUG: Half determination by state\n");
+        return isFunctionInBottomHalfByState(f);
+    }
     int n = f->getNumberOfRegulators();
     int n2 = n/2;
     std::vector<int> midLevel;
@@ -1934,4 +1941,87 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
         return CONSISTENT;
     }
     return SINGLE_INC_GEN;
+}
+
+//TODO put this in the function object as an object method
+bool isFunctionInBottomHalfByState(Function *f)
+{
+    std::map<std::string,int> regMap = f->getRegulatorsMap();
+    int regulators = f->getNumberOfRegulators();
+    int entries = (int) pow(2, regulators);
+    int nOne = 0;
+    int nZero = 0;
+
+    for(int entry = 0; entry < entries; entry++)
+    {
+        std::bitset<16> bits (entry);
+        std::map<std::string,int> input;
+        int bitIndex = 0;
+        for(auto it = regMap.begin(), end = regMap.end(); it!=end; it++)
+        {
+            input.insert(std::pair<std::string, int>(it->first, bits.test(bitIndex) ? 1 : 0));
+            bitIndex++;
+        }
+        if(getFunctionValue(f, input))
+        {
+            nOne++;
+            if(nOne > entries / 2)
+                break;
+        }
+        else
+        {
+            nZero++;
+            if(nZero > entries / 2)
+                break;
+        }
+
+    }
+    if(nZero > entries / 2)
+    {
+        return true;
+    }
+    return false;
+
+}
+
+bool getFunctionValue(Function * f, std::map<std::string,int> input)
+{
+    for(int i = 1; i <= f->nClauses_; i++)
+    {
+        bool isClauseSatisfiable = true;
+        std::vector<std::string> clause = f->clauses_[i];
+        for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
+        {
+            Edge* e = network->getEdge((*it), f->node_);
+            if(e != nullptr)
+            {
+                //positive interaction
+                if(e->getSign() > 0)
+                {
+                    if(input[(*it)] == 0)
+                    {
+                        isClauseSatisfiable = false;
+                        break;
+                    }
+                }
+                //negative interaction
+                else
+                {
+                    if(input[(*it)] > 0)
+                    {
+                        isClauseSatisfiable = false;
+                        break;
+                    }
+                }
+            }
+            else{
+                std::cout << "WARN: Missing edge from " << (*it) << " to " << f->node_ << std::endl;
+                return false;
+            }
+        }
+        if(isClauseSatisfiable)
+            return true;
+
+    }
+    return false;
 }
