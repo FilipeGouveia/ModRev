@@ -324,8 +324,9 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     
     std::string clauses_file = "clause_aux.";
     clauses_file.append(Util_h::getFilename(filename));
-    clauses_file.append(".");
-    clauses_file.append(std::to_string((int)time(NULL)));
+    //this is to avoid colisions if necessary
+    //clauses_file.append(".");
+    //clauses_file.append(std::to_string((int)time(NULL)));
     clauses_file.append(".lp");
 
     function_cmd.append(clauses_file);
