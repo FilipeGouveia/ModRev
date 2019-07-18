@@ -29,11 +29,11 @@ limit memoryuse 2048m
 foreach it1 ($iterations)
     foreach it2 ($iterations)
 
+        set it = $it1$it2
+
         echo "Staring Iteration"
         echo $it
         echo "\n"
-
-        set it = $it1$it2
 
         foreach folder ($folders)
 
