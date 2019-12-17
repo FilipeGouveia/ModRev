@@ -9,6 +9,7 @@ class Function {
 
     private:
         std::map<std::string,int> regulatorsMap_;
+        std::vector<int> fullLevel_;
 
     public:
 
@@ -16,6 +17,7 @@ class Function {
         int nClauses_;
         std::map<int, std::vector< std::string >> clauses_;
         int level_;
+        bool son_consistent;
 
         Function(std::string node, int nClauses);
         ~Function();
@@ -25,6 +27,11 @@ class Function {
         std::map<std::string,int> getRegulatorsMap();
         std::string printFunction();
         bool isEqual(Function* f);
+
+        std::vector<int> getFullLevel();
+        int compareLevel(Function * f);
+        int compareLevel(std::vector<int> fullLevel);
+        std::string printFunctionFullLevel();
 
         static bool isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses);
     
@@ -76,6 +83,7 @@ class Network {
         
         std::map< std::string, Node* > nodes_;
         std::vector< Edge* > edges_;
+        std::string input_file_network_;
 
         Network();
         ~Network();
@@ -127,6 +135,9 @@ class InconsistentNode {
         bool repaired_;
         //possible ways to repair the node;
         std::vector<RepairSet*> repairSet_;
+
+        //debug repair type: 0 - no info; 1 - gen; 2 - part; 3 - both
+        int repairType;
 
         InconsistentNode(std::string id, bool generalization);
         ~InconsistentNode();

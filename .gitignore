@@ -17,3 +17,5 @@ generate*.csh
 inputTestsV2
 runTests.csh
 resultsv3latex.txt
+ModelRevisionCpp/doubleInc
+modrev-v*

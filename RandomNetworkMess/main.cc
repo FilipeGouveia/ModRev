@@ -257,16 +257,31 @@ void modelMessing(std::ofstream & log_s, int f_prob, int e_prob, int r_prob, int
                 }
             }
 
+            bool isNonComparable = Configuration::isActive("nonComparableFunctions");
             while(!tCandidates.empty())
             {
                 candidate = tCandidates.front();
                 tCandidates.erase(tCandidates.begin());
                 
-                if(getProbability(50) || numberRegulators == 1 || numberRegulators > 12)
+                if(numberRegulators == 1 || numberRegulators > 12)
                 {
                     break;
                 }
-
+                if((!isNonComparable || originalF->domainChanged || !originalF->isEqual(candidate)) && getProbability(50)) 
+                {
+                    break;
+                }
+                if(isNonComparable && !originalF->domainChanged && originalF->isEqual(candidate))
+                {
+                    isGeneralize = !isGeneralize;
+                }
+                else
+                {
+                    if(isNonComparable && getProbability(50))
+                    {
+                        isGeneralize = !isGeneralize;
+                    }
+                }
                 std::vector<Function*> tauxCandidates = ASPHelper::getFunctionReplace(candidate, isGeneralize);
                 if(!tauxCandidates.empty())
                     tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());

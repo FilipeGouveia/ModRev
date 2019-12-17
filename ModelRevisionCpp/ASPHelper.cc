@@ -40,11 +40,7 @@ int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std:
             std::cout << "model consistent" << std::endl;
         return opt;
    }
-   if(opt > 0)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "found " << result.size() << " solutions with " << opt << " inconsistent nodes" << std::endl;
-   }
+
    return opt;
 
 }
@@ -287,7 +283,7 @@ std::vector<InconsistencySolution*> ASPHelper::parseFunctionRepairResults(std::v
 
 
 
-std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers) {
+std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers, std::string filename) {
     std::vector<Function*> result;
 
     std::string function_cmd = Configuration::getValue("ASP_solver");
@@ -326,8 +322,11 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
     function_cmd.append(std::to_string(el));
     function_cmd.append(".lp ");
     
-    std::string clauses_file = "clause_aux";
-    clauses_file.append(std::to_string((int)time(NULL)));
+    std::string clauses_file = "clause_aux.";
+    clauses_file.append(Util_h::getFilename(filename));
+    //this is to avoid colisions if necessary
+    //clauses_file.append(".");
+    //clauses_file.append(std::to_string((int)time(NULL)));
     clauses_file.append(".lp");
 
     function_cmd.append(clauses_file);
