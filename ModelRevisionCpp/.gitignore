@@ -1,3 +1,4 @@
 *.o
 modrev
 .makedeps
+runModRev*.csh
