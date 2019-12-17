@@ -1,4 +1,7 @@
 check_ASP=true
 function_ASP=true
 ASP_dir=../ASP/
+debug=ftrue
+compareLevelFunction=true
+exactMiddleFunctionDetermination=ftrue
 

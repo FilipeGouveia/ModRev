@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "Configuration.h"
 
 Network::Network() 
@@ -186,8 +187,9 @@ Function::Function(std::string node, int nClauses)
         clauses_.insert(std::make_pair(i,clause));
     }
     regulatorsMap_ = std::map<std::string,int>();
+    fullLevel_ = std::vector<int>();
     level_ = 0;
-
+    son_consistent = false;
 }
 
 Function::~Function() {}
@@ -345,6 +347,111 @@ bool Function::isClausePresent(std::vector<std::string> clause, std::map<int, st
     return false;
 }
 
+std::vector<int> Function::getFullLevel()
+{
+    if(fullLevel_.empty())
+    {
+        int nRegulators = getNumberOfRegulators();
+        for(int i = 1; i <= nClauses_; i++)
+        {
+            std::vector<std::string> clause = clauses_.find(i)->second;
+            int count = (int)clause.size();
+            fullLevel_.push_back(nRegulators - count);
+        }
+        std::sort(fullLevel_.begin(), fullLevel_.end(), std::greater<int>());
+
+    }
+    return fullLevel_;
+}
+
+//returns -1 if the original function is lower
+//return 0 if the functions are the same level
+//return 1 if the other function is lower
+int Function::compareLevel(Function * f)
+{
+    std::vector<int> ownLevel = getFullLevel();
+    std::vector<int> otherLevel = f->getFullLevel();
+
+    int ownLevelSize = (int)ownLevel.size();
+    int otherLevelSize = (int)otherLevel.size();
+
+    int min = ownLevelSize;
+    if(otherLevelSize < min)
+    {
+        min = otherLevelSize;
+    }
+
+    for(int i = 0; i < min; i++)
+    {
+        if(ownLevel[i] < otherLevel[i])
+            return -1;
+        if(ownLevel[i] > otherLevel[i])
+            return 1;
+    }
+
+    if(ownLevelSize < otherLevelSize)
+        return -1;
+    if(ownLevelSize > otherLevelSize)
+        return 1;
+    return 0;
+
+}
+
+int Function::compareLevel(std::vector<int> otherLevel)
+{
+    std::vector<int> ownLevel = getFullLevel();
+
+    int ownLevelSize = (int)ownLevel.size();
+    int otherLevelSize = (int)otherLevel.size();
+
+    int min = ownLevelSize;
+    if(otherLevelSize < min)
+    {
+        min = otherLevelSize;
+    }
+
+    for(int i = 0; i < min; i++)
+    {
+        if(ownLevel[i] < otherLevel[i])
+            return -1;
+        if(ownLevel[i] > otherLevel[i])
+            return 1;
+    }
+
+    if(ownLevelSize < otherLevelSize)
+        return -1;
+    if(ownLevelSize > otherLevelSize)
+        return 1;
+    return 0;
+
+}
+
+
+
+std::string Function::printFunctionFullLevel()
+{
+    std::string result = "";
+    std::vector<int> level = getFullLevel();
+
+    result += "(";
+    for(int i = 0; i < nClauses_; i++)
+    {
+        if(i > 0)
+        {
+            result += ",";
+        }
+        result += std::to_string(level[i]);
+    }
+    result += ")";
+
+    if(Configuration::isActive("debug"))
+    {
+        std::cout << "DEBUG: print full level order " << result << "\n";
+    }
+
+    return result;
+}
+
 
 InconsistencySolution::InconsistencySolution()
     :iNodes_(),
@@ -358,16 +465,29 @@ InconsistencySolution::~InconsistencySolution(){}
 
 void InconsistencySolution::addGeneralization(std::string id) {
 
-    InconsistentNode* newINode = new InconsistentNode(id, true);
-    iNodes_.insert(std::make_pair(id, newINode));
+    auto it = iNodes_.find(id);
+    if ( it == iNodes_.end() ) {
+        InconsistentNode* newINode = new InconsistentNode(id, true);
+        iNodes_.insert(std::make_pair(id, newINode));
+    } else {
+        if(it->second->repairType != 1)
+            it->second->repairType = 3;
+    }
+    
 
 }
 
 
 void InconsistencySolution::addParticularization(std::string id) {
 
-    InconsistentNode* newINode = new InconsistentNode(id, false);
-    iNodes_.insert(std::make_pair(id, newINode));
+    auto it = iNodes_.find(id);
+    if ( it == iNodes_.end() ) {
+        InconsistentNode* newINode = new InconsistentNode(id, false);
+        iNodes_.insert(std::make_pair(id, newINode));
+    } else {
+        if(it->second->repairType != 2)
+            it->second->repairType = 3;
+    }
 
 }
 
@@ -484,6 +604,15 @@ InconsistentNode::InconsistentNode(std::string id, bool generalization)
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         repaired_ = false;
+        if(generalization)
+        {
+            repairType = 1;
+        }
+        else
+        {
+            repairType = 2;
+        }
+        
     }
 
 InconsistentNode::~InconsistentNode(){}

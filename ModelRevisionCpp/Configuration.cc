@@ -20,6 +20,7 @@ void Configuration::parseConfig() {
     _configMap["allOpt"] = "true"; // show one or more solutions
     _configMap["debug"] = "false";
     _configMap["multipleProfiles"] = "true";
+    _configMap["compareLevelFunction"] = "true";
 
     //read new values from config file
 
