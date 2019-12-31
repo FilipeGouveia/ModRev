@@ -6,10 +6,13 @@
 #include <iostream>
 #include <algorithm>
 #include "Configuration.h"
+#include <BooleanFunction.h>
+#include <set>
 
 Network::Network() 
     :nodes_(),
-    edges_(){}
+    edges_(),
+    observation_files(){}
 
 Network::~Network() {
 
@@ -177,191 +180,64 @@ Function* Node::getFunction() {
 }
 
 
-Function::Function(std::string node, int nClauses)
-    :node_(node),
-    nClauses_(nClauses)
+Function::Function(std::string node)
 {
-    for(int i = 1; i <= nClauses; i++)
-    {
-        std::vector<std::string> clause;
-        clauses_.insert(std::make_pair(i,clause));
-    }
-    regulatorsMap_ = std::map<std::string,int>();
-    fullLevel_ = std::vector<int>();
-    level_ = 0;
+    booleanF_ = new BooleanFunction::Function(node);
+    distanceFromOriginal_ = 0;
     son_consistent = false;
 }
 
-Function::~Function() {}
+Function::Function(BooleanFunction::Function * f)
+{
+    booleanF_ = f;
+    distanceFromOriginal_ = 0;
+    son_consistent = false;
+}
+
+Function::~Function() {
+   delete(booleanF_); 
+}
+
+std::string Function::getNode()
+{
+    return booleanF_->getOutputVariable();
+}
 
 void Function::addElementClause(int id, std::string node) {
-    if(id > nClauses_)
-    {
-        for(int i = nClauses_ + 1; i <= id; i++)
-        {
-            std::vector<std::string> clause;
-            clauses_.insert(std::make_pair(i,clause));
-        }
-        nClauses_ = id;
-    }
-    if(id > 0 && id <= nClauses_)
-    {
-        auto it = clauses_.find(id);
-        if(it != clauses_.end())
-        {
-            it->second.push_back(node);
-        }
-    }
+    booleanF_->addVariableToTerm(id, node);
 }
 
 
 int Function::getNumberOfRegulators(){
-    return getRegulatorsMap().size();
+    return booleanF_->getDimension();
 }
 
 
 std::map<std::string,int> Function::getRegulatorsMap(){
-    if(regulatorsMap_.empty())
-    {
-        int index = 1;
-        std::map<std::string,int> elements;
-        for(int i = 1; i <= nClauses_; i++)
-        {
-            std::vector<std::string> clause = clauses_.find(i)->second;
-            for(auto it = clause.begin(), end=clause.end(); it!=end; it++)
-            {
-                auto ret = elements.insert(std::make_pair((*it),index));
-                if(ret.second != false)
-                    index++;
-            }
-        }
-        regulatorsMap_ = elements;
-    }
-    return regulatorsMap_;
+    return booleanF_->getVariableMap();
+}
+
+std::map<int, std::set<std::string>> Function::getClauses(){
+    return booleanF_->getTerms();
+}
+
+int Function::getNClauses()
+{
+    return booleanF_->getNTerms();
 }
 
 std::string Function::printFunction(){
-    std::string result = "";
-    if(nClauses_ < 1)
-    {
-        result += "Empty Function (turn node input)";
-    }
-    for(int i = 1; i <= nClauses_; i++)
-    {
-        result += "(";
-        std::vector<std::string> clause = clauses_[i];
-        bool first = true;
-        for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
-        {
-            if(!first)
-            {
-                result += " && ";
-            }
-            first = false;
-            result += (*it);
-        }
-        result += ")";
-        if(i < nClauses_)
-        {
-            result += " || ";
-        }
-    }
-    return result;
+    return BooleanFunction::PrintFunction(booleanF_);
 }
 
 bool Function::isEqual(Function* f)
 {
-    if(nClauses_ != f->nClauses_ || node_.compare(f->node_) != 0)
-        return false;
-
-    for(int i = 1; i <= nClauses_; i++)
-    {
-        //to prevent some function having duplicated clauses, we double check inclusiveness
-        if(!Function::isClausePresent(clauses_[i], f->clauses_))
-            return false;
-        if(!Function::isClausePresent(f->clauses_[i], clauses_))
-            return false;
-    }
-    
-    return true;
-}
-
-bool Function::isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses)
-{
-
-    for(auto it = clauses.begin(), end = clauses.end(); it!=end; it++)
-    {
-        std::vector<std::string> possMatch = it->second;
-        bool isPossibleMatch = true;
-
-        for(auto itElem = clause.begin(), endElem = clause.end(); itElem != endElem; itElem++)
-        {
-            bool elemFound = false;
-
-            for(auto itPossElem = possMatch.begin(), endPossElem = possMatch.end(); itPossElem != endPossElem; itPossElem++)
-            {
-                if((*itElem).compare((*itPossElem)) == 0)
-                {
-                    elemFound = true;
-                    break;
-                }
-            }
-
-            if(!elemFound)
-            {
-                isPossibleMatch = false;
-                break;
-            }
-
-        }
-        
-        if(isPossibleMatch)
-        {
-            bool isTrueMatch = true;
-            //double check to prevent duplicated values originating false positives
-            for(auto itElem = possMatch.begin(), endElem = possMatch.end(); itElem != endElem; itElem++)
-            {
-                bool elemFound = false;
-
-                for(auto itPossElem = clause.begin(), endPossElem = clause.end(); itPossElem != endPossElem; itPossElem++)
-                {
-                    if((*itElem).compare((*itPossElem)) == 0)
-                    {
-                        elemFound = true;
-                        break;
-                    }
-                }
-
-                if(!elemFound)
-                {
-                    isTrueMatch = false;
-                    break;
-                }
-
-            }
-            if(isTrueMatch)
-                return true;
-        }
-
-    }
-    return false;
+    return booleanF_->isEqual(f->getBooleanFunction());
 }
 
 std::vector<int> Function::getFullLevel()
 {
-    if(fullLevel_.empty())
-    {
-        int nRegulators = getNumberOfRegulators();
-        for(int i = 1; i <= nClauses_; i++)
-        {
-            std::vector<std::string> clause = clauses_.find(i)->second;
-            int count = (int)clause.size();
-            fullLevel_.push_back(nRegulators - count);
-        }
-        std::sort(fullLevel_.begin(), fullLevel_.end(), std::greater<int>());
-
-    }
-    return fullLevel_;
+    return booleanF_->getLevel();
 }
 
 //returns -1 if the original function is lower
@@ -369,93 +245,66 @@ std::vector<int> Function::getFullLevel()
 //return 1 if the other function is lower
 int Function::compareLevel(Function * f)
 {
-    std::vector<int> ownLevel = getFullLevel();
-    std::vector<int> otherLevel = f->getFullLevel();
-
-    int ownLevelSize = (int)ownLevel.size();
-    int otherLevelSize = (int)otherLevel.size();
-
-    int min = ownLevelSize;
-    if(otherLevelSize < min)
-    {
-        min = otherLevelSize;
-    }
-
-    for(int i = 0; i < min; i++)
-    {
-        if(ownLevel[i] < otherLevel[i])
-            return -1;
-        if(ownLevel[i] > otherLevel[i])
-            return 1;
-    }
-
-    if(ownLevelSize < otherLevelSize)
-        return -1;
-    if(ownLevelSize > otherLevelSize)
-        return 1;
-    return 0;
-
+    return booleanF_->compareLevel(f->getBooleanFunction());
 }
 
 int Function::compareLevel(std::vector<int> otherLevel)
 {
-    std::vector<int> ownLevel = getFullLevel();
-
-    int ownLevelSize = (int)ownLevel.size();
-    int otherLevelSize = (int)otherLevel.size();
-
-    int min = ownLevelSize;
-    if(otherLevelSize < min)
-    {
-        min = otherLevelSize;
-    }
-
-    for(int i = 0; i < min; i++)
-    {
-        if(ownLevel[i] < otherLevel[i])
-            return -1;
-        if(ownLevel[i] > otherLevel[i])
-            return 1;
-    }
-
-    if(ownLevelSize < otherLevelSize)
-        return -1;
-    if(ownLevelSize > otherLevelSize)
-        return 1;
-    return 0;
-
+    return booleanF_->compareLevel(otherLevel);
 }
 
 
 
 std::string Function::printFunctionFullLevel()
 {
-    std::string result = "";
-    std::vector<int> level = getFullLevel();
+    return BooleanFunction::PrintFunctionLevel(booleanF_);
+}
 
-    result += "(";
-    for(int i = 0; i < nClauses_; i++)
+std::vector<Function*> Function::getParents()
+{
+    std::vector<Function*> result;
+    std::vector<BooleanFunction::Function*> parents = booleanF_->getParents();
+    for(auto it = parents.begin(), end = parents.end(); it != end; it++)
     {
-        if(i > 0)
-        {
-            result += ",";
-        }
-        result += std::to_string(level[i]);
+        Function * f = new Function((*it));
+        f->distanceFromOriginal_ = distanceFromOriginal_ + 1;
+        result.push_back(f);
     }
-    result += ")";
-
-    if(Configuration::isActive("debug"))
-    {
-        std::cout << "DEBUG: print full level order " << result << "\n";
-    }
-
     return result;
+}
+
+std::vector<Function*> Function::getChildren()
+{
+    std::vector<Function*> result;
+    std::vector<BooleanFunction::Function*> parents = booleanF_->getChildren();
+    for(auto it = parents.begin(), end = parents.end(); it != end; it++)
+    {
+        Function * f = new Function((*it));
+        f->distanceFromOriginal_ = distanceFromOriginal_ + 1;
+        result.push_back(f);
+    }
+    return result;
+}
+
+std::vector<Function*> Function::getReplacements(bool generalize)
+{
+    if(generalize)
+    {
+        return getParents();
+    }
+    return getChildren();
+}
+
+BooleanFunction::Function * Function::getBooleanFunction()
+{
+    return booleanF_;
 }
 
 
 InconsistencySolution::InconsistencySolution()
     :iNodes_(),
-    vlabel_(){
+    vlabel_(),
+    updates_() {
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         hasImpossibility = false;
@@ -471,7 +320,16 @@ void InconsistencySolution::addGeneralization(std::string id) {
         iNodes_.insert(std::make_pair(id, newINode));
     } else {
         if(it->second->repairType != 1)
-            it->second->repairType = 3;
+        {
+            if(it->second->repairType == 0)
+            {
+                it->second->repairType = 1;
+            }
+            else
+            {
+                it->second->repairType = 3;
+            }
+        }
     }
     
 
@@ -486,21 +344,70 @@ void InconsistencySolution::addParticularization(std::string id) {
         iNodes_.insert(std::make_pair(id, newINode));
     } else {
         if(it->second->repairType != 2)
-            it->second->repairType = 3;
+        {
+            if(it->second->repairType == 0)
+            {
+                it->second->repairType = 2;
+            }
+            else
+            {
+                it->second->repairType = 3;
+            }
+        }
     }
 
 }
 
+void InconsistencySolution::addTopologicalError(std::string id)
+{
+    auto it = iNodes_.find(id);
+    if ( it == iNodes_.end() ) {
+        InconsistentNode* newINode = new InconsistentNode(id, false);
+        newINode->repairType = 0;
+        newINode->topologicalError_ = true;
+        iNodes_.insert(std::make_pair(id, newINode));
+    } else {
+        it->second->topologicalError_ = true;
+    }
+}
 
-void InconsistencySolution::addVLabel(std::string profile, std::string id, int value) {
-    
+
+
+
+void InconsistencySolution::addVLabel(std::string profile, std::string id, int value, int time) {
     if(vlabel_.find(profile) == vlabel_.end())
     {
-        std::map<std::string, int> newMap;
+        std::map<int, std::map<std::string, int> > newMap;
         vlabel_.insert(std::make_pair(profile, newMap));
     }
-    vlabel_.find(profile)->second.insert(std::make_pair(id, value));
+    std::map<int, std::map<std::string, int> > * profileMap = &(vlabel_.find(profile)->second);
 
+    if(profileMap->find(time) == profileMap->end())
+    {
+        std::map<std::string, int> newMap;
+        profileMap->insert(std::make_pair(time, newMap));
+    }
+
+    profileMap->find(time)->second.insert(std::make_pair(id, value));
+}
+
+void InconsistencySolution::addUpdate(int time, std::string profile, std::string id)
+{
+    if(updates_.find(time) == updates_.end())
+    {
+        std::map<std::string, std::vector<std::string> > newMap;
+        updates_.insert(std::make_pair(time, newMap));
+    }
+
+    auto timeMap = updates_.find(time)->second;
+
+    if(timeMap.find(profile) == timeMap.end())
+    {
+        std::vector<std::string> newVector;
+        timeMap.insert(std::make_pair(profile, newVector));
+    }
+
+    timeMap.find(profile)->second.push_back(id);
 }
 
 void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
@@ -559,7 +466,7 @@ void InconsistencySolution::printSolution(bool printAll) {
             }
             for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
             {
-                std::cout << "\t\t\tChange function of " << (*it)->node_ << " to " << (*it)->printFunction() << std::endl;
+                std::cout << "\t\t\tChange function of " << (*it)->getNode() << " to " << (*it)->printFunction() << std::endl;
             }
             for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
             {
@@ -589,7 +496,11 @@ void InconsistencySolution::printSolution(bool printAll) {
                 std::cout << "\t\tProfile: " << it->first << std::endl;
             for(auto it2 = it->second.begin(), end2 = it->second.end(); it2 != end2; it2++)
             {
-                std::cout << "\t\t" << it2->first << " => " << it2->second << std::endl;
+                std::cout << "\t\t\tTime step: " << it2->first << std::endl;
+                for(auto it3 = it2->second.begin(), end3 = it2->second.end(); it3 != end3; it3++)
+                {
+                    std::cout << "\t\t\t\t" << it3->first << " => " << it3->second << std::endl;
+                }
             }
         }
     }
@@ -604,6 +515,7 @@ InconsistentNode::InconsistentNode(std::string id, bool generalization)
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
         repaired_ = false;
+        topologicalError_ = false;
         if(generalization)
         {
             repairType = 1;

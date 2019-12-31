@@ -16,6 +16,10 @@ void Configuration::parseConfig() {
     _configMap["ASP_dir"] = "../ASP/"; //ASP disrectory
     _configMap["ASP_solver"] = "./../ASP/bin-Darwin/clingo"; // ASP solver
     _configMap["ASP_CC_SS"] =  "../ASP/ConsistencyCheck/core-ss.lp"; //ASP consistency check steady state program file
+    _configMap["ASP_CC_D"] =  "../ASP/Dynamic/core.lp"; //ASP consistency check dynamic program file
+    _configMap["ASP_CC_D_A"] =  "../ASP/Dynamic/a-update.lp"; //ASP consistency check dynamic asyncronous update program file
+    _configMap["ASP_CC_D_S"] =  "../ASP/Dynamic/s-update.lp"; //ASP consistency check dynamic synchronous update program file
+    _configMap["ASP_CC_D_MA"] =  "../ASP/Dynamic/ma-update.lp"; //ASP consistency check dynamic multi-asynchronous update program file
     _configMap["ASP_Functions"] = "../ASP/Functions/"; // ASP function files directory
     _configMap["allOpt"] = "true"; // show one or more solutions
     _configMap["debug"] = "false";
