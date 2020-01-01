@@ -1,7 +1,8 @@
 check_ASP=true
 function_ASP=true
 ASP_dir=../ASP/
-debug=true
+debug=false
 compareLevelFunction=true
 exactMiddleFunctionDetermination=true
+forceOptimum=false
 

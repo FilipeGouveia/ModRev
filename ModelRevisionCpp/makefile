@@ -14,7 +14,8 @@ OS := $(shell uname)
 CPPS = $(wildcard *.cc)
 HEADERS = $(wildcard *.h)
 OBJS = $(CPPS:%.cc=%.o)
-LIBS = $(wildcard lib/*.a)
+LIBSOSX = $(wildcard libOSX/*.a)
+LIBSUNIX = $(wildcard libUNIX/*.a)
 TARGET = modrev
 
 
@@ -26,9 +27,9 @@ all: depend $(TARGET)
 
 $(TARGET): $(OBJS)
 ifeq ($(OS),Linux)
-	$(CXX) $(LFLAGSLINUX) -o $@ $^ $(LIBS)
+	$(CXX) $(LFLAGSLINUX) -o $@ $^ $(LIBSUNIX)
 else
-	$(CXX) $(LFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(LFLAGS) -o $@ $^ $(LIBSOSX)
 endif
 
 %.o: %.cc

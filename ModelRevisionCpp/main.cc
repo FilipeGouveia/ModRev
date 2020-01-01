@@ -880,7 +880,13 @@ bool searchComparableFunctions(InconsistencySolution* inconsistency, Inconsisten
             delete(candidate);
         }
     }
-        
+
+    //try non comparable function if no function is found and optimum is required
+    if(!solFound && Configuration::isActive("forceOptimum"))
+    {
+        return searchNonComparableFunctions(inconsistency, iNode, flippedEdges, addedEdges, removedEdges);
+    }
+    
     return solFound;
 
 }
@@ -1062,7 +1068,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         if(Configuration::isActive("debug"))
             printf("DEBUG: End half determination\n");
         if(Configuration::isActive("debug"))
-            printf("Performing a search going %s\n", isGeneralize ? "up" : "down");
+            printf("DEBUG: Performing a search going %s\n", isGeneralize ? "up" : "down");
     }
     int cindex = 1;
     for(auto it = originalMap.begin(), end = originalMap.end(); it!= end; it++)
@@ -1074,9 +1080,10 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         }
 
     }
+
     candidates.push_back(newF);
     if(Configuration::isActive("debug"))
-        printf("Finding functions for double inconsistency in %s %s (%d regulators)\n\n",originalF->printFunction().c_str(), originalF->printFunctionFullLevel().c_str(), originalF->getNumberOfRegulators());
+        printf("DEBUG: Finding functions for double inconsistency in %s %s (%d regulators)\n\n",originalF->printFunction().c_str(), originalF->printFunctionFullLevel().c_str(), originalF->getNumberOfRegulators());
 
     // get the possible candidates to replace the inconsistent function
     bool functionRepaired = false;
@@ -1092,13 +1099,13 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         {
             continue;
         }
-
-        if(isFuncConsistentWithLabel(inconsistency, candidate))
+        int incType = nFuncInconsistWithLabel(inconsistency, candidate);
+        if(incType == CONSISTENT)
         {
             isConsistent = true;
             consistentFunctions.push_back(candidate);
             if(!functionRepaired && Configuration::isActive("debug"))
-                printf("\tfound first function at level %d %s\n",candidate->distanceFromOriginal_, candidate->printFunction().c_str());
+                printf("\tDEBUG: found first function at level %d %s\n",candidate->distanceFromOriginal_, candidate->printFunction().c_str());
             functionRepaired = true;
             solFound = true;
             
@@ -1184,8 +1191,16 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         //not consistent candidate
         else
         {
+            //if the function is inconsistent but it came from a consistent function
+            //then we can stop search its branch further
             if(candidate->son_consistent)
                 continue;
+            
+            //if the function is not consistent and has a inconsistency diferent from the direction we are going
+            // then we can stop exploring such branch
+            if(incType == DOUBLE_INC || (isGeneralize && incType == SINGLE_INC_PART) || (!isGeneralize && incType == SINGLE_INC_GEN))
+                continue;
+
             if(levelCompare)
             {
                 if(isGeneralize && !equalLevel.empty() && candidate->compareLevel(originalF) > 0)
@@ -1232,7 +1247,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         {
             if(levelCompare)
             {
-                printf("\nPrinting consistent functions found using level comparison\n");
+                printf("\nDEBUG: Printing consistent functions found using level comparison\n");
                 if(!equalLevel.empty())
                 {
                     printf("Looked at %d functions. Found %d consistent. To return %d functions of same level\n\n", counter, (int)consistentFunctions.size(), (int)equalLevel.size());
@@ -1257,8 +1272,8 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
             }
             else
             {
-                printf("\nPrinting consistent functions found\n");
-                printf("Looked at %d functions. Found %d functions\n\n", counter, (int)consistentFunctions.size());
+                //printf("\nPrinting consistent functions found\n");
+                printf("DEBUG: Looked at %d functions. Found %d functions\n\n", counter, (int)consistentFunctions.size());
                 //for(auto it = consistentFunctions.begin(), end = consistentFunctions.end(); it != end; it++)
                 //{
                 //    printf("\t %s %s (distance from bottom: %d)\n", (*it)->printFunction().c_str(), (*it)->printFunctionFullLevel().c_str(), (*it)->level_);
@@ -1268,7 +1283,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         }
         else
         {
-            printf("no consistent functions found - %d\n", counter);
+            printf("DEBUG: no consistent functions found - %d\n", counter);
         }
     }
 
