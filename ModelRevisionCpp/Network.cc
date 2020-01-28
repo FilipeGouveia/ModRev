@@ -161,7 +161,7 @@ bool Edge::isEqual(Edge* e, bool checkSign)
 Node::Node(std::string id)
     :id_(id)
     {
-        regFunction_ = nullptr;
+        regFunction_ = new Function(id);
     }
 
 Node::~Node()

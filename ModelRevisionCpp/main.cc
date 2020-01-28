@@ -152,13 +152,14 @@ void modelRevision() {
     if(Configuration::isActive("debug"))
         std::cout << "found " << fInconsistencies.size() << " solutions with " << fInconsistencies.front()->iNodes_.size() << " inconsistent nodes" << std::endl;
 
-
     //At this point we have an inconsistent network with node candidates to be repaired
 
     //for each possible inconsistency solution/labelling, try to make the model consistent
     InconsistencySolution * bestSolution = nullptr;
+    
     for(auto it = fInconsistencies.begin(), end = fInconsistencies.end(); it != end; it++)
     {
+
         repairInconsistencies((*it));
 
         //TODO
@@ -245,7 +246,6 @@ std::vector<InconsistencySolution*> checkConsistency(int & optimization) {
 //returns the set of repair operations to be applied
 void repairInconsistencies(InconsistencySolution* inconsistency)
 {
-
     //repair each inconsistent node
     for(auto it = inconsistency->iNodes_.begin(), end = inconsistency->iNodes_.end(); it != end; it++)
     {
@@ -270,7 +270,9 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
     Node * originalN = network->getNode(iNode->id_);
     Function * originalF = originalN->regFunction_;
 
-    std::map<std::string,int> originalMap = originalF->getRegulatorsMap();
+    std::map<std::string,int> originalMap;
+    if(originalF != nullptr)
+        originalMap = originalF->getRegulatorsMap();
     std::vector<Edge*> listEdgesRemove;
     std::vector<Edge*> listEdgesAdd;
 
@@ -472,7 +474,11 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* inconsistency, In
 {
     Function * f = network->getNode(iNode->id_)->regFunction_;
 
-    std::map<std::string,int> map = f->getRegulatorsMap();
+    std::map<std::string,int> map;
+    if(f != nullptr)
+    {
+        map = f->getRegulatorsMap();
+    }
     std::vector<Edge*> listEdges;
     for(auto it = map.begin(), end = map.end(); it!= end; it++)
     {
@@ -659,6 +665,7 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
     int time = 0;
+    int lastVal = -1;
     while(profileMap->find(time) != profileMap->end())
     {
         //if it is not steady state, the following time must exist
@@ -764,23 +771,47 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
         {
             if(isSteadyState)
             {
-                if((*timeMap)[f->getNode()] == 0)
+                if(nClauses == 0)
                 {
                     return CONSISTENT;
                 }
-                return SINGLE_INC_GEN;
+                else
+                {
+                    if((*timeMap)[f->getNode()] == 0)
+                    {
+                        return CONSISTENT;
+                    }
+                    return SINGLE_INC_GEN;
+                }
             }
             else
             {
-                if((*profileMap)[time+1][f->getNode()] != 0)
+                if(nClauses == 0)
                 {
-                    if(result == CONSISTENT || result == SINGLE_INC_GEN)
+                    //no function
+                    //input node
+                    if(lastVal < 0)
                     {
-                        result = SINGLE_INC_GEN;
+                        lastVal = (*timeMap)[f->getNode()];
                     }
-                    else
+                    if((*profileMap)[time+1][f->getNode()] != lastVal)
                     {
                         return DOUBLE_INC;
+                    }
+
+                }
+                else
+                {
+                    if((*profileMap)[time+1][f->getNode()] != 0)
+                    {
+                        if(result == CONSISTENT || result == SINGLE_INC_GEN)
+                        {
+                            result = SINGLE_INC_GEN;
+                        }
+                        else
+                        {
+                            return DOUBLE_INC;
+                        }
                     }
                 }
 
@@ -908,6 +939,7 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
     int time = 0;
+    int lastVal = -1;
     while(profileMap->find(time) != profileMap->end())
     {
         //if it is not steady state, the following time must exist
@@ -1006,6 +1038,10 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         {
             if(isSteadyState)
             {
+                if(nClauses == 0)
+                {
+                    return true;
+                }
                 if((*timeMap)[f->getNode()] == 0)
                 {
                     return true;
@@ -1014,9 +1050,26 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
             }
             else
             {
-                if((*profileMap)[time+1][f->getNode()] != 0)
+                if(nClauses == 0)
                 {
-                    return false;
+                    //no function
+                    //input node
+                    if(lastVal < 0)
+                    {
+                        lastVal = (*timeMap)[f->getNode()];
+                    }
+                    if((*profileMap)[time+1][f->getNode()] != lastVal)
+                    {
+                        return false;
+                    }
+
+                }
+                else
+                {
+                    if((*profileMap)[time+1][f->getNode()] != 0)
+                    {
+                        return false;
+                    }
                 }
 
             }

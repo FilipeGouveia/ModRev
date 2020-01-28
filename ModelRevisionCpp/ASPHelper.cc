@@ -272,14 +272,14 @@ void ASPHelper::parseNetwork(Network * network) {
                     continue;
                 }
                 Node* node = network->addNode(split[0]);
-                if(split[1].find("..") != std::string::npos)
-                {
-                    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
-                    split[1] = aux_split[aux_split.size()-1];
-                }
+                //if(split[1].find("..") != std::string::npos)
+                //{
+                //    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
+                //    split[1] = aux_split[aux_split.size()-1];
+                //}
 
-                Function* f = new Function(split[0]);
-                node->addFunction(f);
+                //Function* f = new Function(split[0]);
+                //node->addFunction(f);
                 continue;
             }
             if(split[0].compare("functionAnd") == 0)
