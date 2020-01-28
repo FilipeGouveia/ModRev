@@ -629,6 +629,7 @@ bool repairNodeConsistencyFunctions(InconsistencySolution* inconsistency, Incons
         if(Configuration::isActive("debug"))
             std::cout << "DEBUG: end searching for comparable functions for node " << iNode->id_ << "\n";
     }
+
     return solFound;
 }
 
@@ -905,6 +906,7 @@ bool searchComparableFunctions(InconsistencySolution* inconsistency, Inconsisten
                     tCandidates.push_back((*it));
             }
         }
+        tauxCandidates.clear();
         //tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
         if(!candidateSol)
         {
@@ -1292,6 +1294,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
             if(!isIn(candidates, (*it)))
                 candidates.push_back((*it));
         }
+        tauxCandidates.clear();
         
     }
     if(Configuration::isActive("debug"))
@@ -1441,6 +1444,12 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         }
 
     }
+
+    candidates.clear();
+    consistentFunctions.clear();
+    bestBelow.clear();
+    bestAbove.clear();
+    equalLevel.clear();
     
     return solFound;
 
