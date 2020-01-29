@@ -494,7 +494,15 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* inconsistency, In
 
     bool solFound = false;
 
-    for(int nEdges = 0; nEdges <= (int)listEdges.size(); nEdges++)
+    int iterations = (int)listEdges.size();
+    //if a solution was already found,
+    //do not exceed the number of flip edges from previous solutions
+    if(iNode->repaired_)
+    {
+        iterations = iNode->getNFlipEdgesOperations();
+    }
+
+    for(int nEdges = 0; nEdges <= iterations; nEdges++)
     {
         if(Configuration::isActive("debug"))
             std::cout << "DEBUG: testing with " << nEdges << " edge flips\n";

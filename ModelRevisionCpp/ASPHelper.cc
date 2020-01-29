@@ -271,7 +271,8 @@ void ASPHelper::parseNetwork(Network * network) {
                     std::cout << "WARN! FunctionOr not recognised: " << line << std::endl;
                     continue;
                 }
-                Node* node = network->addNode(split[0]);
+                network->addNode(split[0]);
+                //Node* node = network->addNode(split[0]);
                 //if(split[1].find("..") != std::string::npos)
                 //{
                 //    std::vector<std::string> aux_split = Util_h::split(split[1], '.');

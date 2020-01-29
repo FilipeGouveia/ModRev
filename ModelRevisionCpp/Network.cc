@@ -423,14 +423,24 @@ void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
         else
         {
             //filter solutions not optimal
-            if(target->second->getNTopologyChanges() < repairSet->getNTopologyChanges()
-            || target->second->getNRepairOperations() < repairSet->getNRepairOperations())
+            if(repairSet->getNAddRemoveOperations() > target->second->getNAddRemoveOperations())
             {
                 return;
             }
+            if(repairSet->getNAddRemoveOperations() == target->second->getNAddRemoveOperations() && 
+                repairSet->getNFlipEdgesOperations() > target->second->getNFlipEdgesOperations())
+            {
+                return;
+            }
+            if(repairSet->getNAddRemoveOperations() == target->second->getNAddRemoveOperations() && 
+                repairSet->getNFlipEdgesOperations() == target->second->getNFlipEdgesOperations() &&
+                repairSet->getNRepairOperations() > target->second->getNRepairOperations())
+            {
+                return;
+            }
+            
             //update values for better solutions
-            if(repairSet->getNTopologyChanges() < target->second->getNTopologyChanges()
-            || repairSet->getNRepairOperations() < target->second->getNRepairOperations())
+            if(repairSet->getNRepairOperations() < target->second->getNRepairOperations())
             {
                 nTopologyChanges_ -= target->second->getNTopologyChanges();
                 nTopologyChanges_ += repairSet->getNTopologyChanges();
@@ -506,6 +516,16 @@ void InconsistencySolution::printSolution(bool printAll) {
     }
 }
 
+InconsistentNode* InconsistencySolution::getINode(std::string id)
+{
+    auto target = iNodes_.find(id);
+    if(target != iNodes_.end())
+    {
+        return target->second;
+    }
+    return nullptr;
+}
+
 
 
 InconsistentNode::InconsistentNode(std::string id, bool generalization)
@@ -514,6 +534,8 @@ InconsistentNode::InconsistentNode(std::string id, bool generalization)
     repairSet_(){
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
+        nAddRemoveOperations_ = 0;
+        nFlipEdgesOperations_ = 0;
         repaired_ = false;
         topologicalError_ = false;
         if(generalization)
@@ -537,17 +559,45 @@ void InconsistentNode::addRepairSet(RepairSet* repairSet)
         repaired_ = true;
         nTopologyChanges_ = repairSet->getNTopologyChanges();
         nRepairOperations_= repairSet->getNRepairOperations();
+        nFlipEdgesOperations_ = repairSet->getNFlipEdgesOperations();
+        nAddRemoveOperations_ = repairSet->getNAddRemoveOperations();
     }
     else
     {
+        //if new solutions is worse, ignore
+        if(repairSet->getNAddRemoveOperations() > nAddRemoveOperations_ )
+        {
+            return;
+        }
+        if(repairSet->getNAddRemoveOperations() == nAddRemoveOperations_ && 
+            repairSet->getNFlipEdgesOperations() > nFlipEdgesOperations_)
+        {
+            return;
+        }
+        if(repairSet->getNAddRemoveOperations() == nAddRemoveOperations_ && 
+            repairSet->getNFlipEdgesOperations() == nFlipEdgesOperations_ &&
+            repairSet->getNRepairOperations() > nRepairOperations_)
+        {
+            return;
+        }
+
         //if new solution is better, remove all others before
-        if(repairSet->getNTopologyChanges() < nTopologyChanges_ ||
-            repairSet->getNRepairOperations() < nRepairOperations_)
+        //at this point we know that the new repair is at least as good as existing ones
+        if(repairSet->getNRepairOperations() < nRepairOperations_)
         {
             repairSet_.clear();
             nTopologyChanges_ = repairSet->getNTopologyChanges();
             nRepairOperations_= repairSet->getNRepairOperations();
+            nAddRemoveOperations_ = repairSet->getNAddRemoveOperations();
+            nFlipEdgesOperations_ = repairSet->getNFlipEdgesOperations();
         }
+        //if(repairSet->getNTopologyChanges() < nTopologyChanges_ ||
+        //    repairSet->getNRepairOperations() < nRepairOperations_)
+        //{
+        //    repairSet_.clear();
+        //    nTopologyChanges_ = repairSet->getNTopologyChanges();
+        //    nRepairOperations_= repairSet->getNRepairOperations();
+        //}
     }
     repairSet_.push_back(repairSet);
 }
@@ -560,6 +610,14 @@ int InconsistentNode::getNRepairOperations() {
     return nRepairOperations_;
 }
 
+int InconsistentNode::getNAddRemoveOperations() {
+    return nAddRemoveOperations_;
+}
+
+int InconsistentNode::getNFlipEdgesOperations() {
+    return nFlipEdgesOperations_;
+}
+
 
 RepairSet::RepairSet()
     :repairedFunctions_(),
@@ -568,6 +626,8 @@ RepairSet::RepairSet()
     addedEdges_() {
         nTopologyChanges_ = 0;
         nRepairOperations_ = 0;
+        nAddRemoveOperations_ = 0;
+        nFlipEdgesOperations_ = 0;
     }
 
 RepairSet::~RepairSet(){}
@@ -581,6 +641,13 @@ int RepairSet::getNRepairOperations() {
     return nRepairOperations_;
 }
 
+int RepairSet::getNFlipEdgesOperations() {
+    return nFlipEdgesOperations_;
+}
+
+int RepairSet::getNAddRemoveOperations() {
+    return nAddRemoveOperations_;
+}
 
 void RepairSet::addRepairedFunction(Function* f) {
     repairedFunctions_.push_back(f);
@@ -592,18 +659,21 @@ void RepairSet::addFlippedEdge(Edge* e) {
     flippedEdges_.push_back(e);
     nRepairOperations_++;
     nTopologyChanges_++;
+    nFlipEdgesOperations_++;
 }
 
 void RepairSet::removeEdge(Edge* e) {
     removedEdges_.push_back(e);
     nRepairOperations_++;
     nTopologyChanges_++;
+    nAddRemoveOperations_++;
 }
 
 void RepairSet::addEdge(Edge* e) {
     addedEdges_.push_back(e);
     nRepairOperations_++;
     nTopologyChanges_++;
+    nAddRemoveOperations_++;
 }
 
 bool RepairSet::isEqual(RepairSet* repairSet)
@@ -611,6 +681,8 @@ bool RepairSet::isEqual(RepairSet* repairSet)
 
     if(nTopologyChanges_ != repairSet->nTopologyChanges_ ||
         nRepairOperations_ != repairSet->nRepairOperations_ ||
+        nFlipEdgesOperations_ != repairSet->nFlipEdgesOperations_ ||
+        nAddRemoveOperations_ != repairSet->nAddRemoveOperations_ ||
         repairedFunctions_.size() != repairSet->repairedFunctions_.size() ||
         flippedEdges_.size() != repairSet->flippedEdges_.size() ||
         removedEdges_.size() != repairSet->removedEdges_.size() ||

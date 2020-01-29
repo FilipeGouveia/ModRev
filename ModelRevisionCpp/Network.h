@@ -117,6 +117,8 @@ class RepairSet {
     public:
         int nTopologyChanges_;
         int nRepairOperations_;
+        int nAddRemoveOperations_;
+        int nFlipEdgesOperations_;
         std::vector<Function*> repairedFunctions_; //should only be one per repairSet per inconsistent node
         std::vector<Edge*> flippedEdges_;
         std::vector<Edge*> removedEdges_;
@@ -127,6 +129,8 @@ class RepairSet {
 
         int getNTopologyChanges();
         int getNRepairOperations();
+        int getNAddRemoveOperations();
+        int getNFlipEdgesOperations();
         void addRepairedFunction(Function* f);
         void addFlippedEdge(Edge* e);
         void removeEdge(Edge* e);
@@ -143,6 +147,8 @@ class InconsistentNode {
         bool topologicalError_;
         int nTopologyChanges_;
         int nRepairOperations_;
+        int nAddRemoveOperations_;
+        int nFlipEdgesOperations_;
         bool repaired_;
         //possible ways to repair the node;
         std::vector<RepairSet*> repairSet_;
@@ -155,6 +161,8 @@ class InconsistentNode {
 
         int getNTopologyChanges();
         int getNRepairOperations();
+        int getNAddRemoveOperations();
+        int getNFlipEdgesOperations();
         void addRepairSet(RepairSet* repairSet);
 };
 
@@ -184,6 +192,7 @@ class InconsistencySolution {
         void addRepairSet(std::string id, RepairSet* repairSet);
         int getNTopologyChanges();
         int getNRepairOperations();
+        InconsistentNode* getINode(std::string id);
         void printSolution(bool printAll = true);
 
 };
