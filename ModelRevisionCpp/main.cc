@@ -409,6 +409,10 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
                 }
             }
 
+            //clean memory
+            listAddCombination.clear();
+            listRemoveCombination.clear();
+
         }
 
         if(solFound)
@@ -423,6 +427,14 @@ void repairNodeConsistency(InconsistencySolution* inconsistency, InconsistentNod
         inconsistency->hasImpossibility = true;
         std::cout << "WARN: Not possible to repair node " << iNode->id_ << std::endl;
     }
+
+    //clean memory
+    listEdgesRemove.clear();
+    listEdgesAdd.clear();
+    listEdgesRemove.resize(0);
+    listEdgesAdd.resize(0);
+
+
     return;
 
 }
@@ -550,6 +562,9 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* inconsistency, In
                 std::cout << "DEBUG: ready to end with " << nEdges << " edges flipped\n";
             break;
         }
+
+        //clean memory
+        eCandidates.clear();
 
     }
 
@@ -915,12 +930,16 @@ bool searchComparableFunctions(InconsistencySolution* inconsistency, Inconsisten
             }
         }
         tauxCandidates.clear();
+        tauxCandidates.resize(0);
         //tCandidates.insert(tCandidates.end(),tauxCandidates.begin(),tauxCandidates.end());
         if(!candidateSol)
         {
             delete(candidate);
         }
     }
+
+    tCandidates.clear();
+    tCandidates.resize(0);
 
     //try non comparable function if no function is found and optimum is required
     if(!solFound && Configuration::isActive("forceOptimum"))
@@ -1257,21 +1276,29 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
             //if the function is inconsistent but it came from a consistent function
             //then we can stop search its branch further
             if(candidate->son_consistent)
+            {
+                delete(candidate);
                 continue;
+            }
             
             //if the function is not consistent and has a inconsistency diferent from the direction we are going
             // then we can stop exploring such branch
             if(incType == DOUBLE_INC || (isGeneralize && incType == SINGLE_INC_PART) || (!isGeneralize && incType == SINGLE_INC_GEN))
+            {
+                delete(candidate);
                 continue;
+            }
 
             if(levelCompare)
             {
                 if(isGeneralize && !equalLevel.empty() && candidate->compareLevel(originalF) > 0)
                 {
+                    delete(candidate);
                     continue;
                 }
                 if(!isGeneralize && !equalLevel.empty() && candidate->compareLevel(originalF) < 0)
                 {
+                    delete(candidate);
                     continue;
                 }
                 if(isGeneralize && !bestAbove.empty())
@@ -1280,6 +1307,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
                     int repCmp = representant->compareLevel(candidate);
                     if(repCmp < 0)
                     {
+                        delete(candidate);
                         continue;
                     }
                 }
@@ -1289,6 +1317,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
                     int repCmp = representant->compareLevel(candidate);
                     if(repCmp > 0)
                     {
+                        delete(candidate);
                         continue;
                     }
                 }
@@ -1302,7 +1331,13 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
             if(!isIn(candidates, (*it)))
                 candidates.push_back((*it));
         }
+        if(!isConsistent)
+        {
+            delete(candidate);
+        }
+
         tauxCandidates.clear();
+        tauxCandidates.resize(0);
         
     }
     if(Configuration::isActive("debug"))
@@ -1454,10 +1489,15 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
     }
 
     candidates.clear();
+    candidates.resize(0);
     consistentFunctions.clear();
+    consistentFunctions.resize(0);
     bestBelow.clear();
+    bestBelow.resize(0);
     bestAbove.clear();
+    bestAbove.resize(0);
     equalLevel.clear();
+    equalLevel.resize(0);
     
     return solFound;
 

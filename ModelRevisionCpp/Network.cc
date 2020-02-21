@@ -585,6 +585,7 @@ void InconsistentNode::addRepairSet(RepairSet* repairSet)
         //at this point we know that the new repair is at least as good as existing ones
         if(repairSet->getNRepairOperations() < nRepairOperations_)
         {
+            repairSet_.erase(repairSet_.begin(), repairSet_.end());
             repairSet_.clear();
             nTopologyChanges_ = repairSet->getNTopologyChanges();
             nRepairOperations_= repairSet->getNRepairOperations();
@@ -630,7 +631,14 @@ RepairSet::RepairSet()
         nFlipEdgesOperations_ = 0;
     }
 
-RepairSet::~RepairSet(){}
+RepairSet::~RepairSet(){
+    repairedFunctions_.erase(repairedFunctions_.begin(), repairedFunctions_.end());
+    repairedFunctions_.clear();
+    flippedEdges_.clear();
+    removedEdges_.clear();
+    addedEdges_.erase(addedEdges_.begin(), addedEdges_.end());
+    addedEdges_.clear();
+}
 
 
 int RepairSet::getNTopologyChanges() {
