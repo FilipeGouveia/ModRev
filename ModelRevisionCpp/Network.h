@@ -4,27 +4,31 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <BooleanFunction.h>
+#include <set>
 
 class Function {
 
     private:
-        std::map<std::string,int> regulatorsMap_;
-        std::vector<int> fullLevel_;
+        BooleanFunction::Function * booleanF_;
 
     public:
 
-        std::string node_;
-        int nClauses_;
-        std::map<int, std::vector< std::string >> clauses_;
-        int level_;
+        int distanceFromOriginal_;
         bool son_consistent;
 
-        Function(std::string node, int nClauses);
+        Function(BooleanFunction::Function *f);
+        Function(std::string node);
         ~Function();
 
+        std::string getNode();
         void addElementClause(int id, std::string node);
         int getNumberOfRegulators();
         std::map<std::string,int> getRegulatorsMap();
+
+        std::map<int, std::set<std::string>> getClauses();
+        int getNClauses();
+
         std::string printFunction();
         bool isEqual(Function* f);
 
@@ -33,8 +37,13 @@ class Function {
         int compareLevel(std::vector<int> fullLevel);
         std::string printFunctionFullLevel();
 
-        static bool isClausePresent(std::vector<std::string> clause, std::map<int, std::vector<std::string>> clauses);
-    
+        std::vector<Function*> getParents();
+        std::vector<Function*> getChildren();
+
+        std::vector<Function*> getReplacements(bool generalize);
+
+        BooleanFunction::Function * getBooleanFunction();
+
 };
 
 
@@ -84,6 +93,7 @@ class Network {
         std::map< std::string, Node* > nodes_;
         std::vector< Edge* > edges_;
         std::string input_file_network_;
+        std::vector< std::string> observation_files;
 
         Network();
         ~Network();
@@ -107,6 +117,8 @@ class RepairSet {
     public:
         int nTopologyChanges_;
         int nRepairOperations_;
+        int nAddRemoveOperations_;
+        int nFlipEdgesOperations_;
         std::vector<Function*> repairedFunctions_; //should only be one per repairSet per inconsistent node
         std::vector<Edge*> flippedEdges_;
         std::vector<Edge*> removedEdges_;
@@ -117,6 +129,8 @@ class RepairSet {
 
         int getNTopologyChanges();
         int getNRepairOperations();
+        int getNAddRemoveOperations();
+        int getNFlipEdgesOperations();
         void addRepairedFunction(Function* f);
         void addFlippedEdge(Edge* e);
         void removeEdge(Edge* e);
@@ -130,8 +144,11 @@ class InconsistentNode {
     public:
         std::string id_;
         bool generalization_;
+        bool topologicalError_;
         int nTopologyChanges_;
         int nRepairOperations_;
+        int nAddRemoveOperations_;
+        int nFlipEdgesOperations_;
         bool repaired_;
         //possible ways to repair the node;
         std::vector<RepairSet*> repairSet_;
@@ -144,6 +161,8 @@ class InconsistentNode {
 
         int getNTopologyChanges();
         int getNRepairOperations();
+        int getNAddRemoveOperations();
+        int getNFlipEdgesOperations();
         void addRepairSet(RepairSet* repairSet);
 };
 
@@ -153,8 +172,11 @@ class InconsistencySolution {
     public:
         //map node id as key
         std::map<std::string, InconsistentNode*> iNodes_;
-        //map profile as key; second map node as key;
-        std::map<std::string, std::map<std::string,int>> vlabel_;
+        //map profile as key; second map time as key; third map node as key;
+        std::map<std::string, std::map<int, std::map<std::string, int > > > vlabel_;
+        //map time as key; second map profile as key; second map as a vector of the id of the nodes that update in a given time, in a given profile
+        //note that multiple node can update in multi-asynchronous update mode
+        std::map<int, std::map<std::string, std::vector<std::string> > > updates_;
         int nTopologyChanges_;
         int nRepairOperations_;
         bool hasImpossibility;
@@ -164,10 +186,13 @@ class InconsistencySolution {
 
         void addGeneralization(std::string id);
         void addParticularization(std::string id);
-        void addVLabel(std::string profile, std::string id, int value);
+        void addTopologicalError(std::string id);
+        void addVLabel(std::string profile, std::string id, int value, int time = 0);
+        void addUpdate(int time, std::string profile, std::string id);
         void addRepairSet(std::string id, RepairSet* repairSet);
         int getNTopologyChanges();
         int getNRepairOperations();
+        InconsistentNode* getINode(std::string id);
         void printSolution(bool printAll = true);
 
 };

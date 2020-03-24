@@ -14,38 +14,130 @@
 #include <algorithm>
 #include <time.h>
 
-int ASPHelper::checkConsistency(std::string input_file_network, std::vector<std::vector<std::string>> & result, bool ss) {
+#include <clingo.hh>
 
-    std::string solve_cmd = Configuration::getValue("ASP_solver");
-    solve_cmd.append(" ");
-    if(ss)
-        solve_cmd.append(Configuration::getValue("ASP_CC_SS"));
-    solve_cmd.append(" ");
-    solve_cmd.append("--opt-mode=optN");
-    solve_cmd.append(" ");
-    solve_cmd.append(input_file_network);
+enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-    std::string result_cmd = exec(solve_cmd.c_str());
-    int opt = -2;
-    result = ASPHelper::getOptAnswer(result_cmd, opt);
-   if(opt == -1)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "found no solution" << std::endl;
-        return opt;
-   } 
-   if(opt == 0)
-   {
-        if(Configuration::isActive("debug"))
-            std::cout << "model consistent" << std::endl;
-        return opt;
-   }
+std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * network, int & optimization, bool ss, int update) {
 
-   return opt;
+    std::vector<InconsistencySolution*> result;
 
+    try
+    {
+        Clingo::Logger logger = [](Clingo::WarningCode, char const *message) {
+            if(Configuration::isActive("debug"))
+            {
+                std::cerr << message << std::endl;
+            }
+        };
+
+        Clingo::Control * ctl = new Clingo::Control({"--opt-mode=optN"}, logger, 20);
+
+        if(ss)
+        {
+            ctl->load(Configuration::getValue("ASP_CC_SS").c_str());
+        }
+        else
+        {
+            ctl->load(Configuration::getValue("ASP_CC_D").c_str());
+            switch(update)
+            {
+                case ASYNC:
+                    ctl->load(Configuration::getValue("ASP_CC_D_A").c_str());
+                    break;
+                case SYNC:
+                    ctl->load(Configuration::getValue("ASP_CC_D_S").c_str());
+                    break;
+                case MASYNC:
+                    ctl->load(Configuration::getValue("ASP_CC_D_MA").c_str());
+                    break;
+            }
+        }
+
+        ctl->load(network->input_file_network_.c_str());
+        for(auto it = network->observation_files.begin(), end = network->observation_files.end(); it != end; it++)
+        {
+            ctl->load((*it).c_str());
+        }
+
+        ctl->ground({{"base", {}}});
+        Clingo::SolveHandle sh = ctl->solve();
+        if(sh.get().is_satisfiable())
+        {
+            for(auto &m : sh)
+            {
+                if(m && m.optimality_proven())
+                {
+                    //optimum model found
+                    result.push_back(parseCCModel(m, optimization));
+                }
+            }
+        }
+        else
+        {
+            optimization = -1;
+        }
+
+    }
+    catch (std::exception const &e) {
+        std::cerr << "failed to check consistency: " << e.what() << std::endl;
+    }
+
+    return result;
 }
 
+InconsistencySolution * ASPHelper::parseCCModel(const Clingo::Model &m, int & optimization)
+{
+    InconsistencySolution* inconsistency = new InconsistencySolution();
+    int count = 0;
+    for(auto &atom : m.symbols())
+    {
+        std::string name(atom.name());
+        Clingo::SymbolSpan args = atom.arguments();
 
+        if(name.compare("vlabel") == 0)
+        {
+            if(args.size() > 3)
+            {
+                inconsistency->addVLabel(args[0].to_string(), args[2].to_string(), args[3].number(), args[1].number());
+            }
+            else
+            {
+                inconsistency->addVLabel(args[0].to_string(), args[1].to_string(), args[2].number(), 0);
+            }
+            continue;
+        }
+        if(name.compare("r_gen") == 0)
+        {
+            inconsistency->addGeneralization(args[0].to_string());
+            continue;
+        }
+        if(name.compare("r_part") == 0)
+        {
+            inconsistency->addParticularization(args[0].to_string());
+        }
+        if(name.compare("repair") == 0)
+        {
+            count++;
+            continue;
+        }
+        if(name.compare("update") == 0)
+        {
+            inconsistency->addUpdate(args[1].number(), args[0].to_string(), args[2].to_string());
+            continue;
+        }
+        if(name.compare("topologicalerror") == 0)
+        {
+            inconsistency->addTopologicalError(args[0].to_string());
+            continue;
+        }
+
+    }
+    optimization = count;
+    return inconsistency;
+}
+
+/*
 std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input, int & optimization, bool optAll) {
     
     std::vector<std::vector<std::string>> result;
@@ -105,15 +197,16 @@ std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input,
     return result;
 
 }
+*/
 
-
-void ASPHelper::parseNetwork(std::string input_file_network, Network * network) {
+void ASPHelper::parseNetwork(Network * network) {
 
     std::ifstream file;
-    file.open(input_file_network);
+    file.open(network->input_file_network_);
     if(!file.good())
     {
-        std::fprintf(stderr, "ERROR! Cannot open file '%s'.\n", input_file_network.c_str());
+        std::fprintf(stderr, "ERROR! Cannot open file '%s'.\n", network->input_file_network_.c_str());
+        file.close();
         return;
     }
 
@@ -178,24 +271,16 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
                     std::cout << "WARN! FunctionOr not recognised: " << line << std::endl;
                     continue;
                 }
-                Node* node = network->addNode(split[0]);
-                if(split[1].find("..") != std::string::npos)
-                {
-                    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
-                    split[1] = aux_split[aux_split.size()-1];
-                }
+                network->addNode(split[0]);
+                //Node* node = network->addNode(split[0]);
+                //if(split[1].find("..") != std::string::npos)
+                //{
+                //    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
+                //    split[1] = aux_split[aux_split.size()-1];
+                //}
 
-                int nClauses;
-                try {
-                    nClauses = std::stoi(split[1]);
-                }
-                catch(...)
-                {
-                    std::cout << "WARN! Invalid number of clauses: " << split[1] << " on line " << line << std::endl;
-                    continue;
-                }
-                Function* f = new Function(split[0], nClauses);
-                node->addFunction(f);
+                //Function* f = new Function(split[0]);
+                //node->addFunction(f);
                 continue;
             }
             if(split[0].compare("functionAnd") == 0)
@@ -229,10 +314,12 @@ void ASPHelper::parseNetwork(std::string input_file_network, Network * network) 
         }
     }
 
+    file.close();
+    return;
 
 }
 
-
+/*
 std::vector<InconsistencySolution*> ASPHelper::parseFunctionRepairResults(std::vector<std::vector<std::string>> results) {
     std::vector<InconsistencySolution*> result;   
     for(auto it = results.begin(), end= results.end(); it!=end; it++)
@@ -280,9 +367,9 @@ std::vector<InconsistencySolution*> ASPHelper::parseFunctionRepairResults(std::v
 
     return result;
 }
+*/
 
-
-
+/*
 std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is_fathers, std::string filename) {
     std::vector<Function*> result;
 
@@ -345,8 +432,9 @@ std::vector<Function*> ASPHelper::getFunctionReplace(Function* function, bool is
 
     return parseFunctionFamily(result_cmd, function);
 }
+*/
 
-
+/*
 std::string ASPHelper::constructFunctionClause(Function* function){
     std::map<std::string,int> regMap = function->getRegulatorsMap();
     std::string result = "";
@@ -366,8 +454,9 @@ std::string ASPHelper::constructFunctionClause(Function* function){
     return result;
    
 }
+*/
 
-
+/*
 std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Function* original)
 {
     //std::cout << "DEBUG original function: " << original->printFunction() << std::endl;
@@ -405,7 +494,7 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
                 process = false;
 
                 //process new function
-                Function* newFunction = new Function(original->node_, 1);
+                Function* newFunction = new Function(original->node_);
                 //newFunction->regulatorsMap_ = regMap;
                 std::vector<std::string> splitLine = Util_h::split(line, ' ');
                 int clauseId = 1;
@@ -461,3 +550,4 @@ std::vector<Function*> ASPHelper::parseFunctionFamily(std::string input, Functio
 
     return result;
 }
+*/

@@ -40,3 +40,4 @@ repair(V) :- r_part(V).
 #show r_gen/1.
 #show r_part/1.
 #show vlabel/3.
+#show repair/1.

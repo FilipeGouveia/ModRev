@@ -2,3 +2,4 @@
 modrev
 .makedeps
 runModRev*.csh
+runscripts
