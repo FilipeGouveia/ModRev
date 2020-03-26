@@ -16,10 +16,22 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 
 ### Additional material
 
-- Examples of inconsistent networks: [inputNetworks](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip).
-- Examples of time-series observations: [observations](https://filipegouveia.github.io/ModelRevisionASP/observations.zip).
+- Examples of inconsistent networks: [inputNetworks](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip)
+- Examples of time-series observations: [observations](https://filipegouveia.github.io/ModelRevisionASP/observations.zip)
 
 ## Publications
+
+- F. Gouveia, I. Lynce, P.T. Monteiro (2020)
+  **Revision of Boolean models of regulatory networks using stable state observations**
+  *Journal of Computational Biology*, 27(2): 144-155
+  [doi:10.1089/cmb.2019.0289](https://doi.org/10.1089/cmb.2019.0289)
+
+- F. Gouveia, I. Lynce, P.T. Monteiro (2019)
+  **Model revision of Boolean regulatory networks at stable state**
+  in Z. Cai et al. (editors)
+  *Proc. of the 15th International Symposium on Bioinformatics Research and Applications (ISBRA'19)*, LNCS 11490, 1-13
+  [doi:10.1007/978-3-030-20242-2_9](https://doi.org/10.1007/978-3-030-20242-2_9)
+
 
 ## Authors
 * Filipe Gouveia
