@@ -35,17 +35,17 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 
 <!-- A table summary of the time results can be found here -->
 
-<div class=inner style="display:flex">
-    <div class=inner style="width:50%;float:left;text-align:center">
+<div class="inner" style="display:flex">
+    <div class="inner" style="width:50%;float:left;text-align:center">
         <h6>Synchronous</h6>
-        <div class=inner>
+        <div class="inner">
         <img style="max-width=100%" src="images/FY-s.png" alt="FY - Synchronous"/>
         FY
         </div>
     </div>
-    <div class=inner style="width:50%;float:right;text-align:center">
+    <div class="inner" style="width:50%;float:right;text-align:center">
         <h6>Asynchronous</h6>
-        <div class=inner>
+        <div class="inner">
         <img style="max-width=100%" src="images/FY-a.png" alt="FY - Asynchronous"/>
         FY
         </div>
