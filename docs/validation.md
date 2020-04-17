@@ -1,3 +1,4 @@
+[<< Back](/)
 <!--Here are the results obtained with ModRev v1.2-->
 ## Instances
 
@@ -35,10 +36,23 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 <!-- A table summary of the time results can be found here -->
 
 <div>
-    <div style="width:50%">Synchronous</div>
-    <div style="width:50%">Asynchronous</div>
+    <div style="width:50%;float:left;text-align:center">
+        <p>Synchronous</p>
+        <div>
+        <img src="images/FY-s.png" alt="FY - Synchronous"/>
+        FY
+        </div>
+    </div>
+    <div style="width:50%;float:right;text-align:center">
+        <p>Asynchronous</p>
+        <div>
+        <img src="images/FY-a.png" alt="FY - Asynchronous"/>
+        FY
+        </div>
+    </div>
 </div>
 
+<!--
 <div>
     <div style="width:50%">
         ![FY - Synchronous](images/FY-s.png)
@@ -47,3 +61,4 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
         ![FY - Asynchronous](images/FY-a.png)
     </div>
 </div>
+-->
