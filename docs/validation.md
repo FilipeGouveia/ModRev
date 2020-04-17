@@ -36,8 +36,13 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 <!-- A table summary of the time results can be found here -->
 For a comparative view, please check [here](compare)
 
+
+
 obs - number of observations
+
 ts  - number of time-steps
+
+
 
 ![FY - Synchronous](images/FY-s.png)
 
