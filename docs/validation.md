@@ -1,5 +1,4 @@
-Here are the results obtained with ModRev v1.2
-
+<!--Here are the results obtained with ModRev v1.2-->
 ## Instances
 
 #### Models
@@ -31,9 +30,20 @@ The observations were generated with a length of 20 time-steps. For the experime
 Generated observations can be found [here](https://filipegouveia.github.io/ModelRevisionASP/observations.zip).
 
 
-### Results
+## Results
 
 <!-- A table summary of the time results can be found here -->
 
-![teste](images/FY-a.png)
+<div>
+    <ul>
+        <li style="width:50%">Synchronous</li>
+        <li style="width:50%">Asynchronous</li>
+    </ul>
+</div>
 
+<div>
+    <ul>
+        <li style="width:50%"> ![FY - Synchronous](images/FY-s.png) </li>
+        <li style="width:50%"> ![FY - Asynchronous](images/FY-a.png) </li>
+    </ul>
+</div>
