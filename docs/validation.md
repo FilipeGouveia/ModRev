@@ -39,43 +39,43 @@ For a comparative view, please check [here](compare)
 
 ![FY - Synchronous](images/FY-s.png)
 
-FY - Synchronous
+<p style="text-align:center;">FY - Synchronous</p>
 
 ![FY - Asynchronous](images/FY-a.png)
 
-FY - Asynchronous
+<p style="text-align:center;">FY - Asynchronous</p>
 
 ![SP - Synchronous](images/SP-s.png)
 
-SP - Synchronous
+<p style="text-align:center;">SP - Synchronous</p>
 
 ![SP - Asynchronous](images/SP-a.png)
 
-SP - Asynchronous
+<p style="text-align:center;">SP - Asynchronous</p>
 
 ![TCR - Synchronous](images/TCR-s.png)
 
-TCR - Synchronous
+<p style="text-align:center;">TCR - Synchronous</p>
 
 ![TCR - Asynchronous](images/TCR-a.png)
 
-TCR - Asynchronous
+<p style="text-align:center;">TCR - Asynchronous</p>
 
 ![MCC - Synchronous](images/MCC-s.png)
 
-MCC - Synchronous
+<p style="text-align:center;">MCC - Synchronous</p>
 
 ![MCC - Asynchronous](images/MCC-a.png)
 
-MCC - Asynchronous
+<p style="text-align:center;">MCC - Asynchronous</p>
 
 ![Th - Synchronous](images/th-s.png)
 
-Th - Synchronous
+<p style="text-align:center;">Th - Synchronous</p>
 
 ![FY - Asynchronous](images/th-a.png)
 
-Th - Asynchronous
+<p style="text-align:center;">Th - Asynchronous</p>
 
 <!--
 <div class="inner" style="display:flex">
