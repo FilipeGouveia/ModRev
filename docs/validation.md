@@ -1,6 +1,6 @@
 Here are the results obtained with ModRev v1.2
 
-### Instances
+## Instances
 
 #### Models
 Five well known biological models:
@@ -35,5 +35,5 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 
 <!-- A table summary of the time results can be found here -->
 
-![teste](images/FY-a.pdf)
+![teste](images/FY-a.png)
 
