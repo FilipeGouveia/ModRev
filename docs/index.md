@@ -19,6 +19,10 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 - Examples of inconsistent networks: [inputNetworks](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip)
 - Examples of time-series observations: [observations](https://filipegouveia.github.io/ModelRevisionASP/observations.zip)
 
+### Validation
+
+Check [here](validation)
+
 ## Publications
 
 - F. Gouveia, I. Lynce, P.T. Monteiro (2020)  
