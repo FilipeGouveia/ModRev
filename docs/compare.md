@@ -1,5 +1,5 @@
 <style>
-    #main_content.inner {
+    #main_content.inner, #main_content .inner {
         max-width: 1024px!important;
     }
 </style>
