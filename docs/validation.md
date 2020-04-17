@@ -35,15 +35,15 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 <!-- A table summary of the time results can be found here -->
 
 <div>
-    <ul>
-        <li style="width:50%">Synchronous</li>
-        <li style="width:50%">Asynchronous</li>
-    </ul>
+    <div style="width:50%">Synchronous</div>
+    <div style="width:50%">Asynchronous</div>
 </div>
 
 <div>
-    <ul>
-        <li style="width:50%"> ![FY - Synchronous](images/FY-s.png) </li>
-        <li style="width:50%"> ![FY - Asynchronous](images/FY-a.png) </li>
-    </ul>
+    <div style="width:50%">
+        ![FY - Synchronous](images/FY-s.png)
+    </div>
+    <div style="width:50%">
+        ![FY - Asynchronous](images/FY-a.png)
+    </div>
 </div>
