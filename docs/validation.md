@@ -34,24 +34,57 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 ## Results
 
 <!-- A table summary of the time results can be found here -->
+For a comparative view, please check [here](compare)
 
+
+![FY - Synchronous](images/FY-s.png)
+FY - Synchronous
+
+![FY - Asynchronous](images/FY-a.png)
+FY - Asynchronous
+
+![SP - Synchronous](images/SP-s.png)
+SP - Synchronous
+
+![SP - Asynchronous](images/SP-a.png)
+SP - Asynchronous
+
+![TCR - Synchronous](images/TCR-s.png)
+TCR - Synchronous
+
+![TCR - Asynchronous](images/TCR-a.png)
+TCR - Asynchronous
+
+![MCC - Synchronous](images/MCC-s.png)
+MCC - Synchronous
+
+![MCC - Asynchronous](images/MCC-a.png)
+MCC - Asynchronous
+
+![Th - Synchronous](images/th-s.png)
+Th - Synchronous
+
+![FY - Asynchronous](images/th-a.png)
+Th - Asynchronous
+
+<!--
 <div class="inner" style="display:flex">
     <div class="inner" style="width:50%;float:left;text-align:center">
         <h6>Synchronous</h6>
         <div class="inner">
-        <img style="max-width=100%" src="images/FY-s.png" alt="FY - Synchronous"/>
+        <img style="max-width:100%" src="images/FY-s.png" alt="FY - Synchronous"/>
         FY
         </div>
     </div>
     <div class="inner" style="width:50%;float:right;text-align:center">
         <h6>Asynchronous</h6>
         <div class="inner">
-        <img style="max-width=100%" src="images/FY-a.png" alt="FY - Asynchronous"/>
+        <img style="max-width:100%" src="images/FY-a.png" alt="FY - Asynchronous"/>
         FY
         </div>
     </div>
 </div>
-
+-->
 <!--
 <div>
     <div style="width:50%">
