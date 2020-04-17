@@ -1,9 +1,14 @@
+<style>
+    #main_content {
+        max-width: 1024px!important;
+    }
+</style>
 [<< Back](validation)
 
 
 <div class="inner" style="display:flex">
     <div class="inner" style="width:50%;float:left;text-align:center">
-        <h6>Synchronous</h6>
+        <h5>Synchronous</h5>
         <div class="inner">
         <img style="max-width:100%" src="images/FY-s.png" alt="FY - Synchronous"/>
         FY
@@ -26,7 +31,7 @@
         </div>
     </div>
     <div class="inner" style="width:50%;float:right;text-align:center">
-        <h6>Asynchronous</h6>
+        <h5>Asynchronous</h5>
         <div class="inner">
         <img style="max-width:100%" src="images/FY-a.png" alt="FY - Asynchronous"/>
         FY

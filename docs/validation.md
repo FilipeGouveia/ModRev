@@ -38,33 +38,43 @@ For a comparative view, please check [here](compare)
 
 
 ![FY - Synchronous](images/FY-s.png)
+
 FY - Synchronous
 
 ![FY - Asynchronous](images/FY-a.png)
+
 FY - Asynchronous
 
 ![SP - Synchronous](images/SP-s.png)
+
 SP - Synchronous
 
 ![SP - Asynchronous](images/SP-a.png)
+
 SP - Asynchronous
 
 ![TCR - Synchronous](images/TCR-s.png)
+
 TCR - Synchronous
 
 ![TCR - Asynchronous](images/TCR-a.png)
+
 TCR - Asynchronous
 
 ![MCC - Synchronous](images/MCC-s.png)
+
 MCC - Synchronous
 
 ![MCC - Asynchronous](images/MCC-a.png)
+
 MCC - Asynchronous
 
 ![Th - Synchronous](images/th-s.png)
+
 Th - Synchronous
 
 ![FY - Asynchronous](images/th-a.png)
+
 Th - Asynchronous
 
 <!--
