@@ -44,7 +44,7 @@ ts  - number of time-steps
 <div class="inner float small-no-side-pad">
     <div class="big-50 small-100 text-center">
         <h4>Synchronous</h4>
-        <div class="inner small-no-side-pad>
+        <div class="inner small-no-side-pad">
         <img src="images/FY-s.png" alt="FY - Synchronous"/>
         FY - Synchronous
         </div>
