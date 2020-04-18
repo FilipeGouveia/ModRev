@@ -41,49 +41,49 @@ obs - number of observations
 
 ts  - number of time-steps
 
-<div class="inner float">
+<div class="inner float small-no-side-pad">
     <div class="big-50 small-100 text-center">
         <h4>Synchronous</h4>
-        <div class="inner">
+        <div class="inner small-no-side-pad>
         <img src="images/FY-s.png" alt="FY - Synchronous"/>
         FY - Synchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/SP-s.png" alt="SP - Synchronous"/>
         SP - Synchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/TCR-s.png" alt="TCR - Synchronous"/>
         TCR - Synchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/MCC-s.png" alt="MCC - Synchronous"/>
         MCC - Synchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/th-s.png" alt="Th - Synchronous"/>
         Th - Synchronous
         </div>
     </div>
     <div class="big-50 small-100 text-center">
         <h4>Asynchronous</h4>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/FY-a.png" alt="FY - Asynchronous"/>
         FY - Asynchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/SP-a.png" alt="SP - Asynchronous"/>
         SP - Asynchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/TCR-a.png" alt="TCR - Asynchronous"/>
         TCR - Asynchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/MCC-a.png" alt="MCC - Asynchronous"/>
         MCC - Asynchronous
         </div>
-        <div class="inner">
+        <div class="inner small-no-side-pad">
         <img src="images/th-a.png" alt="Th - Asynchronous"/>
         Th - Asynchronous
         </div>
