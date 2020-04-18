@@ -34,59 +34,58 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 ## Results
 
 <!-- A table summary of the time results can be found here -->
-For a comparative view, please check [here](compare)
-
+<!--For a comparative view, please check [here](compare)-->
 
 
 obs - number of observations
 
 ts  - number of time-steps
 
-<div class="inner" style="display:flex">
+<div class="inner float">
     <div class="big-50 small-100 text-center">
-        <h5>Synchronous</h5>
+        <h4>Synchronous</h4>
         <div class="inner">
         <img src="images/FY-s.png" alt="FY - Synchronous"/>
-        FY
+        FY - Synchronous
         </div>
         <div class="inner">
         <img src="images/SP-s.png" alt="SP - Synchronous"/>
-        SP
+        SP - Synchronous
         </div>
         <div class="inner">
         <img src="images/TCR-s.png" alt="TCR - Synchronous"/>
-        TCR
+        TCR - Synchronous
         </div>
         <div class="inner">
         <img src="images/MCC-s.png" alt="MCC - Synchronous"/>
-        MCC
+        MCC - Synchronous
         </div>
         <div class="inner">
         <img src="images/th-s.png" alt="Th - Synchronous"/>
-        Th
+        Th - Synchronous
         </div>
     </div>
     <div class="big-50 small-100 text-center">
-        <h5>Asynchronous</h5>
+        <h4>Asynchronous</h4>
         <div class="inner">
         <img src="images/FY-a.png" alt="FY - Asynchronous"/>
-        FY
+        FY - Asynchronous
         </div>
         <div class="inner">
         <img src="images/SP-a.png" alt="SP - Asynchronous"/>
-        SP
+        SP - Asynchronous
         </div>
         <div class="inner">
         <img src="images/TCR-a.png" alt="TCR - Asynchronous"/>
-        TCR
+        TCR - Asynchronous
         </div>
         <div class="inner">
         <img src="images/MCC-a.png" alt="MCC - Asynchronous"/>
-        MCC
+        MCC - Asynchronous
         </div>
         <div class="inner">
         <img src="images/th-a.png" alt="Th - Asynchronous"/>
-        Th
+        Th - Asynchronous
         </div>
     </div>
 </div>

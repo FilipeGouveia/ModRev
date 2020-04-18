@@ -23,8 +23,16 @@ img {
     max-width: 50%;
 }
 
+.float {
+    display: flex;
+}
+
 @media only screen and (max-width: 600px) {
     .small-100 {
         max-width: 100%!important;
     }
+    .float {
+        display: block!important;
+    }
+
 }
