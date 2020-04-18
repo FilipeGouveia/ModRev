@@ -42,8 +42,56 @@ obs - number of observations
 
 ts  - number of time-steps
 
+<div class="inner" style="display:flex">
+    <div class="big-50 small-100 text-center">
+        <h5>Synchronous</h5>
+        <div class="inner">
+        <img src="images/FY-s.png" alt="FY - Synchronous"/>
+        FY
+        </div>
+        <div class="inner">
+        <img src="images/SP-s.png" alt="SP - Synchronous"/>
+        SP
+        </div>
+        <div class="inner">
+        <img src="images/TCR-s.png" alt="TCR - Synchronous"/>
+        TCR
+        </div>
+        <div class="inner">
+        <img src="images/MCC-s.png" alt="MCC - Synchronous"/>
+        MCC
+        </div>
+        <div class="inner">
+        <img src="images/th-s.png" alt="Th - Synchronous"/>
+        Th
+        </div>
+    </div>
+    <div class="big-50 small-100 text-center">
+        <h5>Asynchronous</h5>
+        <div class="inner">
+        <img src="images/FY-a.png" alt="FY - Asynchronous"/>
+        FY
+        </div>
+        <div class="inner">
+        <img src="images/SP-a.png" alt="SP - Asynchronous"/>
+        SP
+        </div>
+        <div class="inner">
+        <img src="images/TCR-a.png" alt="TCR - Asynchronous"/>
+        TCR
+        </div>
+        <div class="inner">
+        <img src="images/MCC-a.png" alt="MCC - Asynchronous"/>
+        MCC
+        </div>
+        <div class="inner">
+        <img src="images/th-a.png" alt="Th - Asynchronous"/>
+        Th
+        </div>
+    </div>
+</div>
 
-
+<!--
 ![FY - Synchronous](images/FY-s.png)
 
 <p style="text-align:center;">FY - Synchronous</p>
@@ -83,7 +131,7 @@ ts  - number of time-steps
 ![FY - Asynchronous](images/th-a.png)
 
 <p style="text-align:center;">Th - Asynchronous</p>
-
+-->
 <!--
 <div class="inner" style="display:flex">
     <div class="inner" style="width:50%;float:left;text-align:center">

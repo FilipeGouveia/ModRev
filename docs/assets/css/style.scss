@@ -2,7 +2,7 @@
 ---
 @import "{{ site.theme }}";
 .inner {
-    max-width: 1080px!important;
+    max-width: 1000px!important;
 }
 #main_content {
     background: #f4f4f4;
@@ -11,4 +11,20 @@
     border-top: none;
     padding-left: 40px;
     padding-right: 40px;
+}
+.text-center {
+    text-align: center;
+}
+img {
+    max-width:100%;
+}
+
+.big-50 {
+    max-width: 50%;
+}
+
+@media only screen and (max-width: 600px) {
+    .small-100 {
+        max-width: 100%!important;
+    }
 }
