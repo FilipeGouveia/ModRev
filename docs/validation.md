@@ -4,11 +4,11 @@
 
 #### Models
 Five well known biological models:
- - **FY**  : Fission Yeast by Davidich and Bornholdt (2008)
- - **SP**  : Segment Polarity (1 cell) by Sánchez *et al.* (2002)
- - **TCR** : TCR Signalisation by Klamt *et al.* (2006)
- - **MCC** : Mammalian Cell Cycle by Fauré *et al.* (2006)
- - **Th**  : T-helper Cell Differentiation by Mendoza and Xenarios (2006)
+ - **FY**  : Fission Yeast by Davidich and Bornholdt (2008) ([doi:10.1371/journal.pone.0001672](https://doi.org/10.1371/journal.pone.0001672))
+ - **SP**  : Segment Polarity (1 cell) by Sánchez *et al.* (2002) ([doi:10.1387/ijdb.072439ls](https://doi.org/10.1387/ijdb.072439ls))
+ - **TCR** : TCR Signalisation by Klamt *et al.* (2006) ([doi:10.1186/1471-2105-7-56](https://doi.org/10.1186/1471-2105-7-56))
+ - **MCC** : Mammalian Cell Cycle by Fauré *et al.* (2006) ([doi:10.1093/bioinformatics/btl210](https://doi.org/10.1093/bioinformatics/btl210))
+ - **Th**  : T-helper Cell Differentiation by Mendoza and Xenarios (2006) ([doi:10.1186/1742-4682-3-13](https://doi.org/10.1186/1742-4682-3-13))
 
 Models were corrupted according to different parameters:
  - **F** : probability of changing a regulatory function
