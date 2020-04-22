@@ -9,6 +9,7 @@ These instructions will let you compile and use our tool for tests purposes.
 ### Dependencies
 
 This tool has a dependency of C++ boost libraries, available online. ([boost.org](https://boost.org))
+
 Make sure that boost libraries are installed before compiling the tool.
 
 ### Compiling
@@ -25,6 +26,7 @@ make
 ### Model Revision Tool
 
 Examples of inconsistent networks are provided in [inputNetworks](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip).
+
 Examples of time-series observations are provided in [observations](https://filipegouveia.github.io/ModelRevisionASP/observations.zip).
 
 To use this tool, do:
