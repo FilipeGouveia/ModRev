@@ -14,8 +14,13 @@ resultsV3
 Extract*.pl
 extract*.csh
 generate*.csh
-inputTestsV2
+inputTests*/
 runTests.csh
 resultsv3latex.txt
 ModelRevisionCpp/doubleInc
 modrev-v*
+bundle/
+.vscode/
+results-table*/
+results-plot*/
+input*stats/
