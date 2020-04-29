@@ -33,6 +33,7 @@ Generated observations can be found [here](https://filipegouveia.github.io/Model
 
 ## Results
 
+For detailed time results, please check [results-v1.2.pdf](/ModelRevisionASP/results-v1.2.pdf).
 <!-- A table summary of the time results can be found here -->
 <!--For a comparative view, please check [here](compare)-->
 
