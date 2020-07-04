@@ -199,123 +199,215 @@ std::vector<std::vector<std::string>> ASPHelper::getOptAnswer(std::string input,
 }
 */
 
-void ASPHelper::parseNetwork(Network * network) {
+int ASPHelper::parseNetwork(Network * network) {
+
+    int result = 1;
 
     std::ifstream file;
     file.open(network->input_file_network_);
     if(!file.good())
     {
-        std::fprintf(stderr, "ERROR! Cannot open file '%s'.\n", network->input_file_network_.c_str());
+        std::fprintf(stderr, "ERROR!\tCannot open file '%s'.\n", network->input_file_network_.c_str());
         file.close();
-        return;
+        return -2;
     }
+    int countLine = 0;
 
     std::string line;
     while(std::getline(file,line))
     {
+        countLine++;
         line.erase(std::remove_if(line.begin(),line.end(),isspace),line.end());
         if(line.find(").") != std::string::npos)
         {
-            std::vector<std::string> split = Util_h::split(line,'(');
-            if(split[0].compare("edge") == 0)
+            std::vector<std::string> predicates = Util_h::split(line,')');
+            for (int i = 0; i < (int)predicates.size()-1; i++)
             {
-                split = Util_h::split(split[1], ')');
-                split = Util_h::split(split[0], ',');
-                if(split.size() != 3)
+                //fix to allow multiple predicates per line
+                predicates[i] += ").";
+                if(i>0)
                 {
-                    std::cout << "WARN! Edge not recognised: " << line << std::endl;
-                    continue;
+                    predicates[i].erase(0,1);
                 }
-                std::string startId = split[0];
-                std::string endId = split[1];
-                int sign;
-                try {
-                    sign = std::stoi(split[2]);
-                }
-                catch(...)
-                {
-                    std::cout << "WARN! Invalid edge sign: " << split[2] << " on line " << line << std::endl;
-                    continue;
-                }
-                
-                Node* startNode = network->addNode(startId);
-                Node* endNode = network->addNode(endId);
-                network->addEdge(startNode, endNode, sign);
-                continue;
-            }
-            if(split[0].compare("fixed") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                split = Util_h::split(split[0], ',');
-                if(split.size() != 2)
-                {
-                    continue;
-                }
-                std::string startId = split[0];
-                std::string endId = split[1];
 
-                Edge* e = network->getEdge(startId, endId);
-                if(e != nullptr)
+                std::vector<std::string> split = Util_h::split(predicates[i],'(');
+                if(split[0].compare("edge") == 0)
                 {
-                    e->setFixed();
+                    split = Util_h::split(split[1], ')');
+                    split = Util_h::split(split[0], ',');
+                    if(split.size() != 3)
+                    {
+                        std::cout << "WARN!\tEdge not recognised in line " << countLine << ": " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[1][0]) && !isdigit(split[1][0])))
+                    {
+                        std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        return -2;
+                    }
+                    std::string startId = split[0];
+                    std::string endId = split[1];
+                    int sign;
+                    try {
+                        sign = std::stoi(split[2]);
+                    }
+                    catch(...)
+                    {
+                        std::cout << "WARN!\tInvalid edge sign: " << split[2] << " on line " << countLine << " on edge " << predicates[i] << std::endl;
+                        return -2;
+                    }
+                    if(sign != 0 && sign != 1 )
+                    {
+                        std::cout << "WARN!\tInvalid edge sign on line " << countLine << " on edge " << predicates[i] << std::endl;
+                        return -2;
+                    }
+                    Node* startNode = network->addNode(startId);
+                    Node* endNode = network->addNode(endId);
+                    network->addEdge(startNode, endNode, sign);
+                    continue;
                 }
-                continue;
-            }
-            if(split[0].compare("functionOr") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                split = Util_h::split(split[0], ',');
-                if(split.size() != 2)
+                if(split[0].compare("fixed") == 0)
                 {
+                    split = Util_h::split(split[1], ')');
+                    split = Util_h::split(split[0], ',');
+                    if(split.size() != 2)
+                    {
+                        continue;
+                    }
+                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[1][0]) && !isdigit(split[1][0])))
+                    {
+                        std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        return -2;
+                    }
+                    std::string startId = split[0];
+                    std::string endId = split[1];
 
-                    std::cout << "WARN! FunctionOr not recognised: " << line << std::endl;
+                    Edge* e = network->getEdge(startId, endId);
+                    if(e != nullptr)
+                    {
+                        e->setFixed();
+                    }
+                    else
+                    {
+                        std::cout << "WARN!\tUnrecognised edge on line " << countLine << ": " << predicates[i] << " Ignoring..." << std::endl;
+                    }
                     continue;
                 }
-                network->addNode(split[0]);
-                //Node* node = network->addNode(split[0]);
-                //if(split[1].find("..") != std::string::npos)
-                //{
-                //    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
-                //    split[1] = aux_split[aux_split.size()-1];
-                //}
+                if(split[0].compare("functionOr") == 0)
+                {
+                    split = Util_h::split(split[1], ')');
+                    split = Util_h::split(split[0], ',');
+                    if(split.size() != 2)
+                    {
+                        std::cout << "WARN!\tfunctionOr not recognised on line " << countLine << ": " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+                    if((!islower(split[0][0]) && !isdigit(split[0][0])))
+                    {
+                        std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        return -2;
+                    }
+                    network->addNode(split[0]);
+                    
+                    if(split[1].find("..") != std::string::npos)
+                    {
+                        split = Util_h::split(split[1], '.');
+                        int range;
+                        try {
+                            range = std::stoi(split[split.size()-1]);
+                        }
+                        catch(...)
+                        {
+                            std::cout << "WARN!\tInvalid range limit: " << split[split.size()-1] << " on line " << countLine << " in " << predicates[i] << " It must be an integer greater than 0." << std::endl;
+                            return -2;
+                        }
+                        if(range < 1)
+                        {
+                            std::cout << "WARN!\tInvalid range limit: " << range << " on line " << countLine << " in " << predicates[i] << " It must be an integer greater than 0." << std::endl;
+                            return -2;
+                        }
 
-                //Function* f = new Function(split[0]);
-                //node->addFunction(f);
-                continue;
-            }
-            if(split[0].compare("functionAnd") == 0)
-            {
-                split = Util_h::split(split[1], ')');
-                split = Util_h::split(split[0], ',');
-                if(split.size() != 3)
-                {
-                    std::cout << "WARN! FunctionAnd not recognised: " << line << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "WARN!\tInvalid functionOr definition in line " << countLine << ": " << predicates[i] << std::endl;
+                        return -2;
+                    }
+
+                    //Node* node = network->addNode(split[0]);
+                    //if(split[1].find("..") != std::string::npos)
+                    //{
+                    //    std::vector<std::string> aux_split = Util_h::split(split[1], '.');
+                    //    split[1] = aux_split[aux_split.size()-1];
+                    //}
+
+                    //Function* f = new Function(split[0]);
+                    //node->addFunction(f);
                     continue;
                 }
-                Node * node = network->getNode(split[0]);
-                if(node == nullptr)
+                if(split[0].compare("functionAnd") == 0)
                 {
-                    std::cout << "WARN! node not recognised: " << split[0] << " on line " << line <<std::endl;
+                    split = Util_h::split(split[1], ')');
+                    split = Util_h::split(split[0], ',');
+                    if(split.size() != 3)
+                    {
+                        std::cout << "WARN!\tFunctionAnd not recognised on line " << countLine << ": " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+
+                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[2][0]) && !isdigit(split[2][0])))
+                    {
+                        std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        return -2;
+                    }
+
+                    Node * node = network->getNode(split[0]);
+                    if(node == nullptr)
+                    {
+                        std::cout << "WARN!\tNode not recognised or not yet defined: " << split[0] << " on line " << countLine << " in " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+                    Node * node2 = network->getNode(split[2]);
+                    if(node2 == nullptr)
+                    {
+                        std::cout << "WARN!\tNode not recognised or not yet defined: " << split[2] << " on line " << countLine << " in " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+
+                    int clauseId;
+                    try {
+                        clauseId = std::stoi(split[1]);
+                    }
+                    catch(...)
+                    {
+                        std::cout << "WARN!\tInvalid clause Id: " << split[1] << " on line " << countLine << " in " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+
+                    if(clauseId < 1)
+                    {
+                        std::cout << "WARN!\tInvalid clause Id: " << split[1] << " on line " << countLine << " in " << predicates[i] << std::endl;
+                        result = -1;
+                        continue;
+                    }
+
+                    node->getFunction()->addElementClause(clauseId, split[2]);
                     continue;
                 }
-                int clauseId;
-                try {
-                    clauseId = std::stoi(split[1]);
-                }
-                catch(...)
-                {
-                    std::cout << "WARN! Invalid clause Id: " << split[1] << " on line " << line << std::endl;
-                    continue;
-                }
-                node->getFunction()->addElementClause(clauseId, split[2]);
-                continue;
+
             }
 
         }
     }
 
     file.close();
-    return;
+    return result;
 
 }
 

@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-set version = 1.2
+set version = 1.2.1
 set bundleDir = bundle
 
 
@@ -25,11 +25,13 @@ mkdir $bundleDir/$version/ModRev/ASP/ConsistencyCheck
 cp ASP/ConsistencyCheck/core-ss.lp $bundleDir/$version/ModRev/ASP/ConsistencyCheck/
 mkdir $bundleDir/$version/ModRev/ASP/Dynamic
 cp ASP/Dynamic/*.lp $bundleDir/$version/ModRev/ASP/Dynamic/
+cp -R examples $bundleDir/$version/ModRev/
 
 cp ModelRevisionCpp/*.h $bundleDir/$version/ModRev/
 cp ModelRevisionCpp/*.cc $bundleDir/$version/ModRev/
 cp ModelRevisionCpp/makefile $bundleDir/$version/ModRev/
 cp ModelRevisionCpp/README.md $bundleDir/$version/ModRev/
+cp ModelRevisionCpp/CHANGELOG.txt $bundleDir/$version/ModRev/
 cp -R ModelRevisionCpp/libOSX $bundleDir/$version/ModRev/
 cp -R ModelRevisionCpp/libUNIX $bundleDir/$version/ModRev/
 cp -R ModelRevisionCpp/headers $bundleDir/$version/ModRev/

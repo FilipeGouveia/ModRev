@@ -26,6 +26,7 @@ void Configuration::parseConfig() {
     _configMap["multipleProfiles"] = "true";
     _configMap["compareLevelFunction"] = "true";
     _configMap["exactMiddleFunctionDetermination"] = "true";
+    _configMap["ignoreWarnings"] = "false";
 
     //read new values from config file
 

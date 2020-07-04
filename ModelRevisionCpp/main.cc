@@ -25,7 +25,12 @@ int main(int argc, char ** argv) {
     if(process_arguments(argc, argv) != 0)
         return -1;
 
-    ASPHelper::parseNetwork(network);
+    int parse = ASPHelper::parseNetwork(network);
+    if(parse < 1 && !Configuration::isActive("ignoreWarnings"))
+    {
+        std::cout << std::endl << "ABORT:\tModel definition with errors." << std::endl << "\tCheck documentation for input definition details." << std::endl;
+        return -1;
+    }
 
     //main function that revises the model
     modelRevision();

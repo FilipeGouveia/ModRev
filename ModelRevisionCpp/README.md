@@ -39,6 +39,27 @@ Check `./modrev --help` for more details of the available options.
 
 Example of usage under stable state observations:
 ```
+./modrev -m examples/model.lp -obs examples/obsSS.lp -ss
+```
+
+Example of usage under stable state observations with a fixed edge:
+```
+./modrev -m examples/modelFixed.lp -obs examples/obsSS.lp -ss
+```
+
+Examples of usage under time-series observations with synchronous update:
+```
+./modrev -m examples/model.lp -obs obsTS01.lp -up s
+```
+```
+./modrev -m examples/model.lp -obs obsTS02.lp -up s
+```
+
+
+##### Other examples
+
+Example of usage under stable state observations:
+```
 ./modrev -m inputNetworks/boolean_cell_cycle/00/boolean_cell_cycle-50-0-0-0-net-att.lp -ss
 ```
 

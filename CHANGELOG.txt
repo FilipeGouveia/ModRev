@@ -1,0 +1,23 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+## [1.2.1] - 2020-07-04
+- Added some input validation on model definition.
+- Support to multiple predicates per line in model definition.
+
+## [1.2.0] - 2020-03-26
+- Added support for time-series observations.
+  - synchronous and asynchronous mode
+
+## [1.1.0] - 2019-12-17
+- Added support for repairing nodes with double inconsistency reasons at stable state.
+
+## [1.0.0] - 2019-02-25
+- Added support for multiple steady stete profiles simultaneously.
+
+## [0.2.0] - 2018-11-25
+- Added more repair operations.
+  - Add and remove regulators.
+
+## [0.1.0] - 2018-10-25
+- First base realease with basic model revision for steady state considering one profile.
