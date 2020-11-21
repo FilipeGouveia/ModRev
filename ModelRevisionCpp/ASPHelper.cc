@@ -332,8 +332,21 @@ int ASPHelper::parseNetwork(Network * network) {
                     }
                     else
                     {
-                        std::cout << "WARN!\tInvalid functionOr definition in line " << countLine << ": " << predicates[i] << std::endl;
-                        return -2;
+                        int range;
+                        try {
+                            range = std::stoi(split[1]);
+                            if(range < 1)
+                            {
+                                std::cout << "WARN!\tInvalid range limit: " << range << " on line " << countLine << " in " << predicates[i] << " It must be an integer greater than 0." << std::endl;
+                                return -2;
+                            }
+                        }
+                        catch(...)
+                        {
+                            std::cout << "WARN!\tInvalid functionOr range definition in line " << countLine << ": " << predicates[i] << std::endl;
+                            return -2;
+                        }
+                        
                     }
 
                     //Node* node = network->addNode(split[0]);
