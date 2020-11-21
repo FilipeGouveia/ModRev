@@ -14,6 +14,8 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
+std::string version = "1.2.2";
+
 Network * network = new Network();
 bool isSteadyState = false;
 int update = ASYNC;
@@ -126,6 +128,7 @@ void printHelp()
 {
     std::cout << "Model Revision program." << std::endl;
     std::cout << "  Given a model and a set of observations it determines if the model is consistent. If not, it computes all the minimum number of repair operations in order to render the model consistent." << std::endl;
+    std::cout << "Version: " << version << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << "  modrev [-m] model_file [[-obs] observation_files...] [options]" << std::endl;
     std::cout << "  options:" << std::endl;
