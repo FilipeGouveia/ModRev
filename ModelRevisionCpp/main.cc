@@ -633,6 +633,24 @@ bool repairNodeConsistencyFunctions(InconsistencySolution* inconsistency, Incons
         std::cout << "WARN: Found a consistent node before expected: " << iNode->id_ << std::endl;
     }
 
+    //if a solution was already found,
+    //do not exceed the number of operations from previous solutions
+    //avoiding search for function when there is already a solutions without changing the function
+    //with the same number of operations
+    if(iNode->repaired_)
+    {
+        int nRAop = iNode->getNAddRemoveOperations();
+        int nFEop = iNode->getNFlipEdgesOperations();
+        int nOp = iNode->getNRepairOperations();
+        if((nRAop == (int)addedEdges.size() + (int)removedEdges.size()) && (nFEop == (int)flippedEdges.size())
+            && (nOp == nRAop + nFEop))
+        {
+            if(Configuration::isActive("debug"))
+                std::cout << "DEBUG: better solution already found. No function search.\n";
+            return false;
+        }
+    }
+
     //model not yet consistent and is necessary to change function
     if(repairType == DOUBLE_INC)
     {
