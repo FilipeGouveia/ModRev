@@ -10,7 +10,7 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 
 ## Releases
 
-- [ModRev v1.2.1](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.1.zip) (current version)
+- [ModRev v1.2.3](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.3.zip) (current version)
 - [ModRev v1.1.0](https://filipegouveia.github.io/ModelRevisionASP/modrev-1.1.zip) (version 1.1 only supports stable state observations)
 
 
@@ -24,6 +24,12 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 Check [here](validation) for more information about experimental validation.
 
 ## Publications
+
+- F. Gouveia, I. Lynce, P.T. Monteiro (2020)  
+  **ModRev - Model Revision Tool for Boolean Logical Models of Biological Regulatory Networks**  
+  in A. Abate, T. Petrov, V. Wolf (editors)  
+  *Computational Methods in Systems Biology (CMSB 2020)*, LNCS 12314, 339-348, Springer  
+  [doi:10.1007/978-3-030-60327-4_18](https://doi.org/10.1007/978-3-030-60327-4_18)
 
 - F. Gouveia, I. Lynce, P.T. Monteiro (2020)  
   **Revision of Boolean models of regulatory networks using stable state observations**  

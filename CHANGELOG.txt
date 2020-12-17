@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2020-12-17
+- Updated BooleanFunction lib
+  - Fixed a bug in rule 2 of computing children
+
 ## [1.2.2] - 2020-11-21
 - Fixed a bug in input validation.
 - Added version information to help option.

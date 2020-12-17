@@ -14,7 +14,7 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::string version = "1.2.2";
+std::string version = "1.2.3";
 
 Network * network = new Network();
 bool isSteadyState = false;
