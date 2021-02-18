@@ -12,6 +12,7 @@ class Configuration {
         static int getIntValue(std::string key);
         static bool isActive(std::string key);
         static void printConfig();
+        static void setValue(std::string key, std::string value);
 
     private:
         static std::map<std::string,std::string> _configMap;

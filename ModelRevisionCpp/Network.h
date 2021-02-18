@@ -178,6 +178,8 @@ class InconsistencySolution {
         //note that multiple node can update in multi-asynchronous update mode
         std::map<int, std::map<std::string, std::vector<std::string> > > updates_;
         int nTopologyChanges_;
+        int nAROperations;
+        int nEOperations;
         int nRepairOperations_;
         bool hasImpossibility;
 
@@ -193,7 +195,9 @@ class InconsistencySolution {
         int getNTopologyChanges();
         int getNRepairOperations();
         InconsistentNode* getINode(std::string id);
-        void printSolution(bool printAll = true);
+        void printSolution(int verboseLevel, bool printAll = true);
+        void printParsableSolution();
+        int compareRepairs(InconsistencySolution* solution);
 
 };
 #endif

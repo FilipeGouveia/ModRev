@@ -20,6 +20,11 @@ Network * network = new Network();
 bool isSteadyState = false;
 int update = ASYNC;
 
+// verbose level
+// 0 - machine style output
+// 1 - human readable output [default]
+int verbose = 1;
+
 int main(int argc, char ** argv) {
 
     Configuration::parseConfig();
@@ -30,7 +35,7 @@ int main(int argc, char ** argv) {
     int parse = ASPHelper::parseNetwork(network);
     if(parse < 1 && !Configuration::isActive("ignoreWarnings"))
     {
-        std::cout << std::endl << "ABORT:\tModel definition with errors." << std::endl << "\tCheck documentation for input definition details." << std::endl;
+        std::cout << std::endl << "#ABORT:\tModel definition with errors." << std::endl << "\tCheck documentation for input definition details." << std::endl;
         return -1;
     }
 
@@ -61,6 +66,11 @@ int process_arguments(const int argc, char const * const * argv) {
                 isSteadyState = true;
                 continue;
             }
+            if(strcmp(argv[i],"--exhaustive-search") == 0)
+            {
+                Configuration::setValue("forceOptimum","true");
+                continue;
+            }
             lastOpt = argv[i];
             if(lastOpt.compare("--help") == 0 || lastOpt.compare("-h") == 0)
             {
@@ -70,7 +80,8 @@ int process_arguments(const int argc, char const * const * argv) {
             
             if(lastOpt.compare("--model") != 0 && lastOpt.compare("-m") != 0 &&
                 lastOpt.compare("--observations") != 0 && lastOpt.compare("-obs") != 0 &&
-                lastOpt.compare("--update") != 0 && lastOpt.compare("-up") != 0)
+                lastOpt.compare("--update") != 0 && lastOpt.compare("-up") != 0 &&
+                lastOpt.compare("--verbose") != 0 && lastOpt.compare("-v") != 0)
             {
                 std::cout << "Invalid option " << lastOpt << std::endl;
                 printHelp();
@@ -113,10 +124,32 @@ int process_arguments(const int argc, char const * const * argv) {
                     continue;
                 }
 
-                std::cout << "Invalid value for option --update: " << argv[1] << std::endl;
+                std::cout << "Invalid value for option --update: " << argv[i] << std::endl;
                 printHelp();
                 return -1;
 
+            }
+            if(lastOpt.compare("--verbose") == 0 || lastOpt.compare("-v") == 0)
+            {
+                try{
+                    int value = std::stoi(argv[i]);
+                    if(value >= 0 && value <= 1)
+                    {
+                        verbose = value;
+                    }
+                    else{
+                        std::cout << "Invalid value for option --verbose: " << argv[i] << std::endl;
+                        printHelp();
+                        return -1;
+                    }
+                }
+                catch(std::exception& e)
+                {
+                    std::cout << "Invalid value for option --verbose: " << argv[i] << std::endl;
+                    printHelp();
+                    return -1;
+                }   
+                continue;
             }
 
         }
@@ -140,6 +173,10 @@ void printHelp()
     std::cout << "\t\t\t\t\t\ta  - asynchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\tma - multi-asynchronous update" << std::endl;
+    std::cout << "    --exhaustive-search\t\t\tForce exhaustive search of function repair operations. DEFAULT: false." << std::endl;
+    std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1} of output. DEFAULT: 1." << std::endl;
+    std::cout << "\t\t\t\t\t\t0  - machine style output" << std::endl;
+    std::cout << "\t\t\t\t\t\t1  - human readable output" << std::endl;
     std::cout << "    --help,-h\t\t\t\tPrint help options." << std::endl;
     
 }
@@ -173,7 +210,8 @@ void modelRevision() {
         //TODO
         if(!(*it)->hasImpossibility)
         {
-            if(bestSolution == nullptr || (*it)->getNTopologyChanges() < bestSolution->getNTopologyChanges())
+            //if(bestSolution == nullptr || (*it)->getNTopologyChanges() < bestSolution->getNTopologyChanges())
+            if(bestSolution == nullptr || (*it)->compareRepairs(bestSolution) > 0)
             {
                 bestSolution = (*it);
                 if(Configuration::isActive("debug"))
@@ -185,7 +223,7 @@ void modelRevision() {
         else
         {
             if(Configuration::isActive("debug"))
-                std::cout << "Reached an impossibility\n";
+                std::cout << "DEBUG: Reached an impossibility\n";
         }
     }
 
@@ -203,16 +241,17 @@ void modelRevision() {
         {
             if(Configuration::isActive("debug"))
                 std::cout << "DEBUG: checking for printing solution with " << (*it)->getNTopologyChanges() << " topology changes\n";
-            if(!(*it)->hasImpossibility && (*it)->getNTopologyChanges() == bestSolution->getNTopologyChanges())
+            //if(!(*it)->hasImpossibility && (*it)->getNTopologyChanges() == bestSolution->getNTopologyChanges())
+            if(!(*it)->hasImpossibility && ((*it)->compareRepairs(bestSolution) >= 0 || Configuration::isActive("showSolutionForEachInconsistency")))
             {
-                (*it)->printSolution();
+                (*it)->printSolution(verbose);
             }
         }
 
     }
     else
     {
-        bestSolution->printSolution();
+        bestSolution->printSolution(verbose);
     }
 
 }
