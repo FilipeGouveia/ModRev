@@ -27,6 +27,8 @@ void Configuration::parseConfig() {
     _configMap["compareLevelFunction"] = "true";
     _configMap["exactMiddleFunctionDetermination"] = "true";
     _configMap["ignoreWarnings"] = "false";
+    _configMap["forceOptimum"] = "false";
+    _configMap["showSolutionForEachInconsistency"]= "false"; //show best solution for each consistency check solution even if it is not globally optimum
 
     //read new values from config file
 
@@ -114,4 +116,9 @@ void Configuration::printConfig()
         std::cout << it->first << " --> " << it->second << std::endl;
     }
 
+}
+
+void Configuration::setValue(std::string key, std::string value){
+    _configMap[key] = value;
+    return;
 }
