@@ -470,9 +470,9 @@ int InconsistencySolution::getNRepairOperations() {
 }
 
 void InconsistencySolution::printSolution(int verboseLevel, bool printAll) {
-    if(verboseLevel == 0)
+    if(verboseLevel < 2)
     {
-        return printParsableSolution();
+        return printParsableSolution(verboseLevel);
     }
     std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
     for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
@@ -528,15 +528,16 @@ void InconsistencySolution::printSolution(int verboseLevel, bool printAll) {
     }
 }
 
-void InconsistencySolution::printParsableSolution() {
-    std::cout << "[";
+void InconsistencySolution::printParsableSolution(int verboseLevel) {
+    if(verboseLevel > 0)
+        std::cout << "[";
     for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
     {
         if(iNode != iNodes_.begin())
         {
-            std::cout << ";";
+            std::cout << (verboseLevel > 0 ? ";" : "/");
         }
-        std::cout << iNode->second->id_ << ":{";
+        std::cout << iNode->second->id_ << (verboseLevel > 0 ? ":{" : "@");
 
         for(auto repair = iNode->second->repairSet_.begin(), repairEnd = iNode->second->repairSet_.end(); repair!=repairEnd;repair++)
         {
@@ -544,7 +545,8 @@ void InconsistencySolution::printParsableSolution() {
             {
                 std::cout << ";";
             }
-            std::cout << "{";
+            if(verboseLevel > 0)
+                std::cout << "{";
             
             bool first = true;
 
@@ -552,45 +554,69 @@ void InconsistencySolution::printParsableSolution() {
             {
                 if(!first)
                 {
-                    std::cout << ";";
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
                 }
                 first = false;
-                std::cout << "A:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << "," << (*it)->getSign() << ")";
+                if(verboseLevel > 0)
+                {
+                    std::cout << "A:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << "," << (*it)->getSign() << ")";
+                }
+                else
+                {
+                    std::cout << "A," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << "," << (*it)->getSign();
+                }
             }
             for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
             {
                 if(!first)
                 {
-                    std::cout << ";";
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
                 }
                 first = false;
-                std::cout << "R:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                if(verboseLevel > 0)
+                {
+                    std::cout << "R:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                }
+                else
+                {
+                    std::cout << "R," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_;
+                }
             }
             for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
             {
                 if(!first)
                 {
-                    std::cout << ";";
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
                 }
                 first = false;
-                std::cout << "E:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                if(verboseLevel > 0)
+                {
+                    std::cout << "E:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                }
+                else
+                {
+                    std::cout << "E," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_;
+                }
             }
             for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
             {
                 if(!first)
                 {
-                    std::cout << ";";
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
                 }
                 first = false;
-                std::cout << "F:"<< (*it)->printFunction();
+                std::cout << "F" << (verboseLevel > 0 ? ":" : ",") << (*it)->printFunction();
             }
-
-            std::cout << "}";
+            if(verboseLevel > 0)
+                std::cout << "}";
 
         }
-        std::cout << "}";
+        if(verboseLevel > 0)
+            std::cout << "}";
     }
-    std::cout << "]" << std::endl;
+    if(verboseLevel > 0)
+        std::cout << "]";
+    std::cout << std::endl;
 }
 
 /*

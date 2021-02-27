@@ -196,7 +196,7 @@ class InconsistencySolution {
         int getNRepairOperations();
         InconsistentNode* getINode(std::string id);
         void printSolution(int verboseLevel, bool printAll = true);
-        void printParsableSolution();
+        void printParsableSolution(int verboseLevel);
         int compareRepairs(InconsistencySolution* solution);
 
 };

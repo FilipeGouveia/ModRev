@@ -14,16 +14,17 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::string version = "1.2.3";
+std::string version = "1.2.4";
 
 Network * network = new Network();
 bool isSteadyState = false;
 int update = ASYNC;
 
 // verbose level
-// 0 - machine style output
-// 1 - human readable output [default]
-int verbose = 1;
+// 0 - machine style output (minimalistic easily parsable)
+// 1 - machine style output (using set of sets)
+// 2 - human readable output [default]
+int verbose = 2;
 
 int main(int argc, char ** argv) {
 
@@ -133,7 +134,7 @@ int process_arguments(const int argc, char const * const * argv) {
             {
                 try{
                     int value = std::stoi(argv[i]);
-                    if(value >= 0 && value <= 1)
+                    if(value >= 0 && value <= 2)
                     {
                         verbose = value;
                     }
@@ -174,9 +175,10 @@ void printHelp()
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\tma - multi-asynchronous update" << std::endl;
     std::cout << "    --exhaustive-search\t\t\tForce exhaustive search of function repair operations. DEFAULT: false." << std::endl;
-    std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1} of output. DEFAULT: 1." << std::endl;
-    std::cout << "\t\t\t\t\t\t0  - machine style output" << std::endl;
-    std::cout << "\t\t\t\t\t\t1  - human readable output" << std::endl;
+    std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1,2} of output. DEFAULT: 2." << std::endl;
+    std::cout << "\t\t\t\t\t\t0  - machine style output (minimalistic easily parsable)" << std::endl;
+    std::cout << "\t\t\t\t\t\t1  - machine style output (using sets of sets)" << std::endl;
+    std::cout << "\t\t\t\t\t\t2  - human readable output" << std::endl;
     std::cout << "    --help,-h\t\t\t\tPrint help options." << std::endl;
     
 }
