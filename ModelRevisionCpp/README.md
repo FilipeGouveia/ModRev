@@ -127,9 +127,9 @@ In this minimalistic format:
  - Symbol ";" separates different sets of repair operations;
  - Symbol ":" separates each repair operation.
  - Each repair operation has the following format:
-    - A,`<V1>`,`<V2>`,`<S>`     indicating the **A**ddition of an edge from `<V1>`to `<V2>` with sign `<S>`;
-    - R,`<V1>`,`<V2>`           indicating the **R**emoval of the edge from `<V1>`to `<V2>`;
-    - E,`<V1>`,`<V2>`           indicating the flip of the sign of the **E**dge from `<V1>`to `<V2>`;
+    - A,`<V1>`,`<V2>`,`<S>`     indicating the **A**ddition of an edge from `<V1>` to `<V2>` with sign `<S>`;
+    - R,`<V1>`,`<V2>`           indicating the **R**emoval of the edge from `<V1>` to `<V2>`;
+    - E,`<V1>`,`<V2>`           indicating the flip of the sign of the **E**dge from `<V1>` to `<V2>`;
     - F,`<Function>`              indicating the change of the regulatory **F**unction to `<Function>`.
 
 The previous example can be represented as:
