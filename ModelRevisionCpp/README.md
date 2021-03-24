@@ -137,6 +137,7 @@ The previous example can be represented as:
 v1@E,v2,v1/v2@F,(v1) || (v4)/v3@E,v1,v3:F,(v1 && v2) || (v1 && v4);E,v2,v3:F,(v1 && v2) || (v2 && v4)
 ```
 
+Sub-optimal solutions in machine style output are preceeded by a "+" symbol.
 
 **Note:** The format of the input files are described in more detail in *ASP/README.md*.
 

@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.2.5] - 2021-03-24
+- Sub-optimal solutions
+  - Now also available as a command option.
+  - Now indentified in the output.
+
 ## [1.2.4] - 2021-02-27
 - Support machine style output.
   - Easily parsable outputs are supported in option --verbose.

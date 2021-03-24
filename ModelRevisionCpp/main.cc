@@ -67,6 +67,11 @@ int process_arguments(const int argc, char const * const * argv) {
                 isSteadyState = true;
                 continue;
             }
+            if(strcmp(argv[i],"--sub-opt") == 0)
+            {
+                Configuration::setValue("showSolutionForEachInconsistency","true");
+                continue;
+            }
             if(strcmp(argv[i],"--exhaustive-search") == 0)
             {
                 Configuration::setValue("forceOptimum","true");
@@ -175,12 +180,13 @@ void printHelp()
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\tma - multi-asynchronous update" << std::endl;
     std::cout << "    --exhaustive-search\t\t\tForce exhaustive search of function repair operations. DEFAULT: false." << std::endl;
+    std::cout << "    --sub-opt\t\t\t\tShow sub-optimal solutions found. DEFAULT: false." << std::endl;
     std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1,2} of output. DEFAULT: 2." << std::endl;
     std::cout << "\t\t\t\t\t\t0  - machine style output (minimalistic easily parsable)" << std::endl;
     std::cout << "\t\t\t\t\t\t1  - machine style output (using sets of sets)" << std::endl;
     std::cout << "\t\t\t\t\t\t2  - human readable output" << std::endl;
     std::cout << "    --help,-h\t\t\t\tPrint help options." << std::endl;
-    
+
 }
 
 //Model revision procedure
@@ -235,6 +241,7 @@ void modelRevision() {
         return;
     }
     
+    bool showSubOpt = Configuration::isActive("showSolutionForEachInconsistency");
     //TODO
     if(Configuration::isActive("allOpt"))
     {
@@ -244,8 +251,19 @@ void modelRevision() {
             if(Configuration::isActive("debug"))
                 std::cout << "DEBUG: checking for printing solution with " << (*it)->getNTopologyChanges() << " topology changes\n";
             //if(!(*it)->hasImpossibility && (*it)->getNTopologyChanges() == bestSolution->getNTopologyChanges())
-            if(!(*it)->hasImpossibility && ((*it)->compareRepairs(bestSolution) >= 0 || Configuration::isActive("showSolutionForEachInconsistency")))
+            if(!(*it)->hasImpossibility && ((*it)->compareRepairs(bestSolution) >= 0 || showSubOpt))
             {
+                if(showSubOpt && (*it)->compareRepairs(bestSolution) < 0)
+                {
+                    if(verbose < 2)
+                    {
+                        std::cout << "+";
+                    }
+                    else
+                    {
+                        std::cout << "(Sub-Optimal Solution)\n";
+                    }
+                }
                 (*it)->printSolution(verbose);
             }
         }

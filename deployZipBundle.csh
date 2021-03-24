@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-set version = 1.2.4
+set version = 1.2.5
 set bundleDir = bundle
 
 
