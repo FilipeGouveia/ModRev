@@ -12,7 +12,11 @@
 Network::Network() 
     :nodes_(),
     edges_(),
-    observation_files(){}
+    observation_files_ts(),
+    observation_files_ss(){
+        has_ss_obs = false;
+        has_ts_obs = false;
+    }
 
 Network::~Network() {
 
