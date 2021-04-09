@@ -61,3 +61,26 @@ std::string getFilename(const std::string &s)
     }
     return filename;
 }
+
+std::string getFilepath(const std::string &s) 
+{
+    if(s.empty())
+        return "./";
+    std::string filepath = s;
+    std::vector<std::string> elems;
+    elems = split(filepath, '/');
+    filepath = "";
+    if(elems.size() > 1)
+    {
+        for(int i = 0; i < (int) elems.size() - 1; i++)
+        {
+            filepath.append(elems[i]);
+            filepath.append("/");
+        }
+    }
+    else
+    {
+        return "./";
+    }
+    return filepath;
+}

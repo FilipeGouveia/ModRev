@@ -17,7 +17,9 @@ noneNegative(P,T,V,Id) :- onePositive(P,T,V,Id), not oneNegative(P,T,V,Id).
 
 %input nodes
 input(V) :- not functionOr(V,_), vertex(V).
-vlabel(P,T+1,V,S) :- input(V), vlabel(P,T,V,S), exp(P), time(P,T+1), not repair(V).
+%vlabel(P,T+1,V,S) :- input(V), vlabel(P,T,V,S), exp(P), time(P,T+1), not repair(V).
+vlabel(P,T+1,V,0) :- input(V), vlabel(P,T,V,0), exp(P), time(P,T+1), not r_gen(V).
+vlabel(P,T+1,V,1) :- input(V), vlabel(P,T,V,1), exp(P), time(P,T+1), not r_part(V).
 
 
 %not sure if this makes sense

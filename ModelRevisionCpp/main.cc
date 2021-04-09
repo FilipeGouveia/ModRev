@@ -14,7 +14,7 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::string version = "2.0.0-unstable";
+std::string version = "1.3.0-unstable";
 
 Network * network = new Network();
 int update = ASYNC;
@@ -25,9 +25,10 @@ int update = ASYNC;
 // 2 - human readable output [default]
 int verbose = 2;
 
+
 int main(int argc, char ** argv) {
 
-    Configuration::parseConfig();
+    Configuration::parseConfig(Util_h::getFilepath(argv[0]).append("config.txt"));
 
     if(process_arguments(argc, argv) != 0)
         return -1;
@@ -55,6 +56,12 @@ int process_arguments(const int argc, char const * const * argv) {
         return -1;
     }
 
+    // observation type
+    // 0 - time-series observations [default]
+    // 1 - stable state observations
+    // 2 - both (time-series + stable state)
+    int obs_type = 0;
+
     std::string lastOpt = "-m";
 
     for(int i = 1; i < argc; i++)
@@ -71,6 +78,14 @@ int process_arguments(const int argc, char const * const * argv) {
                 Configuration::setValue("forceOptimum","true");
                 continue;
             }
+
+            // retro-compatibiity option
+            if(strcmp(argv[i],"--steady-state") == 0 || strcmp(argv[i],"--ss") == 0)
+            {
+                obs_type = 1;
+                continue;
+            }
+
             lastOpt = argv[i];
             if(lastOpt.compare("--help") == 0 || lastOpt.compare("-h") == 0)
             {
@@ -80,7 +95,7 @@ int process_arguments(const int argc, char const * const * argv) {
             
             if(lastOpt.compare("--model") != 0 && lastOpt.compare("-m") != 0 &&
                 lastOpt.compare("--observations") != 0 && lastOpt.compare("-obs") != 0 &&
-                lastOpt.compare("--stable-state") != 0 && lastOpt.compare("-ss") != 0 &&
+                lastOpt.compare("--observation-type") != 0 && lastOpt.compare("-ot") != 0 &&
                 lastOpt.compare("--update") != 0 && lastOpt.compare("-up") != 0 &&
                 lastOpt.compare("--verbose") != 0 && lastOpt.compare("-v") != 0)
             {
@@ -103,15 +118,31 @@ int process_arguments(const int argc, char const * const * argv) {
             }
             if(lastOpt.compare("--observations") == 0 || lastOpt.compare("-obs") == 0)
             {
-                network->observation_files_ts.push_back(argv[i]);
-                networks->has_ts_obs = true;
+                network->observation_files.push_back(argv[i]);
                 continue;
             }
-            if(lastOpt.compare("--stable-state") == 0 || lastOpt.compare("-ss") == 0)
+            if(lastOpt.compare("--observation-type") == 0 || lastOpt.compare("-ot") == 0)
             {
-                network->observation_files_ss.push_back(argv[i]);
-                networks->has_ss_obs = true;
-                continue;
+                lastOpt = "-m";
+                if(strcmp(argv[i], "ts") == 0)
+                {
+                    obs_type = 0;
+                    continue;
+                }
+                if(strcmp(argv[i], "ss") == 0)
+                {
+                    obs_type = 1;
+                    continue;
+                }
+                if(strcmp(argv[i], "both") == 0)
+                {
+                    obs_type = 2;
+                    continue;
+                }
+
+                std::cout << "Invalid value for option --observation-type: " << argv[i] << std::endl;
+                printHelp();
+                return -1;
             }
             if(lastOpt.compare("--update") == 0 || lastOpt.compare("-up") == 0)
             {
@@ -139,6 +170,7 @@ int process_arguments(const int argc, char const * const * argv) {
             }
             if(lastOpt.compare("--verbose") == 0 || lastOpt.compare("-v") == 0)
             {
+                lastOpt = "-m";
                 try{
                     int value = std::stoi(argv[i]);
                     if(value >= 0 && value <= 2)
@@ -162,6 +194,16 @@ int process_arguments(const int argc, char const * const * argv) {
 
         }
     }
+
+    if(obs_type == 0 || obs_type == 2)
+    {
+        network->has_ts_obs = true;
+    }
+    if(obs_type == 1 || obs_type == 2)
+    {
+        network->has_ss_obs = true;
+    }
+
     return 0;
 }
 
@@ -171,12 +213,16 @@ void printHelp()
     std::cout << "  Given a model and a set of observations it determines if the model is consistent. If not, it computes all the minimum number of repair operations in order to render the model consistent." << std::endl;
     std::cout << "Version: " << version << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << "  modrev [-m] model_file [[-obs] observation_files...] [[-ss] stable_state_files...] [options]" << std::endl;
+    std::cout << "  modrev [-m] model_file [[-obs] observation_files...] [options]" << std::endl;
     std::cout << "  options:" << std::endl;
     std::cout << "    --model,-m <model_file>\t\tInput model file." << std::endl;
-    std::cout << "    --observations,-obs <obs_files...>\tList of time-series observation files." << std::endl;
+    std::cout << "    --observations,-obs <obs_files...>\tList of observation files." << std::endl;
     //std::cout << "\t\t--output,-o <output_file>\t\tOutput file destination." << std::endl;
-    std::cout << "    --stable-state,-ss <ss_files...>\tList of stable-state observation files" << std::endl;
+    //std::cout << "    --stable-state,-ss <ss_files...>\tList of stable-state observation files" << std::endl;
+    std::cout << "    --observation-type,-ot <value>\tType of observations in {ts|ss|both}. DEFAULT: ts." << std::endl;
+    std::cout << "\t\t\t\t\t\tts   - time-series observations" << std::endl;
+    std::cout << "\t\t\t\t\t\tss   - stable state observations" << std::endl;
+    std::cout << "\t\t\t\t\t\tboth - both time-series and stable state observations" << std::endl;
     std::cout << "    --update,-up <value>\t\tUpdate mode in {a|s|ma}. DEFAULT: a." << std::endl;
     std::cout << "\t\t\t\t\t\ta  - asynchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
@@ -772,6 +818,9 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f)
 
 int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
 {
+    if(Configuration::isActive("debug"))
+        std::cout << "\n###DEBUG: checking consistency of function: " << f->printFunction() << " of node " << f->getNode() << "\n";
+
     int result = CONSISTENT;
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
@@ -783,6 +832,8 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
 
     while(profileMap->find(time) != profileMap->end())
     {
+        if(Configuration::isActive("debug"))
+            std::cout << "\t\tChecking a from time step: " << time << "\n";
         //if it is not steady state, the following time must exist
         if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
@@ -796,17 +847,25 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         {
             std::vector<std::string> updates = labeling->updates_[time][profile];
             bool isUpdated = false;
+            if(Configuration::isActive("debug"))
+                std::cout << "\t\tTesting updates\n";
             for(auto it = updates.begin(), end = updates.end(); it != end; it++)
             {
-                if((*it).compare(f->getNode()))
+                if(Configuration::isActive("debug"))
+                        std::cout << "\t\tList of updated contains: " << (*it) << " and we are testing node " << f->getNode() << "\n";
+                if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
+                    if(Configuration::isActive("debug"))
+                        std::cout << "\t\tIs ASYNC and updated\n";
                     break;
                 }
             }
             if(!isUpdated)
             {
                 time++;
+                if(Configuration::isActive("debug"))
+                    std::cout << "\t\tIs AYNC but not updated\n";
                 continue;
             }
         }
@@ -815,6 +874,8 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         int nClauses = f->getNClauses();
         for(int i = 1; i <= nClauses; i++)
         {
+            if(Configuration::isActive("debug"))
+                std::cout << "\t\tChecking term " << i << "\n";
             bool isClauseSatisfiable = true;
             std::set<std::string> clause = f->getClauses()[i];
             for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
@@ -1056,13 +1117,20 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f)
 
 bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
 {
+    if(Configuration::isActive("debug"))
+        std::cout << "\n###DEBUG: checking consistency of function: " << f->printFunction() << " of node " << f->getNode() << "\n";
+
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
     int time = 0;
     bool isStableState = profileMap->size() == 1;
+    if(Configuration::isActive("debug"))
+        std::cout << "\t\tChecking a stable state profile: " << profile << "\n";
     int lastVal = -1;
     while(profileMap->find(time) != profileMap->end())
     {
+        if(Configuration::isActive("debug"))
+            std::cout << "\t\tChecking a from time step: " << time << "\n";
         //if it is not steady state, the following time must exist
         if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
@@ -1078,15 +1146,19 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
             bool isUpdated = false;
             for(auto it = updates.begin(), end = updates.end(); it != end; it++)
             {
-                if((*it).compare(f->getNode()))
+                if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
+                    if(Configuration::isActive("debug"))
+                        std::cout << "\t\tIs ASYNC and updated\n";
                     break;
                 }
             }
             if(!isUpdated)
             {
                 time++;
+                if(Configuration::isActive("debug"))
+                    std::cout << "\t\tIs AYNC but not updated\n";
                 continue;
             }
         }
@@ -1095,6 +1167,8 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         int nClauses = f->getNClauses();
         for(int i = 1; i <= nClauses; i++)
         {
+            if(Configuration::isActive("debug"))
+                std::cout << "\t\tChecking term " << i << "\n";
             bool isClauseSatisfiable = true;
             std::set<std::string> clause = f->getClauses()[i];
             for(auto it = clause.begin(), end = clause.end(); it!=end; it++)

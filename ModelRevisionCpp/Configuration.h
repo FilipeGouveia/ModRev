@@ -7,7 +7,7 @@
 class Configuration {
 
     public:
-        static void parseConfig();
+        static void parseConfig(std::string filename);
         static std::string getValue(std::string key);
         static int getIntValue(std::string key);
         static bool isActive(std::string key);

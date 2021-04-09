@@ -8,7 +8,7 @@
 
 std::map<std::string,std::string> Configuration::_configMap;
 
-void Configuration::parseConfig() {
+void Configuration::parseConfig(std::string filename) {
 
     //default known values
     _configMap["check_ASP"] = "false"; //use ASP consistency check program
@@ -21,7 +21,6 @@ void Configuration::parseConfig() {
     _configMap["ASP_CC_D_A"] =  "../ASP/Dynamic/a-update.lp"; //ASP consistency check dynamic asyncronous update program file
     _configMap["ASP_CC_D_S"] =  "../ASP/Dynamic/s-update.lp"; //ASP consistency check dynamic synchronous update program file
     _configMap["ASP_CC_D_MA"] =  "../ASP/Dynamic/ma-update.lp"; //ASP consistency check dynamic multi-asynchronous update program file
-    _configMap["ASP_CC_SS_D"] =  "../ASP/core-ss-ts.lp"; //ASP consistency check stable state and dynamic simultaneously program file
     _configMap["ASP_Functions"] = "../ASP/Functions/"; // ASP function files directory
     _configMap["allOpt"] = "true"; // show one or more solutions
     _configMap["debug"] = "false";
@@ -34,7 +33,7 @@ void Configuration::parseConfig() {
 
     //read new values from config file
 
-    std::ifstream f_input("config.txt");
+    std::ifstream f_input(filename);
 
     if(f_input.is_open())
     {

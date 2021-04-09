@@ -69,11 +69,7 @@ std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * networ
         }
 
         ctl->load(network->input_file_network_.c_str());
-        for(auto it = network->observation_files_ts.begin(), end = network->observation_files_ts.end(); it != end; it++)
-        {
-            ctl->load((*it).c_str());
-        }
-        for(auto it = network->observation_files_ss.begin(), end = network->observation_files_ss.end(); it != end; it++)
+        for(auto it = network->observation_files.begin(), end = network->observation_files.end(); it != end; it++)
         {
             ctl->load((*it).c_str());
         }

@@ -15,5 +15,6 @@ std::vector<std::string> split(const std::string &s, char delim);
 std::string exec(const char* cmd);
 
 std::string getFilename(const std::string &s);
+std::string getFilepath(const std::string &s);
 
 #endif /* Util_h */
