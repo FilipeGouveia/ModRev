@@ -373,6 +373,8 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
                 printf("#FOUND a node with impossibility - %s\n", it->second->id_.c_str());
             return;
         }
+        if(Configuration::isActive("debug"))
+            printf("#Found a repair for node - %s\n", it->second->id_.c_str());
         
     }
 
@@ -827,13 +829,9 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
     int time = 0;
     int lastVal = -1;
     bool isStableState = profileMap->size() == 1;
-    if(Configuration::isActive("debug") && isStableState)
-            std::cout << "DEBUG: testing inconsistencies in stable state profile: " << profile << "\n";
 
     while(profileMap->find(time) != profileMap->end())
     {
-        if(Configuration::isActive("debug"))
-            std::cout << "\t\tChecking a from time step: " << time << "\n";
         //if it is not steady state, the following time must exist
         if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
@@ -847,25 +845,17 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         {
             std::vector<std::string> updates = labeling->updates_[time][profile];
             bool isUpdated = false;
-            if(Configuration::isActive("debug"))
-                std::cout << "\t\tTesting updates\n";
             for(auto it = updates.begin(), end = updates.end(); it != end; it++)
             {
-                if(Configuration::isActive("debug"))
-                        std::cout << "\t\tList of updated contains: " << (*it) << " and we are testing node " << f->getNode() << "\n";
                 if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
-                    if(Configuration::isActive("debug"))
-                        std::cout << "\t\tIs ASYNC and updated\n";
                     break;
                 }
             }
             if(!isUpdated)
             {
                 time++;
-                if(Configuration::isActive("debug"))
-                    std::cout << "\t\tIs AYNC but not updated\n";
                 continue;
             }
         }
@@ -874,8 +864,6 @@ int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         int nClauses = f->getNClauses();
         for(int i = 1; i <= nClauses; i++)
         {
-            if(Configuration::isActive("debug"))
-                std::cout << "\t\tChecking term " << i << "\n";
             bool isClauseSatisfiable = true;
             std::set<std::string> clause = f->getClauses()[i];
             for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
@@ -1124,13 +1112,9 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
     //must test for each time step
     int time = 0;
     bool isStableState = profileMap->size() == 1;
-    if(Configuration::isActive("debug"))
-        std::cout << "\t\tChecking a stable state profile: " << profile << "\n";
     int lastVal = -1;
     while(profileMap->find(time) != profileMap->end())
     {
-        if(Configuration::isActive("debug"))
-            std::cout << "\t\tChecking a from time step: " << time << "\n";
         //if it is not steady state, the following time must exist
         if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
@@ -1149,16 +1133,12 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
                 if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
-                    if(Configuration::isActive("debug"))
-                        std::cout << "\t\tIs ASYNC and updated\n";
                     break;
                 }
             }
             if(!isUpdated)
             {
                 time++;
-                if(Configuration::isActive("debug"))
-                    std::cout << "\t\tIs AYNC but not updated\n";
                 continue;
             }
         }
@@ -1167,8 +1147,6 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         int nClauses = f->getNClauses();
         for(int i = 1; i <= nClauses; i++)
         {
-            if(Configuration::isActive("debug"))
-                std::cout << "\t\tChecking term " << i << "\n";
             bool isClauseSatisfiable = true;
             std::set<std::string> clause = f->getClauses()[i];
             for(auto it = clause.begin(), end = clause.end(); it!=end; it++)
