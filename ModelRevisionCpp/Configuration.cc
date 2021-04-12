@@ -8,15 +8,16 @@
 
 std::map<std::string,std::string> Configuration::_configMap;
 
-void Configuration::parseConfig() {
+void Configuration::parseConfig(std::string filename) {
 
     //default known values
     _configMap["check_ASP"] = "false"; //use ASP consistency check program
     _configMap["function_ASP"] = "true"; //use ASP function program
     _configMap["ASP_dir"] = "../ASP/"; //ASP disrectory
     _configMap["ASP_solver"] = "./../ASP/bin-Darwin/clingo"; // ASP solver
-    _configMap["ASP_CC_SS"] =  "../ASP/ConsistencyCheck/core-ss.lp"; //ASP consistency check steady state program file
-    _configMap["ASP_CC_D"] =  "../ASP/Dynamic/core.lp"; //ASP consistency check dynamic program file
+    _configMap["ASP_CC_BASE"] =  "../ASP/base.lp"; //ASP consistency check base program file
+    _configMap["ASP_CC_SS"] =  "../ASP/StableState/core-ss.lp"; //ASP consistency check steady state program file
+    _configMap["ASP_CC_D"] =  "../ASP/Dynamic/core-ts.lp"; //ASP consistency check dynamic program file
     _configMap["ASP_CC_D_A"] =  "../ASP/Dynamic/a-update.lp"; //ASP consistency check dynamic asyncronous update program file
     _configMap["ASP_CC_D_S"] =  "../ASP/Dynamic/s-update.lp"; //ASP consistency check dynamic synchronous update program file
     _configMap["ASP_CC_D_MA"] =  "../ASP/Dynamic/ma-update.lp"; //ASP consistency check dynamic multi-asynchronous update program file
@@ -32,7 +33,7 @@ void Configuration::parseConfig() {
 
     //read new values from config file
 
-    std::ifstream f_input("config.txt");
+    std::ifstream f_input(filename);
 
     if(f_input.is_open())
     {

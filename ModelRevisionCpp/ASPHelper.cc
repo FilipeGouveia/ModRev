@@ -18,7 +18,7 @@
 
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * network, int & optimization, bool ss, int update) {
+std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * network, int & optimization, int update) {
 
     std::vector<InconsistencySolution*> result;
 
@@ -33,13 +33,27 @@ std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * networ
 
         Clingo::Control * ctl = new Clingo::Control({"--opt-mode=optN"}, logger, 20);
 
-        if(ss)
+        ctl->load(Configuration::getValue("ASP_CC_BASE").c_str());
+
+        if(network->has_ss_obs && network->has_ts_obs)
         {
+            //ctl->load(Configuration::getValue("ASP_CC_SS_D").c_str());
             ctl->load(Configuration::getValue("ASP_CC_SS").c_str());
+            ctl->load(Configuration::getValue("ASP_CC_D").c_str());
         }
         else
         {
-            ctl->load(Configuration::getValue("ASP_CC_D").c_str());
+            if(network->has_ss_obs)
+            {
+                ctl->load(Configuration::getValue("ASP_CC_SS").c_str());
+            }
+            else
+            {
+                ctl->load(Configuration::getValue("ASP_CC_D").c_str());
+            }
+        }
+        if(network->has_ts_obs)
+        {
             switch(update)
             {
                 case ASYNC:

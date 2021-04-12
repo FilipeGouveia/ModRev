@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-set version = 1.2.5
+set version = 1.3.0-unstable
 set bundleDir = bundle
 
 
@@ -21,8 +21,9 @@ mkdir $bundleDir/$version/ModRev
 
 mkdir $bundleDir/$version/ModRev/ASP
 cp ASP/README-deploy.md $bundleDir/$version/ModRev/ASP/README.md
-mkdir $bundleDir/$version/ModRev/ASP/ConsistencyCheck
-cp ASP/ConsistencyCheck/core-ss.lp $bundleDir/$version/ModRev/ASP/ConsistencyCheck/
+cp ASP/base.lp $bundleDir/$version/ModRev/ASP/
+mkdir $bundleDir/$version/ModRev/ASP/StableState
+cp ASP/StableState/core-ss.lp $bundleDir/$version/ModRev/ASP/StableState/
 mkdir $bundleDir/$version/ModRev/ASP/Dynamic
 cp ASP/Dynamic/*.lp $bundleDir/$version/ModRev/ASP/Dynamic/
 cp -R examples $bundleDir/$version/ModRev/
@@ -37,16 +38,12 @@ cp -R ModelRevisionCpp/libOSX $bundleDir/$version/ModRev/
 cp -R ModelRevisionCpp/libUNIX $bundleDir/$version/ModRev/
 cp -R ModelRevisionCpp/headers $bundleDir/$version/ModRev/
 
-printf "check_ASP=true\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_dir=./ASP/\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_CC_SS=./ASP/ConsistencyCheck/core-ss.lp\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_CC_D=./ASP/Dynamic/core.lp\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_CC_D_A=./ASP/Dynamic/a-update.lp\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_CC_D_S=./ASP/Dynamic/s-update.lp\n" >> $bundleDir/$version/ModRev/config.txt
-printf "ASP_CC_D_MA=./ASP/Dynamic/ma-update.lp\n" >> $bundleDir/$version/ModRev/config.txt
-printf "compareLevelFunction=true\n" >> $bundleDir/$version/ModRev/config.txt
-printf "exactMiddleFunctionDetermination=true\n" >> $bundleDir/$version/ModRev/config.txt
-printf "forceOptimum=false\n" >> $bundleDir/$version/ModRev/config.txt
+#printf "check_ASP=true\n" >> $bundleDir/$version/ModRev/config.txt
+#printf "compareLevelFunction=true\n" >> $bundleDir/$version/ModRev/config.txt
+#printf "exactMiddleFunctionDetermination=true\n" >> $bundleDir/$version/ModRev/config.txt
+#printf "forceOptimum=false\n" >> $bundleDir/$version/ModRev/config.txt
+
+# Redo files location in make file
 
 cd $bundleDir/$version
 zip -r ModRev-$version.zip ModRev -x .DS_Store

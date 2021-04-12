@@ -95,6 +95,9 @@ class Network {
         std::string input_file_network_;
         std::vector< std::string> observation_files;
 
+        bool has_ss_obs;
+        bool has_ts_obs;
+
         Network();
         ~Network();
 

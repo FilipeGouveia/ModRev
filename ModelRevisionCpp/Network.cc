@@ -12,7 +12,10 @@
 Network::Network() 
     :nodes_(),
     edges_(),
-    observation_files(){}
+    observation_files(){
+        has_ss_obs = false;
+        has_ts_obs = false;
+    }
 
 Network::~Network() {
 
@@ -401,15 +404,15 @@ void InconsistencySolution::addUpdate(int time, std::string profile, std::string
         updates_.insert(std::make_pair(time, newMap));
     }
 
-    auto timeMap = updates_.find(time)->second;
+    std::map<std::string, std::vector<std::string> > * timeMap = &(updates_.find(time)->second);
 
-    if(timeMap.find(profile) == timeMap.end())
+    if(timeMap->find(profile) == timeMap->end())
     {
         std::vector<std::string> newVector;
-        timeMap.insert(std::make_pair(profile, newVector));
+        timeMap->insert(std::make_pair(profile, newVector));
     }
 
-    timeMap.find(profile)->second.push_back(id);
+    timeMap->find(profile)->second.push_back(id);
 }
 
 void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)

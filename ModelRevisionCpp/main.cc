@@ -14,10 +14,9 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::string version = "1.2.4";
+std::string version = "1.3.0-unstable";
 
 Network * network = new Network();
-bool isSteadyState = false;
 int update = ASYNC;
 
 // verbose level
@@ -26,9 +25,10 @@ int update = ASYNC;
 // 2 - human readable output [default]
 int verbose = 2;
 
+
 int main(int argc, char ** argv) {
 
-    Configuration::parseConfig();
+    Configuration::parseConfig(Util_h::getFilepath(argv[0]).append("config.txt"));
 
     if(process_arguments(argc, argv) != 0)
         return -1;
@@ -56,17 +56,18 @@ int process_arguments(const int argc, char const * const * argv) {
         return -1;
     }
 
+    // observation type
+    // 0 - time-series observations [default]
+    // 1 - stable state observations
+    // 2 - both (time-series + stable state)
+    int obs_type = 0;
+
     std::string lastOpt = "-m";
 
     for(int i = 1; i < argc; i++)
     {
         if(argv[i][0] == '-')
         {
-            if(strcmp(argv[i],"--steady-state") == 0 || strcmp(argv[i],"-ss") == 0)
-            {
-                isSteadyState = true;
-                continue;
-            }
             if(strcmp(argv[i],"--sub-opt") == 0)
             {
                 Configuration::setValue("showSolutionForEachInconsistency","true");
@@ -77,6 +78,14 @@ int process_arguments(const int argc, char const * const * argv) {
                 Configuration::setValue("forceOptimum","true");
                 continue;
             }
+
+            // retro-compatibiity option
+            if(strcmp(argv[i],"--steady-state") == 0 || strcmp(argv[i],"--ss") == 0)
+            {
+                obs_type = 1;
+                continue;
+            }
+
             lastOpt = argv[i];
             if(lastOpt.compare("--help") == 0 || lastOpt.compare("-h") == 0)
             {
@@ -86,6 +95,7 @@ int process_arguments(const int argc, char const * const * argv) {
             
             if(lastOpt.compare("--model") != 0 && lastOpt.compare("-m") != 0 &&
                 lastOpt.compare("--observations") != 0 && lastOpt.compare("-obs") != 0 &&
+                lastOpt.compare("--observation-type") != 0 && lastOpt.compare("-ot") != 0 &&
                 lastOpt.compare("--update") != 0 && lastOpt.compare("-up") != 0 &&
                 lastOpt.compare("--verbose") != 0 && lastOpt.compare("-v") != 0)
             {
@@ -110,6 +120,29 @@ int process_arguments(const int argc, char const * const * argv) {
             {
                 network->observation_files.push_back(argv[i]);
                 continue;
+            }
+            if(lastOpt.compare("--observation-type") == 0 || lastOpt.compare("-ot") == 0)
+            {
+                lastOpt = "-m";
+                if(strcmp(argv[i], "ts") == 0)
+                {
+                    obs_type = 0;
+                    continue;
+                }
+                if(strcmp(argv[i], "ss") == 0)
+                {
+                    obs_type = 1;
+                    continue;
+                }
+                if(strcmp(argv[i], "both") == 0)
+                {
+                    obs_type = 2;
+                    continue;
+                }
+
+                std::cout << "Invalid value for option --observation-type: " << argv[i] << std::endl;
+                printHelp();
+                return -1;
             }
             if(lastOpt.compare("--update") == 0 || lastOpt.compare("-up") == 0)
             {
@@ -137,6 +170,7 @@ int process_arguments(const int argc, char const * const * argv) {
             }
             if(lastOpt.compare("--verbose") == 0 || lastOpt.compare("-v") == 0)
             {
+                lastOpt = "-m";
                 try{
                     int value = std::stoi(argv[i]);
                     if(value >= 0 && value <= 2)
@@ -160,6 +194,16 @@ int process_arguments(const int argc, char const * const * argv) {
 
         }
     }
+
+    if(obs_type == 0 || obs_type == 2)
+    {
+        network->has_ts_obs = true;
+    }
+    if(obs_type == 1 || obs_type == 2)
+    {
+        network->has_ss_obs = true;
+    }
+
     return 0;
 }
 
@@ -171,10 +215,14 @@ void printHelp()
     std::cout << "Usage:" << std::endl;
     std::cout << "  modrev [-m] model_file [[-obs] observation_files...] [options]" << std::endl;
     std::cout << "  options:" << std::endl;
-    std::cout << "    --model,-m <model_file>\t\tInput model file. It may contain observations." << std::endl;
+    std::cout << "    --model,-m <model_file>\t\tInput model file." << std::endl;
     std::cout << "    --observations,-obs <obs_files...>\tList of observation files." << std::endl;
     //std::cout << "\t\t--output,-o <output_file>\t\tOutput file destination." << std::endl;
-    std::cout << "    --steady-state,-ss\t\t\tDefine input observations as steady state. DEFAULT: false." << std::endl;
+    //std::cout << "    --stable-state,-ss <ss_files...>\tList of stable-state observation files" << std::endl;
+    std::cout << "    --observation-type,-ot <value>\tType of observations in {ts|ss|both}. DEFAULT: ts." << std::endl;
+    std::cout << "\t\t\t\t\t\tts   - time-series observations" << std::endl;
+    std::cout << "\t\t\t\t\t\tss   - stable state observations" << std::endl;
+    std::cout << "\t\t\t\t\t\tboth - both time-series and stable state observations" << std::endl;
     std::cout << "    --update,-up <value>\t\tUpdate mode in {a|s|ma}. DEFAULT: a." << std::endl;
     std::cout << "\t\t\t\t\t\ta  - asynchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
@@ -286,7 +334,7 @@ std::vector<InconsistencySolution*> checkConsistency(int & optimization) {
     if(Configuration::isActive("check_ASP"))
     {
         // invoke the consistency check program in ASP
-        result = ASPHelper::checkConsistency(network, optimization, isSteadyState, update);
+        result = ASPHelper::checkConsistency(network, optimization, update);
     }
     else
     {
@@ -325,6 +373,8 @@ void repairInconsistencies(InconsistencySolution* inconsistency)
                 printf("#FOUND a node with impossibility - %s\n", it->second->id_.c_str());
             return;
         }
+        if(Configuration::isActive("debug"))
+            printf("#Found a repair for node - %s\n", it->second->id_.c_str());
         
     }
 
@@ -651,7 +701,7 @@ bool repairNodeConsistencyFunctions(InconsistencySolution* inconsistency, Incons
     //it is necessary to validate if the model became consistent
     if(!flippedEdges.empty() || !addedEdges.empty() || !removedEdges.empty())
     {
-        repairType = nFuncInconsistWithLabel(inconsistency, network->getNode(iNode->id_)->regFunction_);
+        repairType = nFuncInconsistentWithLabel(inconsistency, network->getNode(iNode->id_)->regFunction_);
         if(repairType == CONSISTENT)
         {
             if(Configuration::isActive("debug"))
@@ -742,13 +792,13 @@ bool repairNodeConsistencyFunctions(InconsistencySolution* inconsistency, Incons
 }
 
 
-int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f)
+int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f)
 {
     int result = CONSISTENT;
     //verify for each profile
     for(auto it = labeling->vlabel_.begin(), end = labeling->vlabel_.end(); it != end; it++)
     {
-        int ret = nFuncInconsistWithLabel(labeling, f, it->first);
+        int ret = nFuncInconsistentWithLabel(labeling, f, it->first);
         //if(Configuration::isActive("debug"))
         //        std::cout << "DEBUG: consistency value: " << ret << " for node " << f->getNode() << " with function: " << f->printFunction() << std::endl;
         if(result == CONSISTENT)
@@ -768,17 +818,22 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f)
 }
 
 
-int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
+int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
 {
+    if(Configuration::isActive("debug"))
+        std::cout << "\n###DEBUG: checking consistency of function: " << f->printFunction() << " of node " << f->getNode() << "\n";
+
     int result = CONSISTENT;
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
     int time = 0;
     int lastVal = -1;
+    bool isStableState = profileMap->size() == 1;
+
     while(profileMap->find(time) != profileMap->end())
     {
         //if it is not steady state, the following time must exist
-        if(!isSteadyState && profileMap->find(time + 1) == profileMap->end())
+        if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
             break;
         }
@@ -786,13 +841,13 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
         std::map<std::string, int> * timeMap = &((*profileMap)[time]);
 
         //verify if it is an updated node
-        if(!isSteadyState && update != SYNC)
+        if(!isStableState && update != SYNC)
         {
             std::vector<std::string> updates = labeling->updates_[time][profile];
             bool isUpdated = false;
             for(auto it = updates.begin(), end = updates.end(); it != end; it++)
             {
-                if((*it).compare(f->getNode()))
+                if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
                     break;
@@ -843,7 +898,7 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
             if(isClauseSatisfiable)
             {
                 foundSat = true;
-                if(isSteadyState)
+                if(isStableState)
                 {
                     if((*timeMap)[f->getNode()] == 1)
                     {
@@ -878,7 +933,7 @@ int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::s
 
         if(!foundSat)
         {
-            if(isSteadyState)
+            if(isStableState)
             {
                 if(nClauses == 0)
                 {
@@ -1050,14 +1105,18 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f)
 
 bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile)
 {
+    if(Configuration::isActive("debug"))
+        std::cout << "\n###DEBUG: checking consistency of function: " << f->printFunction() << " of node " << f->getNode() << "\n";
+
     std::map<int, std::map<std::string, int> > * profileMap = &(labeling->vlabel_[profile]);
     //must test for each time step
     int time = 0;
+    bool isStableState = profileMap->size() == 1;
     int lastVal = -1;
     while(profileMap->find(time) != profileMap->end())
     {
         //if it is not steady state, the following time must exist
-        if(!isSteadyState && profileMap->find(time + 1) == profileMap->end())
+        if(!isStableState && profileMap->find(time + 1) == profileMap->end())
         {
             break;
         }
@@ -1065,13 +1124,13 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
         std::map<std::string, int> * timeMap = &((*profileMap)[time]);
 
         //verify if it is an updated node
-        if(!isSteadyState && update != SYNC)
+        if(!isStableState && update != SYNC)
         {
             std::vector<std::string> updates = labeling->updates_[time][profile];
             bool isUpdated = false;
             for(auto it = updates.begin(), end = updates.end(); it != end; it++)
             {
-                if((*it).compare(f->getNode()))
+                if((*it).compare(f->getNode())==0)
                 {
                     isUpdated = true;
                     break;
@@ -1122,7 +1181,7 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
             if(isClauseSatisfiable)
             {
                 foundSat = true;
-                if(isSteadyState)
+                if(isStableState)
                 {
                     if((*timeMap)[f->getNode()] == 1)
                     {
@@ -1150,7 +1209,7 @@ bool isFuncConsistentWithLabel(InconsistencySolution* labeling, Function* f, std
 
         if(!foundSat)
         {
-            if(isSteadyState)
+            if(isStableState)
             {
                 if(nClauses == 0)
                 {
@@ -1266,7 +1325,7 @@ bool searchNonComparableFunctions(InconsistencySolution* inconsistency, Inconsis
         {
             continue;
         }
-        int incType = nFuncInconsistWithLabel(inconsistency, candidate);
+        int incType = nFuncInconsistentWithLabel(inconsistency, candidate);
         if(incType == CONSISTENT)
         {
             isConsistent = true;

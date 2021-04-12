@@ -25,8 +25,8 @@ bool repairNodeConsistencyFlippingEdges(InconsistencySolution* solution, Inconsi
 
 bool repairNodeConsistencyFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges);
 
-int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f);
-int nFuncInconsistWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
+int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f);
+int nFuncInconsistentWithLabel(InconsistencySolution* labeling, Function* f, std::string profile);
 
 bool searchComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges, bool generalize);
 bool searchNonComparableFunctions(InconsistencySolution* inconsistency, InconsistentNode* iNode, std::vector<Edge*> flippedEdges, std::vector<Edge*> addedEdges, std::vector<Edge*> removedEdges);
