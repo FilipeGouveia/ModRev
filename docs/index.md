@@ -2,7 +2,7 @@ ModRev is a command line tool to revise Boolean logical models of biological reg
 
 This tool was developed for *UNIX* and *MacOSX* systems.
 
-**ModRev** is able to repair inconsistent Boolean models under *one* of the following:
+**ModRev** is able to repair inconsistent Boolean models under the following:
 - Set of stable state observations 
 - Set of time-series observations
   - With synchronous update scheme
@@ -11,8 +11,6 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 ## Releases
 
 - [ModRev v1.3.0](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.3.0.zip)
-
-**WARNING**: The following realeses may not work properly under the asynchronous update scheme.
 - [ModRev v1.2.5](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.5.zip)
 - [ModRev v1.2.3](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.3.zip) (version used in testing)
 - [ModRev v1.1.0](https://filipegouveia.github.io/ModelRevisionASP/modrev-1.1.zip) (version 1.1 only supports stable state observations)
