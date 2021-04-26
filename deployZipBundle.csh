@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-set version = 1.3.0-unstable
+set version = 1.3.0
 set bundleDir = bundle
 
 

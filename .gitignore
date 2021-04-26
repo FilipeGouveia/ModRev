@@ -18,6 +18,7 @@ inputTests*/
 runTests.csh
 resultsv3latex.txt
 ModelRevisionCpp/doubleInc
+ModelRevisionCpp/ASP
 modrev-v*
 bundle/
 .vscode/

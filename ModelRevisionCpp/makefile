@@ -70,4 +70,5 @@ config:
 	printf "ASP_CC_D_MA=$(CURDIR)/ASP/Dynamic/ma-update.lp\n" >> config.txt
 
 dev: cleanconfig config depend $(TARGET)
+	ln -s ../ASP/ ASP
 	printf "debug=true\n" >> config.txt
