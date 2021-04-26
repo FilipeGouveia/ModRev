@@ -11,6 +11,7 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 ## Releases
 
 - [ModRev v1.3.0](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.3.0.zip)
+
 **WARNING**: The following realeses may not work properly under the asynchronous update scheme.
 - [ModRev v1.2.5](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.5.zip)
 - [ModRev v1.2.3](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.3.zip) (version used in testing)
