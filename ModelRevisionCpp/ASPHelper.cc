@@ -308,6 +308,15 @@ int ASPHelper::parseNetwork(Network * network) {
                     }
                     continue;
                 }
+                if(split[0].compare("vertex") == 0)
+                {
+                    split = Util_h::split(split[1], ')');
+                    std::string node = split[0];
+
+                    Node* n = network->addNode(node);
+
+                    continue;
+                }
                 if(split[0].compare("functionOr") == 0)
                 {
                     split = Util_h::split(split[1], ')');
