@@ -10,8 +10,7 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 
 ## Releases
 
-- [ModRev v1.3.0](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.3.0.zip)
-- [ModRev v1.2.5](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.5.zip)
+- [ModRev v1.3.1](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.3.1.zip)
 - [ModRev v1.2.3](https://filipegouveia.github.io/ModelRevisionASP/ModRev-1.2.3.zip) (version used in testing)
 - [ModRev v1.1.0](https://filipegouveia.github.io/ModelRevisionASP/modrev-1.1.zip) (version 1.1 only supports stable state observations)
 
