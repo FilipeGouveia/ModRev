@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2021-04-26
+- Fixed a bug with missing edges
+
 ## [1.3.0] - 2021-04-24
 - Support for stable state and time-series observations simultaneously.
 - Support for time-series data with different lengths.
