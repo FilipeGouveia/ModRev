@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ## [1.3.0] - 2021-04-24
 - Support for stable state and time-series observations simultaneously.
 - Support for time-series data with different lengths.
-- Major bug correction in asynchronous update scheme.
+- Bug correction in asynchronous update scheme.
 
 ## [1.2.5] - 2021-03-24
 - Sub-optimal solutions

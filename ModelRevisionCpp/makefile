@@ -71,7 +71,7 @@ config:
 
 dev: cleanconfig config depend $(TARGET)
 ifneq ( $(wildcard ASP/),)
-	rm ASP
+	rm -f ASP
 endif
 	ln -s ../ASP/ ASP
 	printf "debug=true\n" >> config.txt
