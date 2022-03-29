@@ -1,0 +1,11 @@
+check_ASP=true
+compareLevelFunction=true
+exactMiddleFunctionDetermination=true
+forceOptimum=false
+ASP_dir=/home/filipegouveia/ModRev/src/ASP/
+ASP_CC_BASE=/home/filipegouveia/ModRev/src/ASP/base.lp
+ASP_CC_SS=/home/filipegouveia/ModRev/src/ASP/StableState/core-ss.lp
+ASP_CC_D=/home/filipegouveia/ModRev/src/ASP/Dynamic/core-ts.lp
+ASP_CC_D_A=/home/filipegouveia/ModRev/src/ASP/Dynamic/a-update.lp
+ASP_CC_D_S=/home/filipegouveia/ModRev/src/ASP/Dynamic/s-update.lp
+ASP_CC_D_MA=/home/filipegouveia/ModRev/src/ASP/Dynamic/ma-update.lp

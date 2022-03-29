@@ -1,4 +1,4 @@
-[<< Back](/ModelRevisionASP)
+[<< Back](/ModRev)
 <!--Here are the results obtained with ModRev v1.2-->
 ## Instances
 
@@ -18,7 +18,7 @@ Models were corrupted according to different parameters:
 
 24 different configurations of corruption parameters were considered and 100 model instances were generated for each configuration.
 
-Generated models can be found [here](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip).
+Generated models can be found [here](https://filipegouveia.github.io/ModRev/inputNetworks.zip).
 
 #### Observations
 
@@ -28,12 +28,12 @@ Five sets of observations were generated consistent with the original models und
 
 The observations were generated with a length of 20 time-steps. For the experimental evaluation it were considered also a part of the same observations with only 3 time-steps.
 
-Generated observations can be found [here](https://filipegouveia.github.io/ModelRevisionASP/observations.zip).
+Generated observations can be found [here](https://filipegouveia.github.io/ModRev/observations.zip).
 
 
 ## Results
 
-For detailed time results, please check [results-global-v1.3.1.pdf](/ModelRevisionASP/results-global-v1.3.1.pdf).
+For detailed time results, please check [results-global-v1.3.1.pdf](/ModRev/results-global-v1.3.1.pdf).
 <!-- For detailed time results, please check [results-v1.2.pdf](/ModelRevisionASP/results-v1.2.pdf). -->
 <!-- A table summary of the time results can be found here -->
 <!--For a comparative view, please check [here](compare)-->
