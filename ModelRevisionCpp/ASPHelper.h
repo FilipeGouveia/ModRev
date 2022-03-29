@@ -10,10 +10,10 @@ class ASPHelper {
 
     public:
         //parses the input file of a network model in ASP format
-        static void parseNetwork(Network * network);
+        static int parseNetwork(Network * network);
 
         //check the consistency of a model and returns a vector of minimum inconsistency solutions
-        static std::vector<InconsistencySolution*> checkConsistency(Network * network, int & optimization, bool ss = false, int update = 0);
+        static std::vector<InconsistencySolution*> checkConsistency(Network * network, int & optimization, int update = 0);
         
 
         //static std::vector<std::vector<std::string>> getOptAnswer(std::string input, int & optimization, bool optAll = true);

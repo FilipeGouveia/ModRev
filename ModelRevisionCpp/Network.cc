@@ -12,7 +12,10 @@
 Network::Network() 
     :nodes_(),
     edges_(),
-    observation_files(){}
+    observation_files(){
+        has_ss_obs = false;
+        has_ts_obs = false;
+    }
 
 Network::~Network() {
 
@@ -306,6 +309,8 @@ InconsistencySolution::InconsistencySolution()
     vlabel_(),
     updates_() {
         nTopologyChanges_ = 0;
+        nAROperations = 0;
+        nEOperations = 0;
         nRepairOperations_ = 0;
         hasImpossibility = false;
     }
@@ -399,15 +404,15 @@ void InconsistencySolution::addUpdate(int time, std::string profile, std::string
         updates_.insert(std::make_pair(time, newMap));
     }
 
-    auto timeMap = updates_.find(time)->second;
+    std::map<std::string, std::vector<std::string> > * timeMap = &(updates_.find(time)->second);
 
-    if(timeMap.find(profile) == timeMap.end())
+    if(timeMap->find(profile) == timeMap->end())
     {
         std::vector<std::string> newVector;
-        timeMap.insert(std::make_pair(profile, newVector));
+        timeMap->insert(std::make_pair(profile, newVector));
     }
 
-    timeMap.find(profile)->second.push_back(id);
+    timeMap->find(profile)->second.push_back(id);
 }
 
 void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
@@ -418,6 +423,8 @@ void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
         if(!target->second->repaired_)
         {
             nTopologyChanges_ += repairSet->getNTopologyChanges();
+            nAROperations += repairSet->getNAddRemoveOperations();
+            nEOperations += repairSet->getNFlipEdgesOperations();
             nRepairOperations_ += repairSet->getNRepairOperations();
         }
         else
@@ -444,6 +451,10 @@ void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
             {
                 nTopologyChanges_ -= target->second->getNTopologyChanges();
                 nTopologyChanges_ += repairSet->getNTopologyChanges();
+                nAROperations -= target->second->getNAddRemoveOperations();
+                nAROperations += repairSet->getNAddRemoveOperations();
+                nEOperations -= target->second->getNFlipEdgesOperations();
+                nEOperations += repairSet->getNFlipEdgesOperations();
                 nRepairOperations_ -= target->second->getNRepairOperations();
                 nRepairOperations_ += repairSet->getNRepairOperations();
             }
@@ -461,7 +472,11 @@ int InconsistencySolution::getNRepairOperations() {
     return nRepairOperations_;
 }
 
-void InconsistencySolution::printSolution(bool printAll) {
+void InconsistencySolution::printSolution(int verboseLevel, bool printAll) {
+    if(verboseLevel < 2)
+    {
+        return printParsableSolution(verboseLevel);
+    }
     std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
     for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
     {
@@ -515,6 +530,123 @@ void InconsistencySolution::printSolution(bool printAll) {
         }
     }
 }
+
+void InconsistencySolution::printParsableSolution(int verboseLevel) {
+    if(verboseLevel > 0)
+        std::cout << "[";
+    for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
+    {
+        if(iNode != iNodes_.begin())
+        {
+            std::cout << (verboseLevel > 0 ? ";" : "/");
+        }
+        std::cout << iNode->second->id_ << (verboseLevel > 0 ? ":{" : "@");
+
+        for(auto repair = iNode->second->repairSet_.begin(), repairEnd = iNode->second->repairSet_.end(); repair!=repairEnd;repair++)
+        {
+            if(repair != iNode->second->repairSet_.begin())
+            {
+                std::cout << ";";
+            }
+            if(verboseLevel > 0)
+                std::cout << "{";
+            
+            bool first = true;
+
+            for(auto it = (*repair)->addedEdges_.begin(), end = (*repair)->addedEdges_.end(); it != end; it++)
+            {
+                if(!first)
+                {
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
+                }
+                first = false;
+                if(verboseLevel > 0)
+                {
+                    std::cout << "A:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << "," << (*it)->getSign() << ")";
+                }
+                else
+                {
+                    std::cout << "A," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << "," << (*it)->getSign();
+                }
+            }
+            for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
+            {
+                if(!first)
+                {
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
+                }
+                first = false;
+                if(verboseLevel > 0)
+                {
+                    std::cout << "R:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                }
+                else
+                {
+                    std::cout << "R," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_;
+                }
+            }
+            for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
+            {
+                if(!first)
+                {
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
+                }
+                first = false;
+                if(verboseLevel > 0)
+                {
+                    std::cout << "E:(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")";
+                }
+                else
+                {
+                    std::cout << "E," << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_;
+                }
+            }
+            for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
+            {
+                if(!first)
+                {
+                    std::cout << (verboseLevel > 0 ? ";" : ":");
+                }
+                first = false;
+                std::cout << "F" << (verboseLevel > 0 ? ":" : ",") << (*it)->printFunction();
+            }
+            if(verboseLevel > 0)
+                std::cout << "}";
+
+        }
+        if(verboseLevel > 0)
+            std::cout << "}";
+    }
+    if(verboseLevel > 0)
+        std::cout << "]";
+    std::cout << std::endl;
+}
+
+/*
+* returns -1 if argument is better solution
+* returns 0 if argument is equal
+* returns 1 if this is better solution
+*/
+int InconsistencySolution::compareRepairs(InconsistencySolution* solution)
+{
+
+    if(nAROperations < solution->nAROperations)
+        return 1;
+    if(nAROperations > solution->nAROperations)
+        return -1;
+    
+    if(nEOperations < solution->nEOperations)
+        return 1;
+    if(nEOperations > solution->nEOperations)
+        return -1;
+
+    if(nRepairOperations_ < solution->nRepairOperations_)
+        return 1;
+    if(nRepairOperations_ > solution->nRepairOperations_)
+        return -1;
+    return 0;
+}
+
 
 InconsistentNode* InconsistencySolution::getINode(std::string id)
 {

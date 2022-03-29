@@ -1,0 +1,53 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+## [1.3.1] - 2021-04-26
+- Fixed a bug with missing edges
+
+## [1.3.0] - 2021-04-24
+- Support for stable state and time-series observations simultaneously.
+- Support for time-series data with different lengths.
+- Bug correction in asynchronous update scheme.
+
+## [1.2.5] - 2021-03-24
+- Sub-optimal solutions
+  - Now also available as a command option.
+  - Now indentified in the output.
+
+## [1.2.4] - 2021-02-27
+- Support machine style output.
+  - Easily parsable outputs are supported in option --verbose.
+- Introduced new options that were previously only in config file.
+  - Exhaustive search method.
+- Fixed a bug in final optimal solution filter.
+- Support to display a solution for each inconsistent set even if it is not globally optimal.
+- Fixed a bug in topological error detection.
+
+## [1.2.3] - 2020-12-17
+- Updated BooleanFunction lib.
+  - Fixed a bug in rule 2 of computing children.
+
+## [1.2.2] - 2020-11-21
+- Fixed a bug in input validation.
+- Added version information to help option.
+
+## [1.2.1] - 2020-07-04
+- Added some input validation on model definition.
+- Support to multiple predicates per line in model definition.
+
+## [1.2.0] - 2020-03-26
+- Added support for time-series observations.
+  - synchronous and asynchronous mode
+
+## [1.1.0] - 2019-12-17
+- Added support for repairing nodes with double inconsistency reasons at stable state.
+
+## [1.0.0] - 2019-02-25
+- Added support for multiple steady stete profiles simultaneously.
+
+## [0.2.0] - 2018-11-25
+- Added more repair operations.
+  - Add and remove regulators.
+
+## [0.1.0] - 2018-10-25
+- First base realease with basic model revision for steady state considering one profile.

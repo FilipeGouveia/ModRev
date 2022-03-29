@@ -1,0 +1,1 @@
+#const t = 2.exp(p3).obs_vlabel(p3,0,v1,0). obs_vlabel(p3,0,v2,1).obs_vlabel(p3,1,v2,0).obs_vlabel(p3,2,v1,1). obs_vlabel(p3,2,v2,0).

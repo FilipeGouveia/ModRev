@@ -1,0 +1,51 @@
+---
+---
+@import "{{ site.theme }}";
+.inner {
+    max-width: 1000px!important;
+}
+#main_content {
+    background: #f4f4f4;
+    border: 1px solid #d1d5da;
+    border-bottom: none;
+    border-top: none;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+.text-center {
+    text-align: center;
+}
+img {
+    max-width:100%;
+}
+
+.big-50 {
+    max-width: 49%;
+}
+
+.float {
+    display: flex;
+}
+
+@media only screen and (max-width: 600px) {
+    .small-100 {
+        max-width: 100%!important;
+    }
+    .float {
+        display: block!important;
+    }
+    #main_content {
+        padding-left: 10px!important;
+        padding-right: 10px!important;
+    }
+
+    .small-no-side-pad {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .small-margin-right {
+        margin-right: 10px;
+    }
+
+}
