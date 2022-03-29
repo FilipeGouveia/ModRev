@@ -1,6 +1,6 @@
-# Model Revision of Boolean Regulatory Networks in Stable State
+# Model Revision of Boolean Logical Models of Biological Regulatory Networks
 
-Model revision tool to repair inconsistent logical models under stable state.
+Model revision tool to repair inconsistent logical models of biological regulatory networks.
 
 ## Getting Started
 
@@ -21,13 +21,20 @@ To compile do:
 make
 ```
 
+Use
+```
+make config
+```
+to define the initial configuration parameters.
+
+
 ## Usage
 
 ### Model Revision Tool
 
-Examples of inconsistent networks are provided in [inputNetworks](https://filipegouveia.github.io/ModelRevisionASP/inputNetworks.zip).
+Examples of inconsistent networks are provided in [inputNetworks](https://filipegouveia.github.io/ModRev/inputNetworks.zip).
 
-Examples of time-series observations are provided in [observations](https://filipegouveia.github.io/ModelRevisionASP/observations.zip).
+Examples of time-series observations are provided in [observations](https://filipegouveia.github.io/ModRev/observations.zip).
 
 To use this tool, do:
 

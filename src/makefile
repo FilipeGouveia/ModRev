@@ -56,7 +56,7 @@ endif
 cleanconfig:
 	rm -f config.txt
 
-config:
+config: cleanconfig
 	printf "check_ASP=true\n" >> config.txt
 	printf "compareLevelFunction=true\n" >> config.txt
 	printf "exactMiddleFunctionDetermination=true\n" >> config.txt
@@ -69,9 +69,5 @@ config:
 	printf "ASP_CC_D_S=$(CURDIR)/ASP/Dynamic/s-update.lp\n" >> config.txt
 	printf "ASP_CC_D_MA=$(CURDIR)/ASP/Dynamic/ma-update.lp\n" >> config.txt
 
-dev: cleanconfig config depend $(TARGET)
-ifneq ( $(wildcard ASP/),)
-	rm -f ASP
-endif
-	ln -s ../ASP/ ASP
+dev: config depend $(TARGET)
 	printf "debug=true\n" >> config.txt
