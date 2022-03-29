@@ -43,6 +43,13 @@ Check [here](validation) for more information about experimental validation.
   *Proc. of the 15th International Symposium on Bioinformatics Research and Applications (ISBRA'19)*, LNCS 11490, 1-13  
   [doi:10.1007/978-3-030-20242-2_9](https://doi.org/10.1007/978-3-030-20242-2_9)
 
+## Thesis
+
+- F. Gouveia (2021)
+  **Model Revision of Boolean Logical Models of Biological Regulatory Networks**
+  *PhD Thesis in Computer Science and Engineering*, Instituto Superior Técnico, Universidade de Lisboa
+  [Thesis.pdf](https://fenix.tecnico.ulisboa.pt/downloadFile/1693531374627830/63543-FilipeGouveia-Thesis-Final.pdf)
+
 
 ## Authors
 * Filipe Gouveia
