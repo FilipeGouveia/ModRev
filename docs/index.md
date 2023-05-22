@@ -48,7 +48,7 @@ Check [here](validation) for more information about experimental validation.
 - F. Gouveia (2021)  
 	**Model Revision of Boolean Logical Models of Biological Regulatory Networks**  
 	*PhD Thesis in Computer Science and Engineering*, Instituto Superior Técnico, Universidade de Lisboa  
-	[Thesis](https://scholar.tecnico.ulisboa.pt/records/Dc_NRZICXqamFOgaJK7aATltOOGTAgr625vU)   ([Bibtex](https://scholar.tecnico.ulisboa.pt/api/records/Dc_NRZICXqamFOgaJK7aATltOOGTAgr625vU/format/bibtex))
+	[Thesis](https://scholar.tecnico.ulisboa.pt/records/Dc_NRZICXqamFOgaJK7aATltOOGTAgr625vU)   ([Bibtex](https://filipegouveia.github.io/ModRev/GouveiaPhDThesis.bib))
 	<!--[Thesis.pdf](https://fenix.tecnico.ulisboa.pt/downloadFile/1693531374627830/63543-FilipeGouveia-Thesis-Final.pdf)-->  
 
 
