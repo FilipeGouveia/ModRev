@@ -35,35 +35,56 @@ std::vector<InconsistencySolution*> ASPHelper::checkConsistency(Network * networ
 
         ctl->load(Configuration::getValue("ASP_CC_BASE").c_str());
 
-        if(network->has_ss_obs && network->has_ts_obs)
+        if(network->has_ss_obs)
         {
-            //ctl->load(Configuration::getValue("ASP_CC_SS_D").c_str());
             ctl->load(Configuration::getValue("ASP_CC_SS").c_str());
-            ctl->load(Configuration::getValue("ASP_CC_D").c_str());
-        }
-        else
-        {
-            if(network->has_ss_obs)
+            if(Configuration::isActive("checkConsistency"))
             {
-                ctl->load(Configuration::getValue("ASP_CC_SS").c_str());
-            }
-            else
-            {
-                ctl->load(Configuration::getValue("ASP_CC_D").c_str());
+                ctl->add("base",{},"inc(P,V) :- vlabel(P,V,0), 1{noneNegative(P,V,Id):functionOr(V,Id)}, vertex(V), ss(P), r_part(V).");
+                ctl->add("base",{},"inc(P,V) :- vlabel(P,V,1), {noneNegative(P,V,Id):functionOr(V,Id)}0, vertex(V), ss(P), functionOr(V,_), r_gen(V).");
+                ctl->add("base",{},"#show inc/2.");
             }
         }
         if(network->has_ts_obs)
         {
+            ctl->load(Configuration::getValue("ASP_CC_D").c_str());
+            if(Configuration::isActive("checkConsistency"))
+            {
+                ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,1), input(V), vlabel(P,T,V,0), exp(P), time(P,T+1), r_gen(V).");
+                ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,0), input(V), vlabel(P,T,V,1), exp(P), time(P,T+1), r_part(V).");
+                ctl->add("base",{},"#show inc/2.");
+            }
             switch(update)
             {
                 case ASYNC:
                     ctl->load(Configuration::getValue("ASP_CC_D_A").c_str());
+                    if(Configuration::isActive("checkConsistency"))
+                    {
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,0), update(P,T,V), 1{noneNegative(P,T,V,Id):functionOr(V,Id)}, vertex(V), exp(P), r_part(V), not topologicalerror(V), time(P,T+1).");
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,1), update(P,T,V), {noneNegative(P,T,V,Id):functionOr(V,Id)}0, vertex(V), exp(P), functionOr(V,_), r_gen(V), not topologicalerror(V), time(P,T+1).");
+                        ctl->add("base",{},"incT(P1,P2,V) :- time(P1,T1), time(P2,T2), T1 != T2, time(P1,T1+1), time(P2,T2+1), update(P1, T1, V), update(P2, T2, V), {vlabel(P1,T1,V1,S1) : vlabel(P2,T2,V1,S2), functionAnd(V,Id, V1), S1!=S2}0, vlabel(P1,T1+1,V,S3), vlabel(P2,T2+1,V,S4), S3 != S4, not input(V), P1 <= P2.");
+                        ctl->add("base",{},"incT(P1,P2,V) :- time(P1,T), time(P2,T), time(P1,T+1), time(P2,T+1), update(P1, T, V), update(P2, T, V), P1 < P2, {vlabel(P1,T,V1,S1) : vlabel(P2,T,V1,S2), S1!=S2,  functionAnd(V,Id, V1)}0, vlabel(P1,T+1,V,S3), vlabel(P2,T+1,V,S4), S3 != S4, not input(V).");
+                        ctl->add("base",{},"#show incT/3.");
+                    }
                     break;
                 case SYNC:
                     ctl->load(Configuration::getValue("ASP_CC_D_S").c_str());
+                    if(Configuration::isActive("checkConsistency"))
+                    {
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,0), 1{noneNegative(P,T,V,Id):functionOr(V,Id)}, vertex(V), exp(P), r_part(V), not topologicalerror(V), time(P,T), time(P,T+1).");
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,1), {noneNegative(P,T,V,Id):functionOr(V,Id)}0, vertex(V), exp(P), functionOr(V,_), r_gen(V), not topologicalerror(V), time(P,T), time(P,T+1).");
+                        ctl->add("base",{},"incT(P1,P2,V) :- time(P1,T1), time(P2,T2), T1 != T2, time(P1,T1+1), time(P2,T2+1), vertex(V), {vlabel(P1,T1,V1,S1): vlabel(P2,T2,V1,S2), S1!=S2, functionAnd(V,Id, V1)}0, vlabel(P1,T1+1,V,S3), vlabel(P2,T2+1,V,S4), S3 != S4, not input(V), P1 <= P2.");
+                        ctl->add("base",{},"incT(P1,P2,V) :- time(P1,T), time(P2,T), time(P1,T+1), time(P2,T+1), exp(P1), exp(P2), P1 < P2, vertex(V), {vlabel(P1,T,V1,S1): vlabel(P2,T,V1,S2), S1!=S2, functionAnd(V,Id, V1)}0, vlabel(P1,T+1,V,S3), vlabel(P2,T+1,V,S4), S3 != S4, not input(V).");
+                        ctl->add("base",{},"#show incT/3.");
+                    }
                     break;
                 case MASYNC:
                     ctl->load(Configuration::getValue("ASP_CC_D_MA").c_str());
+                    if(Configuration::isActive("checkConsistency"))
+                    {
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,0), update(P,T,V), 1{noneNegative(P,T,V,Id):functionOr(V,Id)}, vertex(V), exp(P), r_part(V), time(P,T)+1.");
+                        ctl->add("base",{},"inc(P,V) :- vlabel(P,T+1,V,1), update(P,T,V), {noneNegative(P,T,V,Id):functionOr(V,Id)}0, vertex(V), exp(P), functionOr(V,_), r_gen(V), time(P,T+1).");
+                    }
                     break;
             }
         }
@@ -143,6 +164,20 @@ InconsistencySolution * ASPHelper::parseCCModel(const Clingo::Model &m, int & op
         if(name.compare("topologicalerror") == 0)
         {
             inconsistency->addTopologicalError(args[0].to_string());
+            continue;
+        }
+        if(name.compare("inc") == 0)
+        {
+            //std::cout << "found inc(" << args[0].to_string() << "," << args[1].to_string() << ")" << std::endl;
+            inconsistency->addInconsistentProfile(args[0].to_string(), args[1].to_string());
+            continue;
+        }
+        if(name.compare("incT") == 0)
+        {
+            //std::cout << "found incT(" << args[0].to_string() << "," << args[1].to_string() << "," << args[2].to_string() << ")" << std::endl;
+            //TODO: consider a diferent object to store this topological information
+            inconsistency->addInconsistentProfile(args[0].to_string(), args[2].to_string());
+            inconsistency->addInconsistentProfile(args[1].to_string(), args[2].to_string());
             continue;
         }
 

@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.2] - 2023-10-29
+- Added support for arm architectures by updating clingo libraries.
+- Added option to just check the consistency of a model.
+
 ## [1.3.1] - 2021-04-26
 - Fixed a bug with missing edges
 

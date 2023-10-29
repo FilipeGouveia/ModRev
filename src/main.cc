@@ -14,7 +14,7 @@
 enum inconsistencies { CONSISTENT = 0, SINGLE_INC_GEN, SINGLE_INC_PART, DOUBLE_INC };
 enum update_type { ASYNC = 0, SYNC, MASYNC};
 
-std::string version = "1.3.1";
+std::string version = "1.3.2";
 
 Network * network = new Network();
 int update = ASYNC;
@@ -76,6 +76,11 @@ int process_arguments(const int argc, char const * const * argv) {
             if(strcmp(argv[i],"--exhaustive-search") == 0)
             {
                 Configuration::setValue("forceOptimum","true");
+                continue;
+            }
+            if(strcmp(argv[i],"--check-consistency") == 0 || strcmp(argv[i],"-cc") == 0)
+            {
+                Configuration::setValue("checkConsistency","true");
                 continue;
             }
 
@@ -227,6 +232,7 @@ void printHelp()
     std::cout << "\t\t\t\t\t\ta  - asynchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\ts  - synchronous update" << std::endl;
     std::cout << "\t\t\t\t\t\tma - multi-asynchronous update" << std::endl;
+    std::cout << "    --check-consistency,-cc\t\tCheck the consistency of the model and return without repairing. DEFAULT: false." << std::endl;
     std::cout << "    --exhaustive-search\t\t\tForce exhaustive search of function repair operations. DEFAULT: false." << std::endl;
     std::cout << "    --sub-opt\t\t\t\tShow sub-optimal solutions found. DEFAULT: false." << std::endl;
     std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1,2} of output. DEFAULT: 2." << std::endl;
@@ -246,10 +252,22 @@ void modelRevision() {
     int optimization = -2;
 
     std::vector<InconsistencySolution*> fInconsistencies = checkConsistency(optimization);
-    if(optimization <= 0)
+    if(Configuration::isActive("checkConsistency"))
     {
+        printConsistency(fInconsistencies, optimization);
         return;
     }
+    if(optimization < 0)
+    {
+        std::cout << "It is not possible to repair this network for now." << std::endl;
+        return;
+    }
+    if(optimization == 0)
+    {
+        std::cout << "This network is consistent!" << std::endl;
+        return;
+    }
+
     if(Configuration::isActive("debug"))
         std::cout << "found " << fInconsistencies.size() << " solutions with " << fInconsistencies.front()->iNodes_.size() << " inconsistent nodes" << std::endl;
 
@@ -343,17 +361,35 @@ std::vector<InconsistencySolution*> checkConsistency(int & optimization) {
         //test consistency
     }
 
-    if(optimization < 0)
-    {
-        std::cout << "It is not possible to repair this network for now." << std::endl;
-    }
-
-    if(optimization == 0)
-    {
-        std::cout << "This network is consistent!" << std::endl;
-    }
-
     return result;
+}
+
+void printConsistency(std::vector<InconsistencySolution*> inconsistencies, int optimization) {
+    std::cout << "{" << std::endl;
+    std::cout << "\t\"consistent\": " << (optimization == 0 ? "true" : "false,") << std::endl;
+    if(optimization != 0)
+    {
+        std::cout << "\t\"inconsistencies\": [" << std::endl;
+        bool first = true;
+        for(auto it = inconsistencies.begin(), end = inconsistencies.end(); it != end; it++)
+        {
+            if(first)
+            {
+                first = false;
+            }
+            else
+            {
+                std::cout << "," << std::endl;
+            }
+            std::cout << "\t\t{" << std::endl;
+            (*it)->printInconsistency("\t\t\t");
+            std::cout << "\t\t}";
+        }
+        std::cout << std::endl;
+        std::cout << "\t]" << std::endl;
+    }
+    std::cout << "}" << std::endl;
+    return;
 }
 
 

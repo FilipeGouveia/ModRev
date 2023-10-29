@@ -30,6 +30,7 @@ void Configuration::parseConfig(std::string filename) {
     _configMap["ignoreWarnings"] = "false";
     _configMap["forceOptimum"] = "false";
     _configMap["showSolutionForEachInconsistency"]= "false"; //show best solution for each consistency check solution even if it is not globally optimum
+    _configMap["checkConsistency"] = "false"; //just check the consistency of the model and return
 
     //read new values from config file
 

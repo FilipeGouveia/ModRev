@@ -180,6 +180,11 @@ class InconsistencySolution {
         //map time as key; second map profile as key; second map as a vector of the id of the nodes that update in a given time, in a given profile
         //note that multiple node can update in multi-asynchronous update mode
         std::map<int, std::map<std::string, std::vector<std::string> > > updates_;
+        //map with the inconsistent profiles and corresponding list of incosistent nodes
+        std::map<std::string, std::vector<std::string> > iProfiles_;
+        //map with the inconsistent nodes and corresponding list of incosistent profiles
+        //mirror of the iProfiles map
+        std::map<std::string, std::vector<std::string> > iNodesProfiles_;
         int nTopologyChanges_;
         int nAROperations;
         int nEOperations;
@@ -194,12 +199,14 @@ class InconsistencySolution {
         void addTopologicalError(std::string id);
         void addVLabel(std::string profile, std::string id, int value, int time = 0);
         void addUpdate(int time, std::string profile, std::string id);
+        void addInconsistentProfile(std::string profile, std::string id);
         void addRepairSet(std::string id, RepairSet* repairSet);
         int getNTopologyChanges();
         int getNRepairOperations();
         InconsistentNode* getINode(std::string id);
         void printSolution(int verboseLevel, bool printAll = true);
         void printParsableSolution(int verboseLevel);
+        void printInconsistency(std::string prefix = "");
         int compareRepairs(InconsistencySolution* solution);
 
 };

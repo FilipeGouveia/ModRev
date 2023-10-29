@@ -307,7 +307,9 @@ BooleanFunction::Function * Function::getBooleanFunction()
 InconsistencySolution::InconsistencySolution()
     :iNodes_(),
     vlabel_(),
-    updates_() {
+    updates_(),
+    iProfiles_(),
+    iNodesProfiles_() {
         nTopologyChanges_ = 0;
         nAROperations = 0;
         nEOperations = 0;
@@ -413,6 +415,24 @@ void InconsistencySolution::addUpdate(int time, std::string profile, std::string
     }
 
     timeMap->find(profile)->second.push_back(id);
+}
+
+void InconsistencySolution::addInconsistentProfile(std::string profile, std::string id)
+{
+    if(iProfiles_.find(profile) == iProfiles_.end())
+    {
+        std::vector<std::string> newVector;
+        iProfiles_.insert(std::make_pair(profile, newVector));
+    }
+    iProfiles_.find(profile)->second.push_back(id);
+
+    if(iNodesProfiles_.find(id) == iNodesProfiles_.end())
+    {
+        std::vector<std::string> newVector;
+        iNodesProfiles_.insert(std::make_pair(id, newVector));
+    }
+    iNodesProfiles_.find(id)->second.push_back(profile);
+
 }
 
 void InconsistencySolution::addRepairSet(std::string id, RepairSet* repairSet)
@@ -620,6 +640,39 @@ void InconsistencySolution::printParsableSolution(int verboseLevel) {
     if(verboseLevel > 0)
         std::cout << "]";
     std::cout << std::endl;
+}
+
+void InconsistencySolution::printInconsistency(std::string prefix) {
+    std::cout << prefix << "\"nodes\": [";
+    bool first = true;
+    for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
+    {
+        if(first)
+        {
+            first = false;
+        }
+        else
+        {
+            std::cout << ",";
+        }
+        std::cout << "\"" << iNode->second->id_ << "\"";
+    }
+    std::cout << "]," << std::endl;
+    std::cout << prefix << "\"profiles\": [";
+    first = true;
+    for(auto iProfile = iProfiles_.begin(), iProfileEnd = iProfiles_.end(); iProfile != iProfileEnd; iProfile++)
+    {
+        if(first)
+        {
+            first = false;
+        }
+        else
+        {
+            std::cout << ",";
+        }
+        std::cout << "\"" << iProfile->first << "\"";
+    }
+    std::cout << "]" << std::endl;
 }
 
 /*
