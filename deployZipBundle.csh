@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-set version = 1.3.1
+set version = 1.3.2
 set bundleDir = bundle
 set srcDir = src
 
