@@ -11,11 +11,13 @@ IHEADERS = -Iheaders/libclingo -Iheaders/libBooleanFunction
 
 # Operating System
 OS := $(shell uname)
+UNAME_P := $(shell uname -p)
 
 CPPS = $(wildcard *.cc)
 HEADERS = $(wildcard *.h)
 OBJS = $(CPPS:%.cc=%.o)
 LIBSOSX = $(wildcard libOSX/*.a)
+LIBSOSXARM = $(wildcard libOSX/arm64/*.a)
 #there is an isue with linux lib order
 LIBSUNIX = libUNIX/libclingo.a libUNIX/libgringo.a libUNIX/libreify.a libUNIX/libclasp.a libUNIX/libpotassco.a libUNIX/libBooleanFunction.a
 #LIBSUNIX = $(wildcard libUNIX/*.a)
@@ -33,7 +35,11 @@ $(TARGET): $(OBJS)
 ifeq ($(OS),Linux)
 	$(CXX) $(LFLAGSLINUX) -o $@ $^ $(LIBSUNIX) -lpthread
 else
+ifeq ($(UNAME_P),arm)
+	$(CXX) $(LFLAGS) -o $@ $^ $(LIBSOSXARM)
+else
 	$(CXX) $(LFLAGS) -o $@ $^ $(LIBSOSX)
+endif
 endif
 
 %.o: %.cc

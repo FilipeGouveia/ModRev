@@ -10,6 +10,7 @@ This tool was developed for *UNIX* and *MacOSX* systems.
 
 ## Releases
 
+- [ModRev v1.3.2](https://filipegouveia.github.io/ModRev/ModRev-1.3.2.zip)
 - [ModRev v1.3.1](https://filipegouveia.github.io/ModRev/ModRev-1.3.1.zip)
 - [ModRev v1.2.3](https://filipegouveia.github.io/ModRev/ModRev-1.2.3.zip) (only supports either stable state or time-series observations but not both simultaneously)
 - [ModRev v1.1.0](https://filipegouveia.github.io/ModRev/modrev-1.1.zip) (only supports stable state observations)

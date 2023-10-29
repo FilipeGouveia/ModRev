@@ -7,6 +7,7 @@ vlabel(P,T+1,V,0) :- {noneNegative(P,T,V,Id):functionOr(V,Id)}0, vertex(V), exp(
 %ignore this to consider topological repairs
 topologicalerror(V) :- time(P1,T1), time(P2,T2), T1 != T2, time(P1,T1+1), time(P2,T2+1), vertex(V), {vlabel(P1,T1,V1,S1): vlabel(P2,T2,V1,S2), S1!=S2, functionAnd(V,Id, V1)}0, vlabel(P1,T1+1,V,S3), vlabel(P2,T2+1,V,S4), S3 != S4, not input(V).
 topologicalerror(V) :- time(P1,T), time(P2,T), time(P1,T+1), time(P2,T+1), exp(P1), exp(P2), P1 != P2, vertex(V), {vlabel(P1,T,V1,S1): vlabel(P2,T,V1,S2), S1!=S2, functionAnd(V,Id, V1)}0, vlabel(P1,T+1,V,S3), vlabel(P2,T+1,V,S4), S3 != S4, not input(V).
+%TODO this last constraint it seems weird. i think the time should be any, not forced the same T.
 
 repair(V) :- topologicalerror(V).
 

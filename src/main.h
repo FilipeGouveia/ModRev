@@ -13,6 +13,7 @@ void printHelp();
 void modelRevision();
 
 std::vector<InconsistencySolution*> checkConsistency(int & optimization);
+void printConsistency(std::vector<InconsistencySolution*> inconsistencies, int optimization);
 
 void repairInconsistencies(InconsistencySolution* inconsistency);
 

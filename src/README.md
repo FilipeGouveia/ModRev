@@ -12,6 +12,22 @@ This tool has a dependency of C++ boost libraries, available online. ([boost.org
 
 Make sure that boost libraries are installed before compiling the tool.
 
+
+
+This tool also depends on [clingo](https://potassco.org/clingo/) libraries that are available in src/libUNIX and src/libOSX.
+
+However, you can always download clingo packages, compile the libraries, and replace the corresponding libraries in ModRev/src/libUNIX or ModRev/src/libOSX.
+To compile clingo libraries, extract the package and inside the extracted folder do:
+```
+cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCLINGO_BUILD_STATIC=ON
+cmake --build build
+```
+
+The clingo libraries should then be found in build/lib.
+
+ModRev also depends on [BooleanFunction](https://github.com/FilipeGouveia/BooleanFunction) library.
+If you need to recompile and replace the corresponding library, download the library, follow the instruction to compile and replace the library in ModRev/src/libUNIX or ModRev/src/libOSX.
+
 ### Compiling
 
 This tool is only available for macOS or Linux.
