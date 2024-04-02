@@ -239,6 +239,7 @@ void printHelp()
     std::cout << "\t\t\t\t\t\t0  - machine style output (minimalistic easily parsable)" << std::endl;
     std::cout << "\t\t\t\t\t\t1  - machine style output (using sets of sets)" << std::endl;
     std::cout << "\t\t\t\t\t\t2  - human readable output" << std::endl;
+    std::cout << "\t\t\t\t\t\t3  - JSON format output" << std::endl;
     std::cout << "    --help,-h\t\t\t\tPrint help options." << std::endl;
 
 }
@@ -259,7 +260,8 @@ void modelRevision() {
     }
     if(optimization < 0)
     {
-        std::cout << "It is not possible to repair this network for now." << std::endl;
+        std::cout << "ERROR: It is not possible to repair this network for now. ";
+        std::cout << "This may occur if there is at least one node for which from the same input two different outputs are expected (non-deterministic function)." << std::endl;
         return;
     }
     if(optimization == 0)
