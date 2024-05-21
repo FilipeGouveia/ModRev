@@ -497,6 +497,10 @@ void InconsistencySolution::printSolution(int verboseLevel, bool printAll) {
     {
         return printParsableSolution(verboseLevel);
     }
+    if(verboseLevel == 3)
+    {
+        return printJSONSolution(printAll);
+    }
     std::cout << "### Found solution with " << nRepairOperations_ << " repair operations." << std::endl;
     for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
     {
@@ -640,6 +644,121 @@ void InconsistencySolution::printParsableSolution(int verboseLevel) {
     if(verboseLevel > 0)
         std::cout << "]";
     std::cout << std::endl;
+}
+
+
+void InconsistencySolution::printJSONSolution(bool printAll) {
+    std::cout << "{" << std::endl;
+    std::cout << "\tsolution_repairs: " << nRepairOperations_ << "," << std::endl;
+    std::cout << "\tnode_repairs: [" << std::endl;
+
+    bool firstNode = true;
+    for(auto iNode = iNodes_.begin(), iNodesEnd = iNodes_.end(); iNode != iNodesEnd; iNode++)
+    {
+        if(firstNode)
+        {
+            firstNode = false;
+        }
+        else
+        {
+            std::cout << "," << std::endl;
+        }
+        std::cout << "\t\t{" << std::endl;
+        std::cout << "\t\t\tnode: " << iNode->second->id_ << "," << std::endl;
+        std::cout << "\t\t\trepair_set: [" << std::endl;
+        bool firstRepairSet = true;
+        int i = 1;
+        for(auto repair = iNode->second->repairSet_.begin(), repairEnd = iNode->second->repairSet_.end(); repair!=repairEnd;repair++)
+        {
+            if(firstRepairSet)
+            {
+                firstRepairSet = false;
+            }
+            else
+            {
+                std::cout << "," << std::endl;
+            }
+            std::cout << "\t\t\t\t{" << std::endl;
+            std::cout << "\t\t\t\t\trepair_id: " << i << std::endl;
+            i++;
+            std::cout << "\t\t\t\t\trepairs: [" << std::endl;
+            bool firstRepair = true;
+            for(auto it = (*repair)->repairedFunctions_.begin(), end = (*repair)->repairedFunctions_.end(); it != end; it++)
+            {
+                if(firstRepair)
+                {
+                    firstRepair = false;
+                }
+                else
+                {
+                    std::cout << "," << std::endl;
+                }
+                std::cout << "\t\t\t\t\t\t{" << std::endl;
+                std::cout << "\t\t\t\t\t\t\ttype: \"F\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\tvalue: \"" << (*it)->printFunction() << "\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t}";
+            }
+            for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
+            {
+                if(firstRepair)
+                {
+                    firstRepair = false;
+                }
+                else
+                {
+                    std::cout << "," << std::endl;
+                }
+                std::cout << "\t\t\t\t\t\t{" << std::endl;
+                std::cout << "\t\t\t\t\t\t\ttype: \"E\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\tvalue: \"(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t}";
+            }
+            for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
+            {
+                if(firstRepair)
+                {
+                    firstRepair = false;
+                }
+                else
+                {
+                    std::cout << "," << std::endl;
+                }
+                std::cout << "\t\t\t\t\t\t{" << std::endl;
+                std::cout << "\t\t\t\t\t\t\ttype: \"R\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\tvalue: \"(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t}";
+            }
+            for(auto it = (*repair)->addedEdges_.begin(), end = (*repair)->addedEdges_.end(); it != end; it++)
+            {
+                if(firstRepair)
+                {
+                    firstRepair = false;
+                }
+                else
+                {
+                    std::cout << "," << std::endl;
+                }
+                std::cout << "\t\t\t\t\t\t{" << std::endl;
+                std::cout << "\t\t\t\t\t\t\ttype: \"A\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\tvalue: \"(" << (*it)->getStart()->id_ << "," << (*it)->getEnd()->id_ << ")\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\tsign: " << (*it)->getSign() << std::endl;
+                std::cout << "\t\t\t\t\t\t}";
+            }
+            std::cout << std::endl;
+            std::cout << "\t\t\t\t\t]" << std::endl;
+            std::cout << "\t\t\t\t}";
+            if(!printAll)
+            {
+                break;
+            }
+        }
+        std::cout << std::endl;
+        std::cout << "\t\t\t]" << std::endl;
+        std::cout << "\t\t}";
+    }
+    std::cout << std::endl;
+    std::cout << "\t]" << std::endl;
+    std::cout << "}" << std::endl;
 }
 
 void InconsistencySolution::printInconsistency(std::string prefix) {

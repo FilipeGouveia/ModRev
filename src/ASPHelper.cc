@@ -290,7 +290,7 @@ int ASPHelper::parseNetwork(Network * network) {
                         result = -1;
                         continue;
                     }
-                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[1][0]) && !isdigit(split[1][0])))
+                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
                         return -2;
@@ -324,7 +324,7 @@ int ASPHelper::parseNetwork(Network * network) {
                     {
                         continue;
                     }
-                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[1][0]) && !isdigit(split[1][0])))
+                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
                         return -2;
@@ -362,7 +362,7 @@ int ASPHelper::parseNetwork(Network * network) {
                         result = -1;
                         continue;
                     }
-                    if((!islower(split[0][0]) && !isdigit(split[0][0])))
+                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
                         return -2;
@@ -429,7 +429,7 @@ int ASPHelper::parseNetwork(Network * network) {
                         continue;
                     }
 
-                    if((!islower(split[0][0]) && !isdigit(split[0][0])) ||  (!islower(split[2][0]) && !isdigit(split[2][0])))
+                    if((split[0][0] != '\'' && split[0][0] != '\"' &&  !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[2][0] != '\'' && split[2][0] != '\"' && !islower(split[2][0]) && !isdigit(split[2][0])))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
                         return -2;
