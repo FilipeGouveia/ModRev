@@ -368,7 +368,7 @@ std::vector<InconsistencySolution*> checkConsistency(int & optimization) {
 
 void printConsistency(std::vector<InconsistencySolution*> inconsistencies, int optimization) {
     std::cout << "{" << std::endl;
-    std::cout << "\t\"consistent\": " << (optimization == 0 ? "True" : "False,") << std::endl;
+    std::cout << "\t\"consistent\": " << (optimization == 0 ? "true" : "false,") << std::endl;
     if(optimization != 0)
     {
         std::cout << "\t\"inconsistencies\": [" << std::endl;
