@@ -178,7 +178,7 @@ int process_arguments(const int argc, char const * const * argv) {
                 lastOpt = "-m";
                 try{
                     int value = std::stoi(argv[i]);
-                    if(value >= 0 && value <= 2)
+                    if(value >= 0 && value <= 3)
                     {
                         verbose = value;
                     }
@@ -235,7 +235,7 @@ void printHelp()
     std::cout << "    --check-consistency,-cc\t\tCheck the consistency of the model and return without repairing. DEFAULT: false." << std::endl;
     std::cout << "    --exhaustive-search\t\t\tForce exhaustive search of function repair operations. DEFAULT: false." << std::endl;
     std::cout << "    --sub-opt\t\t\t\tShow sub-optimal solutions found. DEFAULT: false." << std::endl;
-    std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1,2} of output. DEFAULT: 2." << std::endl;
+    std::cout << "    --verbose,-v <value>\t\tVerbose level {0,1,2,3} of output. DEFAULT: 2." << std::endl;
     std::cout << "\t\t\t\t\t\t0  - machine style output (minimalistic easily parsable)" << std::endl;
     std::cout << "\t\t\t\t\t\t1  - machine style output (using sets of sets)" << std::endl;
     std::cout << "\t\t\t\t\t\t2  - human readable output" << std::endl;
