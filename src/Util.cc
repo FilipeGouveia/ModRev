@@ -84,3 +84,35 @@ std::string getFilepath(const std::string &s)
     }
     return filepath;
 }
+
+bool validateInputName(const std::string &s)
+{
+    if(s[0] != '\"' && !islower(s[0]) && !isdigit(s[0]))
+    {
+        return false;
+    }
+    return true;
+}
+
+std::string getOutputName(const std::string &s)
+{
+    std::string out = s;
+    if(s.empty())
+        return "\"\"";
+
+    if(s[0] != '\"')
+        out = "\"" + s + "\"";
+    return out;
+
+}
+
+std::string escapeString(const std::string &s)
+{
+    std::string out = s;
+    size_t start_pos = 0;
+    while((start_pos = out.find("\"", start_pos)) != std::string::npos) {
+        out.replace(start_pos, 1, "\\\"");
+        start_pos += 2;
+    }
+    return out;
+}

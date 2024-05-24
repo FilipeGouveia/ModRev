@@ -266,6 +266,11 @@ void modelRevision() {
     }
     if(optimization == 0)
     {
+        if(verbose == 3)
+        {
+            printConsistency(fInconsistencies, optimization);
+            return;
+        }
         std::cout << "This network is consistent!" << std::endl;
         return;
     }

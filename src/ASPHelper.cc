@@ -290,11 +290,15 @@ int ASPHelper::parseNetwork(Network * network) {
                         result = -1;
                         continue;
                     }
-                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
+                    
+                    //if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
+                    if(!Util_h::validateInputName(split[0]) || !Util_h::validateInputName(split[1]))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        std::cout << "\t\tNodes names must start with a lower case, a digit, or surrounded by quotation marks \"" << std::endl;
                         return -2;
                     }
+                    
                     std::string startId = split[0];
                     std::string endId = split[1];
                     int sign;
@@ -324,9 +328,11 @@ int ASPHelper::parseNetwork(Network * network) {
                     {
                         continue;
                     }
-                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
+                    //if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[1][0] != '\'' && split[1][0] != '\"' && !islower(split[1][0]) && !isdigit(split[1][0])))
+                    if(!Util_h::validateInputName(split[0]) || !Util_h::validateInputName(split[1]))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        std::cout << "\t\tNodes names must start with a lower case, a digit, or surrounded by quotation marks \"" << std::endl;
                         return -2;
                     }
                     std::string startId = split[0];
@@ -362,9 +368,11 @@ int ASPHelper::parseNetwork(Network * network) {
                         result = -1;
                         continue;
                     }
-                    if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])))
+                    //if((split[0][0] != '\'' && split[0][0] != '\"' && !islower(split[0][0]) && !isdigit(split[0][0])))
+                    if(!Util_h::validateInputName(split[0]))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        std::cout << "\t\tNodes names must start with a lower case, a digit, or surrounded by quotation marks \"" << std::endl;
                         return -2;
                     }
                     network->addNode(split[0]);
@@ -429,9 +437,11 @@ int ASPHelper::parseNetwork(Network * network) {
                         continue;
                     }
 
-                    if((split[0][0] != '\'' && split[0][0] != '\"' &&  !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[2][0] != '\'' && split[2][0] != '\"' && !islower(split[2][0]) && !isdigit(split[2][0])))
+                    //if((split[0][0] != '\'' && split[0][0] != '\"' &&  !islower(split[0][0]) && !isdigit(split[0][0])) ||  (split[2][0] != '\'' && split[2][0] != '\"' && !islower(split[2][0]) && !isdigit(split[2][0])))
+                    if(!Util_h::validateInputName(split[0]) || !Util_h::validateInputName(split[2]))
                     {
                         std::cout << "WARN!\tInvalid node argument in line " << countLine << ": " << predicates[i] << std::endl;
+                        std::cout << "\t\tNodes names must start with a lower case, a digit, or surrounded by quotation marks \"" << std::endl;
                         return -2;
                     }
 
