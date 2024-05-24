@@ -666,7 +666,7 @@ void InconsistencySolution::printJSONSolution(bool printAll) {
         }
         std::cout << "\t\t{" << std::endl;
         //std::cout << "\t\t\t\"node\": " << Util_h::getOutputName(iNode->second->id_) << "," << std::endl;
-        std::cout << "\t\t\t\"node\": \"" << Util_h::escapeString(iNode->second->id_) << "\"," << std::endl;
+        std::cout << "\t\t\t\"node\": \"" << Util_h::cleanString(iNode->second->id_) << "\"," << std::endl;
         std::cout << "\t\t\t\"repair_set\": [" << std::endl;
         bool firstRepairSet = true;
         int i = 1;
@@ -697,7 +697,7 @@ void InconsistencySolution::printJSONSolution(bool printAll) {
                 }
                 std::cout << "\t\t\t\t\t\t{" << std::endl;
                 std::cout << "\t\t\t\t\t\t\t\"type\": \"F\"," << std::endl;
-                std::cout << "\t\t\t\t\t\t\t\"value\": \"" << Util_h::escapeString((*it)->printFunction()) << "\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t\t\"value\": \"" << Util_h::cleanString((*it)->printFunction()) << "\"" << std::endl;
                 std::cout << "\t\t\t\t\t\t}";
             }
             for(auto it = (*repair)->flippedEdges_.begin(), end = (*repair)->flippedEdges_.end(); it != end; it++)
@@ -712,7 +712,7 @@ void InconsistencySolution::printJSONSolution(bool printAll) {
                 }
                 std::cout << "\t\t\t\t\t\t{" << std::endl;
                 std::cout << "\t\t\t\t\t\t\t\"type\": \"E\"," << std::endl;
-                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::escapeString((*it)->getStart()->id_) << "," << Util_h::escapeString((*it)->getEnd()->id_) << ")\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::cleanString((*it)->getStart()->id_) << "," << Util_h::cleanString((*it)->getEnd()->id_) << ")\"" << std::endl;
                 std::cout << "\t\t\t\t\t\t}";
             }
             for(auto it = (*repair)->removedEdges_.begin(), end = (*repair)->removedEdges_.end(); it != end; it++)
@@ -727,7 +727,7 @@ void InconsistencySolution::printJSONSolution(bool printAll) {
                 }
                 std::cout << "\t\t\t\t\t\t{" << std::endl;
                 std::cout << "\t\t\t\t\t\t\t\"type\": \"R\"," << std::endl;
-                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::escapeString((*it)->getStart()->id_) << "," << Util_h::escapeString((*it)->getEnd()->id_) << ")\"" << std::endl;
+                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::cleanString((*it)->getStart()->id_) << "," << Util_h::cleanString((*it)->getEnd()->id_) << ")\"" << std::endl;
                 std::cout << "\t\t\t\t\t\t}";
             }
             for(auto it = (*repair)->addedEdges_.begin(), end = (*repair)->addedEdges_.end(); it != end; it++)
@@ -742,7 +742,7 @@ void InconsistencySolution::printJSONSolution(bool printAll) {
                 }
                 std::cout << "\t\t\t\t\t\t{" << std::endl;
                 std::cout << "\t\t\t\t\t\t\t\"type\": \"A\"," << std::endl;
-                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::escapeString((*it)->getStart()->id_) << "," << Util_h::escapeString((*it)->getEnd()->id_) << ")\"," << std::endl;
+                std::cout << "\t\t\t\t\t\t\t\"value\": \"(" << Util_h::cleanString((*it)->getStart()->id_) << "," << Util_h::cleanString((*it)->getEnd()->id_) << ")\"," << std::endl;
                 std::cout << "\t\t\t\t\t\t\t\"sign\": " << (*it)->getSign() << std::endl;
                 std::cout << "\t\t\t\t\t\t}";
             }

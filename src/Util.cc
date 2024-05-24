@@ -116,3 +116,13 @@ std::string escapeString(const std::string &s)
     }
     return out;
 }
+
+std::string cleanString(const std::string &s)
+{
+    std::string out = s;
+    size_t start_pos = 0;
+    while((start_pos = out.find("\"", start_pos)) != std::string::npos) {
+        out.replace(start_pos, 1, "");
+    }
+    return out;
+}

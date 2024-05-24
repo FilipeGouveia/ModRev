@@ -19,5 +19,7 @@ std::string getFilepath(const std::string &s);
 bool validateInputName(const std::string &s);
 std::string getOutputName(const std::string &s);
 std::string escapeString(const std::string &s);
+std::string cleanString(const std::string &s);
+
 
 #endif /* Util_h */
