@@ -776,7 +776,7 @@ void InconsistencySolution::printInconsistency(std::string prefix) {
         {
             std::cout << ",";
         }
-        std::cout << "\"" << iNode->second->id_ << "\"";
+        std::cout << "\"" << Util_h::cleanString(iNode->second->id_) << "\"";
     }
     std::cout << "]," << std::endl;
     std::cout << prefix << "\"profiles\": [";
@@ -791,7 +791,7 @@ void InconsistencySolution::printInconsistency(std::string prefix) {
         {
             std::cout << ",";
         }
-        std::cout << "\"" << iProfile->first << "\"";
+        std::cout << "\"" << Util_h::cleanString(iProfile->first) << "\"";
     }
     std::cout << "]" << std::endl;
 }
