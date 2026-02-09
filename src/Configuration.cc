@@ -23,6 +23,7 @@ void Configuration::parseConfig(std::string filename) {
     _configMap["ASP_CC_D_MA"] =  "../ASP/Dynamic/ma-update.lp"; //ASP consistency check dynamic multi-asynchronous update program file
     _configMap["ASP_Functions"] = "../ASP/Functions/"; // ASP function files directory
     _configMap["allOpt"] = "true"; // show one or more solutions
+    _configMap["showAllFunctions"] = "true"; //show all function repairs of the same level (optimal)
     _configMap["debug"] = "false";
     _configMap["multipleProfiles"] = "true";
     _configMap["compareLevelFunction"] = "true";
